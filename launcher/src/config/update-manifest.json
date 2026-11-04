@@ -1,0 +1,147 @@
+{
+  "name": "River Client",
+  "version": "0.2.8.1",
+  "minimumVersion": "0.1.7",
+  "required": false,
+  "publishedAt": "2026-11-03T18:47:20.432Z",
+  "pageUrl": "https://riverclient.xyz/",
+  "installerUrl": "https://updates.riverclient.xyz/downloads/River-Client-Setup.exe",
+  "portableUrl": "https://updates.riverclient.xyz/downloads/releases/0.2.8.1/River-Client-Portable-0.2.8.1.exe",
+  "linuxUrl": "https://updates.riverclient.xyz/downloads/River-Client-Linux.tar.gz",
+  "packageUrl": "https://updates.riverclient.xyz/downloads/releases/0.2.8.1/River-Client-App-0.2.8.1.zip",
+  "packageParts": [],
+  "fileManifestUrl": "https://updates.riverclient.xyz/downloads/releases/0.2.8.1/file-manifest.json",
+  "appFileManifestUrl": "https://updates.riverclient.xyz/downloads/releases/0.2.8.1/file-manifest.json",
+  "appFileBaseUrl": "https://updates.riverclient.xyz/downloads/releases/0.2.8.1/app/",
+  "fileCount": 80,
+  "files": {
+    "installer": {
+      "name": "River-Client-Setup.exe",
+      "size": 140557712,
+      "sha256": "3ad2cabd5d8b1c201e34c344a5d153eae1b7707d129608dcfa4e34ab4ff8aa3e"
+    },
+    "portable": {
+      "name": "River-Client-Portable-0.2.8.1.exe",
+      "size": 176825339,
+      "sha256": "0d2b9d50dbd42d5cf6d4f592af273a26d3105166ed3a6a441c76df947dcec9a1"
+    },
+    "linux": {
+      "name": "River-Client-Linux-0.2.8.1.tar.gz",
+      "size": 161544005,
+      "sha256": "6a18a70b88bb14caef4a1547ed4ec630d9e9cc99eb713a670f47da89d76d8013"
+    },
+    "package": {
+      "name": "River-Client-App-0.2.8.1.zip",
+      "size": 203151936,
+      "sha256": "1780be3fa45bf807857c549ef7c7029ad0bed71b9d42b7b3c2d63e5a412c8f3e"
+    },
+    "fileManifest": {
+      "name": "file-manifest.json",
+      "size": 24614,
+      "sha256": "f26271cec2e5f714bdbf600d725118dc102778a11451d4de1a6ab29248592c38",
+      "count": 80
+    }
+  },
+  "mods": [
+    {
+      "minecraft": "26.2",
+      "name": "clientcore-0.2.8.1+26.2.jar",
+      "url": "https://updates.riverclient.xyz/downloads/releases/0.2.8.1/mod/clientcore-0.2.8.1%2B26.2.jar",
+      "size": 8129596,
+      "sha256": "428dbb3b5c88522449f784454b57341bce1d26076e23d266605685639c8b6f59"
+    },
+    {
+      "minecraft": "26.1.2",
+      "name": "clientcore-0.2.8.1+26.1.2.jar",
+      "url": "https://updates.riverclient.xyz/downloads/releases/0.2.8.1/mod/clientcore-0.2.8.1%2B26.1.2.jar",
+      "size": 8131670,
+      "sha256": "35e798152e02aba59adc0d5bdd9a6136a34777a605b6459199a7518067f304b1"
+    },
+    {
+      "minecraft": "1.21.11",
+      "name": "clientcore-0.2.8.1+1.21.11.jar",
+      "url": "https://updates.riverclient.xyz/downloads/releases/0.2.8.1/mod/clientcore-0.2.8.1%2B1.21.11.jar",
+      "size": 8269090,
+      "sha256": "89db3d36a4ff65bd7f6a2b29f979ef2c8fa96966fd0971f645d22b6048b45e6e"
+    },
+    {
+      "minecraft": "1.21.10",
+      "name": "clientcore-0.2.8.1+1.21.10.jar",
+      "url": "https://updates.riverclient.xyz/downloads/releases/0.2.8.1/mod/clientcore-0.2.8.1%2B1.21.10.jar",
+      "size": 8165309,
+      "sha256": "013231d02aea008b6cc89ac8d1c50f466622ce8f8e145291d564d4c75c0cfe8d"
+    },
+    {
+      "minecraft": "1.21.8",
+      "name": "clientcore-0.2.8.1+1.21.8.jar",
+      "url": "https://updates.riverclient.xyz/downloads/releases/0.2.8.1/mod/clientcore-0.2.8.1%2B1.21.8.jar",
+      "size": 8161992,
+      "sha256": "eba86b8780361a6f63ebd25c0d3eda5369e271d7f5b3eeabe604d5e2f6bbddc3"
+    },
+    {
+      "minecraft": "1.21.7",
+      "name": "clientcore-0.2.8.1+1.21.7.jar",
+      "url": "https://updates.riverclient.xyz/downloads/releases/0.2.8.1/mod/clientcore-0.2.8.1%2B1.21.7.jar",
+      "size": 8161991,
+      "sha256": "f15a802c20dc1c0f70c4f4121b900bc254c8497b91cfed2776d1b0d1ff3e802c"
+    },
+    {
+      "minecraft": "1.21.6",
+      "name": "clientcore-0.2.8.1+1.21.6.jar",
+      "url": "https://updates.riverclient.xyz/downloads/releases/0.2.8.1/mod/clientcore-0.2.8.1%2B1.21.6.jar",
+      "size": 8161991,
+      "sha256": "1d2085d88ce873f30a99946f46f29a25e50c6d587a62a27559ad67726ff560db"
+    },
+    {
+      "minecraft": "1.21.5",
+      "name": "clientcore-0.2.8.1+1.21.5.jar",
+      "url": "https://updates.riverclient.xyz/downloads/releases/0.2.8.1/mod/clientcore-0.2.8.1%2B1.21.5.jar",
+      "size": 8154134,
+      "sha256": "1fc33b5df57b6d4b45bc9e8268ce22b40c31450bce294da46e4a8462f7e3bcfa"
+    },
+    {
+      "minecraft": "1.21.4",
+      "name": "clientcore-0.2.8.1+1.21.4.jar",
+      "url": "https://updates.riverclient.xyz/downloads/releases/0.2.8.1/mod/clientcore-0.2.8.1%2B1.21.4.jar",
+      "size": 8152922,
+      "sha256": "0b0cd7fa20bfea1efcc0ca3a0e6af54a98ba5ffcbbee6ac4e63929fa6156afd2"
+    },
+    {
+      "minecraft": "1.21.3",
+      "name": "clientcore-0.2.8.1+1.21.3.jar",
+      "url": "https://updates.riverclient.xyz/downloads/releases/0.2.8.1/mod/clientcore-0.2.8.1%2B1.21.3.jar",
+      "size": 8152853,
+      "sha256": "698cc802917ca51478a00f166bc544b202a31a32f22249588b97ddf210030a2f"
+    },
+    {
+      "minecraft": "1.21.2",
+      "name": "clientcore-0.2.8.1+1.21.2.jar",
+      "url": "https://updates.riverclient.xyz/downloads/releases/0.2.8.1/mod/clientcore-0.2.8.1%2B1.21.2.jar",
+      "size": 8152853,
+      "sha256": "b0be18187a0c3c7434d56e8f2785dd26556fed1f40e483a5d12de0c3b4b2d28e"
+    },
+    {
+      "minecraft": "1.21.1",
+      "name": "clientcore-0.2.8.1+1.21.1.jar",
+      "url": "https://updates.riverclient.xyz/downloads/releases/0.2.8.1/mod/clientcore-0.2.8.1%2B1.21.1.jar",
+      "size": 8153197,
+      "sha256": "2b1d8773397797674f78d1d5537feb2731ce726433c61daf2ae14e3087289c8d"
+    },
+    {
+      "minecraft": "1.21",
+      "name": "clientcore-0.2.8.1+1.21.jar",
+      "url": "https://updates.riverclient.xyz/downloads/releases/0.2.8.1/mod/clientcore-0.2.8.1%2B1.21.jar",
+      "size": 8153195,
+      "sha256": "b20cf41f5d50123494b8cf724143f66285ac3b7e900855e77130df776021d390"
+    }
+  ],
+  "changelog": {
+    "version": "0.2.8.1",
+    "title": "River Client 0.2.8.1",
+    "summary": "River updates on every Minecraft version again.",
+    "items": [
+      "Fixed: Instances on Minecraft versions other than 1.21.11 (like 26.2) kept the old River and never got 0.2.8. They update now."
+    ]
+  },
+  "notes": "River updates on every Minecraft version again."
+}
