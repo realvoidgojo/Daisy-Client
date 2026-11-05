@@ -5,11 +5,13 @@ import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import net.minecraft.client.Minecraft
 import java.io.File
+import java.security.MessageDigest
 import java.util.UUID
 
 /**
  * Service managing local-player custom appearance (skin, cape, model type).
  * Persists selected appearance locally and ties it to the active Minecraft account.
+ * Automatically discovers skins equipped via the Daisy launcher or CustomSkinLoader.
  */
 object LocalAppearanceService {
 
@@ -42,16 +44,18 @@ object LocalAppearanceService {
 
     /**
      * Gets the local player's configured appearance, ensuring UUID matches the current user.
+     * Falls back to launcher/local synchronized skin if not explicitly saved in local_appearance.json.
      */
     @JvmStatic
     fun getLocalAppearance(): PlayerAppearance? {
-        val activeUuid = runCatching { Minecraft.getInstance().user.profileId }.getOrNull() ?: return localAppearance
-        val current = localAppearance ?: return null
-        return if (current.uuid == activeUuid.toString().replace("-", "").lowercase()) {
-            current
-        } else {
-            // Keep local appearance tied to the active account/profile
+        val activeUuid = runCatching { Minecraft.getInstance().user.profileId }.getOrNull()
+        val current = localAppearance ?: discoverFromLauncherOrDisk()
+        if (current == null) return null
+
+        return if (activeUuid != null && current.uuid != activeUuid.toString().replace("-", "").lowercase()) {
             current.copy(uuid = activeUuid.toString().replace("-", "").lowercase())
+        } else {
+            current
         }
     }
 
@@ -117,6 +121,79 @@ object LocalAppearanceService {
                 localAppearance = PlayerAppearance.fromJson(obj)
             }
         }
+        if (localAppearance == null) {
+            localAppearance = discoverFromLauncherOrDisk()
+        }
+    }
+
+    /**
+     * Discovers active skin exported by the Daisy launcher into CustomSkinLoader or daisy-launcher directories.
+     */
+    private fun discoverFromLauncherOrDisk(): PlayerAppearance? {
+        val username = runCatching { Minecraft.getInstance().user.name }.getOrNull()?.trim() ?: return null
+        val uuid = runCatching { Minecraft.getInstance().user.profileId.toString() }.getOrDefault(UUID.randomUUID().toString())
+        val gameDir = Minecraft.getInstance().gameDirectory
+
+        // 1. Check local instance CustomSkinLoader sync: CustomSkinLoader/LocalSkin/skins/<name>.png
+        val localSkinFile = File(gameDir, "CustomSkinLoader/LocalSkin/skins/$username.png")
+        if (localSkinFile.exists() && localSkinFile.isFile && localSkinFile.length() > 0) {
+            val asset = cacheFileToAsset(localSkinFile)
+            if (asset != null) {
+                return PlayerAppearance(uuid, asset, null, SkinModel.CLASSIC)
+            }
+        }
+
+        // 2. Check launcher skin history: AppData/Roaming/daisy-launcher/skins/skin-history-<name>.json
+        val appData = System.getenv("APPDATA")
+        if (appData != null) {
+            val historyFile = File(appData, "daisy-launcher/skins/skin-history-$username.json")
+            if (historyFile.exists() && historyFile.isFile) {
+                runCatching {
+                    val root = JsonParser.parseString(historyFile.readText()).asJsonObject
+                    val skins = root.getAsJsonArray("skins")
+                    if (skins != null && skins.size() > 0) {
+                        val skinObj = skins.firstOrNull { it.asJsonObject.get("active")?.asBoolean == true }?.asJsonObject
+                            ?: skins.get(0).asJsonObject
+                        val path = skinObj.get("path")?.asString
+                        val variant = skinObj.get("variant")?.asString
+                        if (!path.isNullOrEmpty()) {
+                            val file = File(path)
+                            if (file.exists() && file.isFile && file.length() > 0) {
+                                val asset = cacheFileToAsset(file)
+                                if (asset != null) {
+                                    val model = if (variant.equals("slim", ignoreCase = true)) SkinModel.SLIM else SkinModel.CLASSIC
+                                    return PlayerAppearance(uuid, asset, null, model)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return null
+    }
+
+    private fun cacheFileToAsset(file: File): AppearanceAsset? {
+        return runCatching {
+            val bytes = file.readBytes()
+            val digest = MessageDigest.getInstance("SHA-256").digest(bytes)
+            val hash = digest.joinToString("") { "%02x".format(it) }
+
+            // Copy into daisy cache directory so AppearanceAssetCache can serve it directly
+            val cacheDir = File(Minecraft.getInstance().gameDirectory, "daisy/cache/assets")
+            if (!cacheDir.exists()) cacheDir.mkdirs()
+            val target = File(cacheDir, "$hash.png")
+            if (!target.exists()) {
+                target.writeBytes(bytes)
+            }
+
+            AppearanceAsset(
+                assetId = hash,
+                url = file.toURI().toString(),
+                sha256 = hash
+            )
+        }.getOrNull()
     }
 
     private fun saveToDisk() {
@@ -131,4 +208,3 @@ object LocalAppearanceService {
         }
     }
 }
-
