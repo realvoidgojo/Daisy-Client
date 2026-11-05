@@ -115,19 +115,16 @@ function ContentRow({ entry, kind, onToggle, onRemove, busy }) {
         {/* River's own mod is what makes the instance a River instance, so it is never
             togglable or removable from here - repairing re-adds it anyway. */}
         {kind === "mods" && !entry.required ? (
-          modern ? (
+          <div className="flex items-center gap-2 mr-2">
             <Switch
               checked={!disabled}
               disabled={busy}
               onCheckedChange={() => onToggle(entry)}
-              title={disabled ? t("Enable") : t("Disable")}
-              aria-label={disabled ? t("Enable") : t("Disable")}
+              title={disabled ? t("Enable mod") : t("Disable mod")}
+              aria-label={disabled ? t("Enable mod") : t("Disable mod")}
+              className="data-[state=checked]:bg-emerald-500"
             />
-          ) : (
-            <Button variant="ghost" size="sm" disabled={busy} onClick={() => onToggle(entry)}>
-              {disabled ? t("Enable") : t("Disable")}
-            </Button>
-          )
+          </div>
         ) : null}
         {!entry.required ? (
           <Button variant="ghost" size="icon" title={t("Remove")} disabled={busy} onClick={() => onRemove(entry)}>

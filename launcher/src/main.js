@@ -1620,6 +1620,28 @@ function skinStorageDir() {
   return path.join(app.getPath("userData"), "skins", "files");
 }
 
+function syncOfflineSkinToInstance(instancePath, playerName) {
+  try {
+    const cleanName = String(playerName || "").trim();
+    if (!instancePath || !cleanName) return;
+
+    // Find the latest active skin from skin history or account skin
+    const history = readSkinHistory();
+    const active = history.find(s => s.active) || history[0];
+    if (!active || !active.path || !fs.existsSync(active.path)) return;
+
+    // CustomSkinLoader directory structure:
+    // .minecraft/CustomSkinLoader/LocalSkin/skins/<PlayerName>.png
+    const targetDir = path.join(instancePath, "CustomSkinLoader", "LocalSkin", "skins");
+    fs.mkdirSync(targetDir, { recursive: true });
+    const targetFile = path.join(targetDir, `${cleanName}.png`);
+    fs.copyFileSync(active.path, targetFile);
+    emit("launcher:log", `[skins] Synchronized offline skin for ${cleanName} to ${targetFile}`);
+  } catch (err) {
+    emit("launcher:log", `[skins] Could not sync offline skin to instance: ${err.message}`);
+  }
+}
+
 function versionsPath() {
   return path.join(app.getPath("userData"), "mojang-versions.json");
 }
@@ -5054,9 +5076,6 @@ ipcMain.handle("launcher:microsoft-logout", () => {
 
 ipcMain.handle("launcher:choose-skin", async (_event, variant) => {
   const auth = await ensureFreshAuth();
-  if (!hasUsableMinecraftToken(auth)) return { ok: false, message: auth.refreshError || "Sign in with Microsoft before changing skins." };
-  const offline = await offlineResult("Skin upload");
-  if (offline) return offline;
 
   const selection = await dialog.showOpenDialog(mainWindow, {
     title: "Choose Minecraft skin PNG",
@@ -5076,21 +5095,36 @@ ipcMain.handle("launcher:choose-skin", async (_event, variant) => {
 
 ipcMain.handle("launcher:equip-skin", async (_event, skinId) => {
   const auth = await ensureFreshAuth();
-  if (!hasUsableMinecraftToken(auth)) return { ok: false, message: auth.refreshError || "Sign in with Microsoft before equipping skins." };
-  const offline = await offlineResult("Skin equip");
-  if (offline) return offline;
 
   const history = readSkinHistory();
   const entry = history.find((skin) => skin.id === skinId);
   if (!entry || !fs.existsSync(entry.path)) return { ok: false, message: "That skin file is not available anymore." };
 
   try {
-    await uploadMinecraftSkin(auth.minecraftAccessToken, entry.path, entry.variant);
     const equippedAt = new Date().toISOString();
     const next = [{ ...entry, equippedAt }, ...history.filter((skin) => skin.id !== skinId)];
     writeSkinHistory(next);
-    const profile = await fetchMinecraftProfile(auth.minecraftAccessToken);
-    writeAuth({ ...auth, profile });
+
+    let previewDataUrl = "";
+    try {
+      previewDataUrl = skinPreviewDataUrl(entry.path);
+    } catch {}
+
+    const updatedProfile = {
+      ...(auth.profile || {}),
+      skinUrl: previewDataUrl || auth.profile?.skinUrl || "",
+      skinVariant: entry.variant || "classic"
+    };
+    writeAuth({ ...auth, profile: updatedProfile });
+
+    // Update in profiles list as well
+    const profiles = readProfiles();
+    const curIdx = profiles.findIndex(p => p.id === auth.profile?.id || p.name.toLowerCase() === (auth.profile?.name || "").toLowerCase());
+    if (curIdx >= 0) {
+      profiles[curIdx].auth = { ...auth, profile: updatedProfile };
+      writeProfiles(profiles);
+    }
+
     return { ok: true, message: `Equipped ${entry.name}.` };
   } catch (error) {
     return { ok: false, message: error.message };
@@ -5131,13 +5165,17 @@ ipcMain.handle("launcher:update-skin-entry", async (_event, patch = {}) => {
   try {
     if (isActive && next.variant !== current.variant) {
       const auth = await ensureFreshAuth();
-      if (!hasUsableMinecraftToken(auth)) {
-        return { ok: false, message: auth.refreshError || "Sign in with Microsoft before changing the active skin model." };
-      }
       if (!fs.existsSync(next.path)) return { ok: false, message: "That skin file is not available anymore." };
-      await uploadMinecraftSkin(auth.minecraftAccessToken, next.path, next.variant);
-      const profile = await fetchMinecraftProfile(auth.minecraftAccessToken);
-      writeAuth({ ...auth, profile });
+      let previewDataUrl = "";
+      try {
+        previewDataUrl = skinPreviewDataUrl(next.path);
+      } catch {}
+      const updatedProfile = {
+        ...(auth.profile || {}),
+        skinUrl: previewDataUrl || auth.profile?.skinUrl || "",
+        skinVariant: next.variant
+      };
+      writeAuth({ ...auth, profile: updatedProfile });
       nextHistory[index] = { ...next, equippedAt: new Date().toISOString() };
     }
     writeSkinHistory(nextHistory);
@@ -5811,6 +5849,12 @@ async function launchStandaloneMinecraft(status, joinAddress = "", plainInstance
   // fall back to java.exe if javaw is missing, or the user asked to see the console.
   const launchExe = status.settings.showConsoleOnLaunch ? javaPath : (javawFor(javaPath) || javaPath);
   if (launchExe !== javaPath) emit("launcher:log", `[launcher] Launching without a console via ${path.basename(launchExe)}.`);
+
+  try {
+    const launchInstPath = plainInstance ? plainInstance.path : status.instancePath;
+    const launchPlayer = freshAuth?.profile?.name || status.settings?.offlineName || "DaisyPlayer";
+    syncOfflineSkinToInstance(launchInstPath, launchPlayer);
+  } catch {}
 
   try {
     launchProcess = spawn(launchExe, launch.args, {
@@ -10521,15 +10565,14 @@ function ensureRequiredJvmArgs(args) {
 async function saveAndUploadSkin(sourcePath, variant, auth) {
   const normalizedVariant = variant === "classic" ? "classic" : "slim";
   const stat = fs.statSync(sourcePath);
-  if (stat.size > 1024 * 1024) throw new Error("Skin PNG is too large. Use a normal Minecraft skin file.");
+  if (stat.size > 2 * 1024 * 1024) throw new Error("Skin PNG is too large. Use a normal Minecraft skin file.");
 
   const id = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
-  const safeName = sanitizeFilename(path.basename(sourcePath, ".png")) || "riv3r-skin";
+  const safeName = sanitizeFilename(path.basename(sourcePath, ".png")) || "daisy-skin";
   const target = path.join(skinStorageDir(), `${id}-${safeName}.png`);
   fs.mkdirSync(path.dirname(target), { recursive: true });
   fs.copyFileSync(sourcePath, target);
 
-  await uploadMinecraftSkin(auth.minecraftAccessToken, target, normalizedVariant);
   const equippedAt = new Date().toISOString();
   const entry = {
     id,
@@ -10540,8 +10583,27 @@ async function saveAndUploadSkin(sourcePath, variant, auth) {
     uploadedAt: equippedAt
   };
   writeSkinHistory([entry, ...readSkinHistory().filter((skin) => skin.path !== target)]);
-  const profile = await fetchMinecraftProfile(auth.minecraftAccessToken);
-  writeAuth({ ...auth, profile });
+
+  let previewDataUrl = "";
+  try {
+    previewDataUrl = skinPreviewDataUrl(target);
+  } catch {}
+
+  const updatedProfile = {
+    ...(auth.profile || {}),
+    skinUrl: previewDataUrl || auth.profile?.skinUrl || "",
+    skinVariant: normalizedVariant
+  };
+  writeAuth({ ...auth, profile: updatedProfile });
+
+  // Update in saved profiles list
+  const profiles = readProfiles();
+  const curIdx = profiles.findIndex(p => p.id === auth.profile?.id || p.name.toLowerCase() === (auth.profile?.name || "").toLowerCase());
+  if (curIdx >= 0) {
+    profiles[curIdx].auth = { ...auth, profile: updatedProfile };
+    writeProfiles(profiles);
+  }
+
   return { ok: true, message: `Uploaded and equipped ${safeName}.` };
 }
 
