@@ -24,7 +24,7 @@ import java.util.concurrent.atomic.AtomicBoolean
  */
 object CapeEntitlements {
 
-    private const val BASE = "https://updates.riverclient.xyz"
+    private const val BASE = "http://127.0.0.1:25585"
 
     private val http: HttpClient by lazy {
         HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5)).build()

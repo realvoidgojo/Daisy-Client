@@ -1635,7 +1635,7 @@ function skinStorageDir() {
 }
 
 let localYggdrasilServer = null;
-let localYggdrasilPort = 0;
+let localYggdrasilPort = 25585;
 let localYggdrasilKeys = null;
 
 function getYggdrasilKeys() {
@@ -1786,6 +1786,57 @@ function startLocalYggdrasilServer() {
           return res.end();
         }
 
+        // Daisy Appearance API: /appearance/uuid/:uuid or /appearance/name/:name
+        if (pathname.startsWith("/appearance/")) {
+          const parts = pathname.slice("/appearance/".length).split("/");
+          const kind = parts[0];
+          const target = decodeURIComponent(parts.slice(1).join("/")).toLowerCase();
+
+          const auth = readAuth();
+          const profiles = readProfiles();
+          let account = profiles.find(p => {
+            const cleanUuid = (p.id || "").replace(/-/g, "").toLowerCase();
+            const cleanName = (p.name || "").toLowerCase();
+            return kind === "uuid" ? cleanUuid === target.replace(/-/g, "") : cleanName === target;
+          });
+          if (!account && auth?.profile) {
+            const cleanUuid = (auth.profile.id || "").replace(/-/g, "").toLowerCase();
+            const cleanName = (auth.profile.name || "").toLowerCase();
+            if ((kind === "uuid" && cleanUuid === target.replace(/-/g, "")) || (kind === "name" && cleanName === target)) {
+              account = { id: auth.profile.id, name: auth.profile.name, auth };
+            }
+          }
+
+          if (account) {
+            const skins = readSkinHistory();
+            const activeSkin = skins.find(s => s.active) || skins[0];
+            const skinUrl = activeSkin && fs.existsSync(activeSkin.path)
+              ? `http://127.0.0.1:${localYggdrasilPort}/textures/${path.basename(activeSkin.path)}`
+              : null;
+            const skinHash = activeSkin && fs.existsSync(activeSkin.path)
+              ? crypto.createHash("sha256").update(fs.readFileSync(activeSkin.path)).digest("hex")
+              : "";
+
+            res.writeHead(200, { "Content-Type": "application/json" });
+            return res.end(JSON.stringify({
+              found: true,
+              username: account.name || "DaisyPlayer",
+              uuid: (account.id || "").replace(/-/g, "").toLowerCase(),
+              model: activeSkin?.variant === "slim" ? "slim" : "classic",
+              updatedAt: Date.now(),
+              skin: skinUrl ? {
+                assetId: skinHash,
+                url: skinUrl,
+                sha256: skinHash
+              } : null,
+              cape: null
+            }));
+          }
+
+          res.writeHead(404, { "Content-Type": "application/json" });
+          return res.end(JSON.stringify({ found: false, error: "Player appearance not found" }));
+        }
+
         res.writeHead(404);
         res.end();
       } catch (err) {
@@ -1795,8 +1846,8 @@ function startLocalYggdrasilServer() {
       }
     });
 
-    localYggdrasilServer.listen(0, "127.0.0.1", () => {
-      localYggdrasilPort = localYggdrasilServer.address().port;
+    localYggdrasilServer.listen(25585, "127.0.0.1", () => {
+      localYggdrasilPort = 25585;
       emit("launcher:log", `[skins] Local offline skin & auth server listening on http://127.0.0.1:${localYggdrasilPort}`);
       resolve(localYggdrasilPort);
     });
@@ -13588,6 +13639,7 @@ if (singleInstanceLock) {
       discordRpcRefreshTimer = setInterval(() => scheduleDiscordPresenceRefresh(), 15000);
     }
     createWindow();
+    startLocalYggdrasilServer().catch((err) => logMainError("startLocalYggdrasilServer", err));
     syncLoginItem(readSettings());
     if (startupRvrPath) queueRvrImport(startupRvrPath);
     scheduleDiscordPresenceRefresh();

@@ -11,6 +11,7 @@
     "AbstractContainerScreenAccessor",
     "AvatarCapeMixin",
     "AvatarRendererMixin",
+    "AvatarSkinMixin",
     "BlockEntityRenderDispatcherMixin",
     "BlockOutlineMixin",
     "BossHealthOverlayMixin",

@@ -34,13 +34,13 @@ import java.util.concurrent.Executors
  */
 object RiverSocial {
 
-    private const val BASE = "https://updates.riverclient.xyz/social"
+    private const val BASE = "http://127.0.0.1:25585/social"
     private const val CONNECT_TIMEOUT = 6000
     private const val READ_TIMEOUT = 10000
     /** How often the friends list refreshes while a social screen is open. */
     const val REFRESH_INTERVAL_MS = 10_000L
 
-    private const val SOCKET_URL = "wss://updates.riverclient.xyz/social/ws"
+    private const val SOCKET_URL = "ws://127.0.0.1:25585/social/ws"
     private const val SOCKET_PROTOCOL = "river.social.v1"
     /** Long enough to stay out of the way, short enough to beat an idle proxy timeout. */
     private const val SOCKET_PING_MS = 4L * 60L * 1000L

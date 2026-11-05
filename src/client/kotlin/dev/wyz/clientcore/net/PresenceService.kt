@@ -23,7 +23,7 @@ import java.util.UUID
  * work happens on a background daemon thread so it never touches the render/tick loop.
  */
 object PresenceService {
-    private const val ENDPOINT = "https://updates.riverclient.xyz/presence"
+    private const val ENDPOINT = "http://127.0.0.1:25585/presence"
     private const val INTERVAL_MS = 10_000L
     private const val CONNECT_TIMEOUT_MS = 5_000
     private const val READ_TIMEOUT_MS = 5_000

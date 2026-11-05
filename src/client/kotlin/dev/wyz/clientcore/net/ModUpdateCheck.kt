@@ -26,7 +26,7 @@ import java.time.Duration
  */
 object ModUpdateCheck {
 
-    private const val URL = "https://updates.riverclient.xyz/version-status.json"
+    private const val URL = "http://127.0.0.1:25585/version-status.json"
 
     private val standalone = System.getProperty("minecraft.launcher.brand") != "river-client"
 

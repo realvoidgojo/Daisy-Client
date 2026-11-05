@@ -42,7 +42,7 @@ import java.net.URI
  */
 object ScreenshotShare {
     private const val MARKER = "river-screenshot:"
-    private const val UPLOAD_URL = "https://updates.riverclient.xyz/screenshots"
+    private const val UPLOAD_URL = "http://127.0.0.1:25585/screenshots"
     /** The worker takes up to 10 MB; a bigger PNG goes up as a JPEG instead. */
     private const val MAX_PNG_BYTES = 9L * 1024 * 1024
 

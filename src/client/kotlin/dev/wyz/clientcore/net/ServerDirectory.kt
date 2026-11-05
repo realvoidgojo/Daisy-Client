@@ -30,7 +30,7 @@ object ServerDirectory {
         class Online(val result: ServerPing.Result) : Status()
     }
 
-    private const val LIST_URL = "https://updates.riverclient.xyz/servers.json"
+    private const val LIST_URL = "http://127.0.0.1:25585/servers.json"
 
     /** What ships with River, used until (or unless) the live list arrives. */
     private val BUNDLED = listOf(
