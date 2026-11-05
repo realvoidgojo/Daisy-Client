@@ -101,7 +101,6 @@ const fsp = require("node:fs/promises");
 const ofs = (() => { try { return require("original-fs"); } catch { return fs; } })();
 const path = require("node:path");
 const http = require("node:http");
-const crypto = require("node:crypto");
 const { pathToFileURL } = require("node:url");
 const zlib = require("node:zlib");
 const os = require("node:os");
@@ -11385,17 +11384,23 @@ async function preparePlainMinecraftLaunch(status, auth, authenticated, joinAddr
   for (const change of fpsChanges) emit("launcher:log", `[launcher] options.txt ${change}`);
 
   const maxHeapMb = Math.max(1024, Number(status.settings.memoryMb || 4096));
-  const offlineJvmProperties = [
-    "-Dminecraft.api.env=custom",
-    "-Dminecraft.api.auth.host=http://127.0.0.1:0",
-    "-Dminecraft.api.account.host=http://127.0.0.1:0",
-    "-Dminecraft.api.session.host=http://127.0.0.1:0",
-    "-Dminecraft.api.services.host=http://127.0.0.1:0"
-  ];
+
+  const yggPort = await startLocalYggdrasilServer();
+  const injectorJar = ensureAuthlibInjectorJar();
+  const injectorArgs = (injectorJar && yggPort > 0)
+    ? [`-javaagent:${injectorJar}=http://127.0.0.1:${yggPort}`]
+    : [
+        "-Dminecraft.api.env=custom",
+        "-Dminecraft.api.auth.host=http://127.0.0.1:0",
+        "-Dminecraft.api.account.host=http://127.0.0.1:0",
+        "-Dminecraft.api.session.host=http://127.0.0.1:0",
+        "-Dminecraft.api.services.host=http://127.0.0.1:0"
+      ];
+
   const args = [
     `-Xms${Math.min(1024, maxHeapMb)}M`,
     `-Xmx${maxHeapMb}M`,
-    ...offlineJvmProperties,
+    ...injectorArgs,
     ...jvmArgsForJava(parseJvmArgs(status.settings.jvmArgs), javaMajor),
     ...versionJvmArgs,
     mainClass,
@@ -11507,6 +11512,19 @@ async function prepareStandaloneMinecraftLaunch(status, auth, authenticated, joi
   for (const change of fpsChanges) emit("launcher:log", `[launcher] options.txt ${change}`);
 
   const maxHeapMb = Math.max(1024, Number(status.settings.memoryMb || 4096));
+
+  const yggPort = await startLocalYggdrasilServer();
+  const injectorJar = ensureAuthlibInjectorJar();
+  const injectorArgs = (injectorJar && yggPort > 0)
+    ? [`-javaagent:${injectorJar}=http://127.0.0.1:${yggPort}`]
+    : [
+        "-Dminecraft.api.env=custom",
+        "-Dminecraft.api.auth.host=http://127.0.0.1:0",
+        "-Dminecraft.api.account.host=http://127.0.0.1:0",
+        "-Dminecraft.api.session.host=http://127.0.0.1:0",
+        "-Dminecraft.api.services.host=http://127.0.0.1:0"
+      ];
+
   const javaArgs = [
     // A starting heap, as Prism Launcher and Mojang's launcher give, so Java is not
     // growing the heap in small steps during the first minutes of play.
@@ -11518,11 +11536,7 @@ async function prepareStandaloneMinecraftLaunch(status, auth, authenticated, joi
       ? ["-XX:HeapDumpPath=MojangTricksIntelDriversForPerformance_javaw.exe_minecraft.exe.heapdump"]
       : []),
     ...ensureRequiredJvmArgs(parseJvmArgs(status.settings.jvmArgs)),
-    "-Dminecraft.api.env=custom",
-    "-Dminecraft.api.auth.host=http://127.0.0.1:0",
-    "-Dminecraft.api.account.host=http://127.0.0.1:0",
-    "-Dminecraft.api.session.host=http://127.0.0.1:0",
-    "-Dminecraft.api.services.host=http://127.0.0.1:0",
+    ...injectorArgs,
     `-Djava.library.path=${nativesDir}`,
     "-Dminecraft.launcher.brand=daisy",
     `-Dminecraft.launcher.version=${app.getVersion()}`,
