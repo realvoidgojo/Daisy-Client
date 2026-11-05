@@ -100,6 +100,8 @@ const fsp = require("node:fs/promises");
 */
 const ofs = (() => { try { return require("original-fs"); } catch { return fs; } })();
 const path = require("node:path");
+const http = require("node:http");
+const crypto = require("node:crypto");
 const { pathToFileURL } = require("node:url");
 const zlib = require("node:zlib");
 const os = require("node:os");
@@ -1618,6 +1620,180 @@ function skinHistoryPath() {
 
 function skinStorageDir() {
   return path.join(app.getPath("userData"), "skins", "files");
+}
+
+let localYggdrasilServer = null;
+let localYggdrasilPort = 0;
+let localYggdrasilKeys = null;
+
+function getYggdrasilKeys() {
+  if (localYggdrasilKeys) return localYggdrasilKeys;
+  try {
+    const keyPath = path.join(app.getPath("userData"), "yggdrasil-key.json");
+    if (fs.existsSync(keyPath)) {
+      const data = JSON.parse(fs.readFileSync(keyPath, "utf8"));
+      if (data.publicKey && data.privateKey) {
+        localYggdrasilKeys = data;
+        return localYggdrasilKeys;
+      }
+    }
+  } catch {}
+
+  const pair = crypto.generateKeyPairSync("rsa", {
+    modulusLength: 2048,
+    publicKeyEncoding: { type: "spki", format: "pem" },
+    privateKeyEncoding: { type: "pkcs8", format: "pem" }
+  });
+  localYggdrasilKeys = pair;
+  try {
+    const keyPath = path.join(app.getPath("userData"), "yggdrasil-key.json");
+    fs.mkdirSync(path.dirname(keyPath), { recursive: true });
+    fs.writeFileSync(keyPath, JSON.stringify(pair, null, 2));
+  } catch {}
+  return localYggdrasilKeys;
+}
+
+function ensureAuthlibInjectorJar() {
+  const target = path.join(app.getPath("userData"), "authlib-injector.jar");
+  if (fs.existsSync(target) && fs.statSync(target).size > 100000) return target;
+  
+  const bundled = path.join(__dirname, "authlib", "authlib-injector.jar");
+  const srcBundled = path.join(__dirname, "..", "src", "authlib", "authlib-injector.jar");
+  const source = fs.existsSync(bundled) ? bundled : (fs.existsSync(srcBundled) ? srcBundled : "");
+  if (source) {
+    try {
+      fs.mkdirSync(path.dirname(target), { recursive: true });
+      fs.copyFileSync(source, target);
+      return target;
+    } catch {}
+  }
+  return "";
+}
+
+function startLocalYggdrasilServer() {
+  if (localYggdrasilServer && localYggdrasilPort > 0) {
+    return Promise.resolve(localYggdrasilPort);
+  }
+
+  return new Promise((resolve) => {
+    const keys = getYggdrasilKeys();
+
+    localYggdrasilServer = http.createServer((req, res) => {
+      try {
+        const u = new URL(req.url, "http://127.0.0.1");
+        const pathname = u.pathname;
+
+        // Serve raw skin textures
+        if (pathname.startsWith("/textures/")) {
+          const skinId = pathname.slice("/textures/".length).replace(/[^a-zA-Z0-9_.-]/g, "");
+          const filePath = path.join(skinStorageDir(), skinId);
+          if (fs.existsSync(filePath)) {
+            res.writeHead(200, { "Content-Type": "image/png" });
+            return res.end(fs.readFileSync(filePath));
+          }
+          res.writeHead(404);
+          return res.end();
+        }
+
+        // Yggdrasil root metadata for authlib-injector
+        if (pathname === "/" || pathname === "") {
+          res.writeHead(200, { "Content-Type": "application/json" });
+          return res.end(JSON.stringify({
+            meta: {
+              serverName: "Daisy Local Server",
+              implementationName: "Daisy",
+              version: "1.0.0"
+            },
+            skinDomains: ["127.0.0.1", "localhost"],
+            signaturePublickey: keys.publicKey
+          }));
+        }
+
+        // Profile lookup by UUID
+        // e.g. /sessionserver/session/minecraft/profile/<uuid> or /api/profiles/minecraft
+        if (pathname.includes("/profile/")) {
+          const rawUuid = pathname.split("/profile/").pop().replace(/[^a-zA-Z0-9-]/g, "");
+          const cleanUuid = rawUuid.replace(/-/g, "").toLowerCase();
+
+          // Match active account or saved profiles
+          const auth = readAuth();
+          const profiles = readProfiles();
+          let account = profiles.find(p => (p.id || "").replace(/-/g, "").toLowerCase() === cleanUuid);
+          if (!account && auth?.profile && (auth.profile.id || "").replace(/-/g, "").toLowerCase() === cleanUuid) {
+            account = { id: auth.profile.id, name: auth.profile.name, auth };
+          }
+          if (!account) {
+            account = { id: rawUuid, name: auth?.profile?.name || "DaisyPlayer" };
+          }
+
+          const playerName = account.name || "DaisyPlayer";
+          const skins = readSkinHistory();
+          const activeSkin = skins.find(s => s.active) || skins[0];
+
+          const textures = {};
+          if (activeSkin && fs.existsSync(activeSkin.path)) {
+            const filename = path.basename(activeSkin.path);
+            textures.SKIN = {
+              url: `http://127.0.0.1:${localYggdrasilPort}/textures/${filename}`,
+              metadata: { model: activeSkin.variant === "slim" ? "slim" : "classic" }
+            };
+          }
+
+          const texturePayload = {
+            timestamp: Date.now(),
+            profileId: cleanUuid,
+            profileName: playerName,
+            isPublic: true,
+            textures
+          };
+
+          const valueBase64 = Buffer.from(JSON.stringify(texturePayload)).toString("base64");
+          const signer = crypto.createSign("RSA-SHA1");
+          signer.update(valueBase64);
+          const sig = signer.sign(keys.privateKey, "base64");
+
+          const responseData = {
+            id: cleanUuid,
+            name: playerName,
+            properties: [
+              {
+                name: "textures",
+                value: valueBase64,
+                signature: sig
+              }
+            ]
+          };
+
+          res.writeHead(200, { "Content-Type": "application/json" });
+          return res.end(JSON.stringify(responseData));
+        }
+
+        // Has joined server / join endpoints (for offline singleplayer/multiplayer bypass)
+        if (pathname.includes("/hasJoined") || pathname.includes("/join")) {
+          res.writeHead(204);
+          return res.end();
+        }
+
+        res.writeHead(404);
+        res.end();
+      } catch (err) {
+        logMainError("localYggdrasil", err);
+        res.writeHead(500);
+        res.end();
+      }
+    });
+
+    localYggdrasilServer.listen(0, "127.0.0.1", () => {
+      localYggdrasilPort = localYggdrasilServer.address().port;
+      emit("launcher:log", `[skins] Local offline skin & auth server listening on http://127.0.0.1:${localYggdrasilPort}`);
+      resolve(localYggdrasilPort);
+    });
+
+    localYggdrasilServer.on("error", (err) => {
+      logMainError("localYggdrasilServer", err);
+      resolve(0);
+    });
+  });
 }
 
 function syncOfflineSkinToInstance(instancePath, playerName) {

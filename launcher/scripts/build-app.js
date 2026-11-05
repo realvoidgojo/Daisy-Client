@@ -11,6 +11,9 @@ fs.mkdirSync(path.join(out, "renderer"), { recursive: true });
 fs.cpSync(path.join(root, "src", "assets"), path.join(out, "assets"), { recursive: true });
 fs.cpSync(path.join(root, "src", "config"), path.join(out, "config"), { recursive: true });
 fs.cpSync(path.join(root, "src", "bundled"), path.join(out, "bundled"), { recursive: true });
+if (fs.existsSync(path.join(root, "src", "authlib"))) {
+  fs.cpSync(path.join(root, "src", "authlib"), path.join(out, "authlib"), { recursive: true });
+}
 // PowerShell helper for the now-playing feed: a data file, not something esbuild bundles.
 fs.copyFileSync(path.join(root, "src", "now-playing.ps1"), path.join(out, "now-playing.ps1"));
 // Now-playing native helper: extracts media-session metadata AND album art (the .ps1
