@@ -1613,8 +1613,21 @@ function instancesPath() {
   return path.join(app.getPath("userData"), "instances.json");
 }
 
-function skinHistoryPath() {
-  return path.join(app.getPath("userData"), "skins", "skin-history.json");
+function activeAccountKey() {
+  try {
+    const auth = readAuth();
+    if (auth?.profile?.name) return sanitizeFilename(auth.profile.name);
+  } catch {}
+  try {
+    const settings = readSettings();
+    if (settings?.offlineName) return sanitizeFilename(settings.offlineName);
+  } catch {}
+  return "default";
+}
+
+function skinHistoryPath(accountKey = activeAccountKey()) {
+  const safe = sanitizeFilename(String(accountKey || "default").trim()) || "default";
+  return path.join(app.getPath("userData"), "skins", `skin-history-${safe}.json`);
 }
 
 function skinStorageDir() {
@@ -2561,25 +2574,32 @@ function writeSettings(next) {
 function readInstances() {
   const settings = readSettings();
   let instances = [];
+  let fileExisted = false;
   try {
-    const payload = JSON.parse(fs.readFileSync(instancesPath(), "utf8"));
-    instances = Array.isArray(payload.instances) ? payload.instances : [];
+    if (fs.existsSync(instancesPath())) {
+      fileExisted = true;
+      const payload = JSON.parse(fs.readFileSync(instancesPath(), "utf8"));
+      instances = Array.isArray(payload.instances) ? payload.instances : [];
+    }
   } catch {
     instances = [];
   }
 
   const normalized = instances.map(normalizeInstance).filter(Boolean);
-  if (!normalized.some((instance) => instance.path === settings.instancePath)) {
-    normalized.unshift({
+
+  // Only auto-create "River Default" if instances.json was completely missing (first run)
+  if (!fileExisted && normalized.length === 0) {
+    normalized.push({
       id: "default",
       name: "River Default",
       type: "default",
       version: settings.selectedVersion,
       loader: "fabric",
-      path: settings.instancePath,
+      path: settings.instancePath || defaultInstancePath(),
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     });
+    writeInstances(normalized);
   }
 
   return normalized.map((instance) => ({
@@ -2911,19 +2931,19 @@ async function mapWithConcurrency(items, limit, work) {
   return results.filter(Boolean);
 }
 
-function readSkinHistory() {
+function readSkinHistory(accountKey) {
   try {
-    const payload = JSON.parse(fs.readFileSync(skinHistoryPath(), "utf8"));
+    const payload = JSON.parse(fs.readFileSync(skinHistoryPath(accountKey), "utf8"));
     return Array.isArray(payload.skins) ? payload.skins.map(normalizeSkinEntry).filter(Boolean) : [];
   } catch {
     return [];
   }
 }
 
-function writeSkinHistory(skins) {
+function writeSkinHistory(skins, accountKey) {
   const normalized = skins.map(normalizeSkinEntry).filter(Boolean).slice(0, 24);
-  fs.mkdirSync(path.dirname(skinHistoryPath()), { recursive: true });
-  fs.writeFileSync(skinHistoryPath(), JSON.stringify({ skins: normalized }, null, 2));
+  fs.mkdirSync(path.dirname(skinHistoryPath(accountKey)), { recursive: true });
+  fs.writeFileSync(skinHistoryPath(accountKey), JSON.stringify({ skins: normalized }, null, 2));
   return normalized;
 }
 
@@ -2982,7 +3002,15 @@ async function ensureAccountSkinSeeded(auth) {
     const safeName = sanitizeFilename(auth.profile.name || "account-skin") || "account-skin";
     const target = path.join(skinStorageDir(), `${id}-${safeName}.png`);
     fs.mkdirSync(path.dirname(target), { recursive: true });
-    await downloadFile(auth.profile.skinUrl, target, { timeoutMs: 15000 });
+
+    if (auth.profile.skinUrl.startsWith("data:image/png;base64,")) {
+      const buf = Buffer.from(auth.profile.skinUrl.split(",")[1], "base64");
+      fs.writeFileSync(target, buf);
+    } else if (auth.profile.skinUrl.startsWith("http")) {
+      await downloadFile(auth.profile.skinUrl, target, { timeoutMs: 15000 });
+    } else {
+      return;
+    }
 
     const now = new Date().toISOString();
     writeSkinHistory([{
@@ -4758,12 +4786,12 @@ ipcMain.handle("launcher:delete-instance", async (_event, request) => {
   const remaining = instances.filter((item) => item.id !== instanceId);
   writeInstances(remaining);
 
-  if (instance.selected) {
+  if (instance.selected || remaining.length === 0) {
     const next = remaining[0];
     const settings = readSettings();
     writeSettings({
       ...settings,
-      instancePath: next ? next.path : defaultInstancePath(),
+      instancePath: next ? next.path : "",
       selectedVersion: next ? next.version : settings.selectedVersion,
       modFilters: {
         ...settings.modFilters,
@@ -5126,7 +5154,7 @@ function setOfflineAccount(name, skinDataUrl = null) {
         const target = path.join(skinStorageDir(), `${id}-${cleanName}.png`);
         fs.mkdirSync(path.dirname(target), { recursive: true });
         fs.writeFileSync(target, buf);
-        const existingSkins = readSkinHistory();
+        const existingSkins = readSkinHistory(cleanName);
         const entry = {
           id,
           name: cleanName + " Skin",
@@ -5136,7 +5164,7 @@ function setOfflineAccount(name, skinDataUrl = null) {
           active: true
         };
         const updatedSkins = [entry, ...existingSkins.filter(s => s.id !== id).map(s => ({ ...s, active: false }))];
-        writeSkinHistory(updatedSkins);
+        writeSkinHistory(updatedSkins, cleanName);
       }
     } catch (e) {
       logMainError("saveOfflineSkin", e);
@@ -8107,15 +8135,39 @@ ipcMain.handle("launcher:switch-profile", async (_event, profileId) => {
   const profile = profiles.find(p => p.id === profileId);
   if (!profile) return { ok: false, message: "Profile not found." };
   const auth = writeAuth({ ...profile.auth, profileId: profileId });
+  const settings = readSettings();
+  writeSettings({
+    ...settings,
+    offlineName: profile.name
+  });
   await ensureAccountSkinSeeded(auth);
   emitStatus();
   refreshKeptSeasons();
   return { ok: true, message: `Switched to ${profile.name}.` };
 });
 
-ipcMain.handle("launcher:remove-profile", (_event, profileId) => {
+ipcMain.handle("launcher:remove-profile", async (_event, profileId) => {
   const profiles = readProfiles().filter(p => p.id !== profileId);
   writeProfiles(profiles);
+
+  // If the removed profile was active or matching current auth
+  const currentAuth = readAuth();
+  if (currentAuth?.profile?.id === profileId || profiles.length === 0) {
+    if (profiles.length > 0) {
+      // Switch to the first remaining profile
+      const next = profiles[0];
+      const auth = writeAuth({ ...next.auth, profileId: next.id });
+      const settings = readSettings();
+      writeSettings({ ...settings, offlineName: next.name });
+      await ensureAccountSkinSeeded(auth);
+    } else {
+      // No offline accounts remain: reset to a brand new default account with clean Steve skin
+      const defaultName = "DaisyPlayer";
+      setOfflineAccount(defaultName, null);
+    }
+  }
+
+  emitStatus();
   return { ok: true, message: "Profile removed." };
 });
 

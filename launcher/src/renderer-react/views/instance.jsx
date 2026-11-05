@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import {
-  ArrowLeft, Blocks, Boxes, Copy, FolderOpen, Globe, Image, Loader2, Package,
+  ArrowLeft, Blocks, Boxes, Copy, Download, FolderOpen, Globe, Image, Loader2, Package,
   Pencil, Play, RefreshCw, ScrollText, Search, Sparkles, TriangleAlert, Trash2, Upload, Wrench
 } from "lucide-react";
 import { api } from "../lib/useStatus";
