@@ -21,7 +21,7 @@ async function installMinecraftVersionFull(request) {
 
   const vanilla = await fetchMinecraftVersionJson(versionId);
   const javaMajor = Number(vanilla.javaVersion && vanilla.javaVersion.majorVersion) || (compareVersions(versionId, "1.17") < 0 ? 8 : requiredJavaMajor(versionId));
-  
+
   emitActivity({ title: "Installing Minecraft " + versionId, detail: "Ensuring Java " + javaMajor + " is installed...", current: 2, total: 6 });
   const javaPath = await ensureExactJava(readSettings(), javaMajor);
 
@@ -112,15 +112,15 @@ const semver = require("semver");
 // their own failures, so reaching here means something unexpected, not fatal.
 function logMainError(kind, error) {
   const line = `[${new Date().toISOString()}] ${kind}: ${(error && error.stack) || error}\n`;
-  try { process.stderr.write(line); } catch {}
-  try { fs.appendFileSync(path.join(app.getPath("userData"), "main-errors.log"), line); } catch {}
+  try { process.stderr.write(line); } catch { }
+  try { fs.appendFileSync(path.join(app.getPath("userData"), "main-errors.log"), line); } catch { }
 }
 process.on("uncaughtException", (error) => logMainError("uncaughtException", error));
 process.on("unhandledRejection", (reason) => logMainError("unhandledRejection", reason));
 let DiscordRPC = null;
 try {
   DiscordRPC = require("discord-rpc");
-} catch {}
+} catch { }
 
 let mainWindow = null;
 let logWindow = null;
@@ -200,7 +200,7 @@ function syncLoginItem(settings) {
   if (!app.isPackaged) return;
   try {
     app.setLoginItemSettings({ openAtLogin: Boolean(settings?.launchOnStartup), args: ["--river-startup"] });
-  } catch {}
+  } catch { }
 }
 
 function focusLauncherWindow() {
@@ -276,7 +276,7 @@ function launchDedicatedUpdaterProcess(update) {
     const target = IS_WINDOWS
       ? (update?.portableUrl || update?.installerUrl || RIVER_WEBSITE_URL)
       : (update?.linuxUrl || RIVER_WEBSITE_URL);
-    shell.openExternal(target).catch(() => {});
+    shell.openExternal(target).catch(() => { });
     const message = (IS_WINDOWS
       ? `Daisy ${update?.latestVersion || ""} is ready. The portable build can't update itself, so the download has been opened in your browser - replace your current Daisy.exe with it.`
       : `Daisy ${update?.latestVersion || ""} is ready. River on Linux can't update itself yet, so the download has been opened in your browser - replace your current copy with it.`
@@ -347,7 +347,7 @@ function readLauncherPackageVersion() {
       const pkg = JSON.parse(fs.readFileSync(pkgPath, "utf8"));
       const v = String(pkg.riverVersion || pkg.version || "").trim();
       if (v) return v;
-    } catch {}
+    } catch { }
   }
   return "1.9.4";
 }
@@ -355,7 +355,7 @@ function readLauncherPackageVersion() {
 const clientModVersion = readLauncherPackageVersion();
 try {
   app.setVersion(clientModVersion);
-} catch {}
+} catch { }
 const clientModJarName = `clientcore-${clientModVersion}.jar`;
 const launcherUserAgent = `RiverClientLauncher/${clientModVersion} (WyZ_EU)`;
 
@@ -388,7 +388,7 @@ function readInstallId() {
       cachedInstallId = existing;
       return cachedInstallId;
     }
-  } catch {}
+  } catch { }
 
   const created = crypto.randomBytes(16).toString("hex");
   try {
@@ -481,12 +481,12 @@ function instanceMcVersion(instancePath) {
     try {
       const match = readInstances().find((i) => String(i.path || "") === p);
       if (match && match.version) return String(match.version);
-    } catch {}
+    } catch { }
   }
   try {
     const sel = readSettings().selectedVersion;
     if (sel) return String(sel);
-  } catch {}
+  } catch { }
   return DEFAULT_MC_VERSION;
 }
 
@@ -501,7 +501,7 @@ function findCoreClientJarInMods(instancePath, mcVersion = instanceMcVersion(ins
       const n = String(file || "");
       if (/^clientcore-[\w.+-]+\.jar$/i.test(n) && clientcoreJarMatchesMc(n, mcVersion)) return path.join(modsDir, file);
     }
-  } catch {}
+  } catch { }
   return preferred;
 }
 
@@ -522,10 +522,10 @@ function removeRiverInGameJars(modsDir) {
         try {
           fs.rmSync(path.join(modsDir, file), { force: true });
           emit("launcher:log", `[launcher] Removed leftover River in-game mod from instance: ${file}`);
-        } catch {}
+        } catch { }
       }
     }
-  } catch {}
+  } catch { }
 }
 
 /**
@@ -714,7 +714,7 @@ function pruneRiverModCache(cacheDir, mcVersion, keepName) {
       fs.rmSync(path.join(cacheDir, file), { force: true });
       emit("launcher:log", `[river] Removed an older download of River: ${file}`);
     }
-  } catch {}
+  } catch { }
 }
 
 function ensureBundledClientCoreMod(instancePath, mcVersion = instanceMcVersion(instancePath)) {
@@ -731,7 +731,7 @@ function ensureBundledClientCoreMod(instancePath, mcVersion = instanceMcVersion(
   for (const file of fs.readdirSync(modsDir)) {
     if (!CLIENTCORE_MOD_PATTERN.test(String(file || ""))) continue;
     if (!clientcoreJarMatchesMc(file, mcVersion)) {
-      try { fs.rmSync(path.join(modsDir, file), { force: true }); } catch {}
+      try { fs.rmSync(path.join(modsDir, file), { force: true }); } catch { }
       emit("launcher:log", `[launcher] Removed clientcore jar not built for ${mcVersion}: ${file}`);
     }
   }
@@ -750,7 +750,7 @@ function ensureBundledClientCoreMod(instancePath, mcVersion = instanceMcVersion(
   const disabledTargetPath = `${targetPath}.disabled`;
 
   if (fs.existsSync(disabledTargetPath)) {
-    try { fs.rmSync(disabledTargetPath, { force: true }); } catch {}
+    try { fs.rmSync(disabledTargetPath, { force: true }); } catch { }
   }
 
   // Drop stale clientcore jars for this same version, keeping only the target.
@@ -759,7 +759,7 @@ function ensureBundledClientCoreMod(instancePath, mcVersion = instanceMcVersion(
     if (!clientcoreJarMatchesMc(file, mcVersion)) continue;
     const fullPath = path.join(modsDir, file);
     if (fullPath.toLowerCase() === targetPath.toLowerCase()) continue;
-    try { fs.rmSync(fullPath, { force: true }); } catch {}
+    try { fs.rmSync(fullPath, { force: true }); } catch { }
   }
 
   try {
@@ -769,7 +769,7 @@ function ensureBundledClientCoreMod(instancePath, mcVersion = instanceMcVersion(
       fs.copyFileSync(sourceJar, targetPath);
       fs.utimesSync(targetPath, sourceStat.atime, sourceStat.mtime);
     }
-  } catch {}
+  } catch { }
 
   const manifest = readModManifest(root);
   manifest.mods[targetName] = {
@@ -794,7 +794,7 @@ function stageRiverRuntimeForInstance(instancePath, mcVersion = instanceMcVersio
   if (fs.existsSync(legacyRuntimeDir) && !fs.existsSync(runtimeDir)) {
     try {
       fs.cpSync(legacyRuntimeDir, runtimeDir, { recursive: true, force: true });
-    } catch {}
+    } catch { }
   }
   const staged = {
     bootstrapJar: copyRuntimeJarToInstance(resolved.bootstrapJar, runtimeDir),
@@ -965,7 +965,7 @@ function parseOptionsTxt(instancePath) {
       const value = line.slice(i + 1).trimEnd();
       if (key) map[key] = value;
     }
-  } catch {}
+  } catch { }
   return map;
 }
 
@@ -981,7 +981,7 @@ function parseNbtFile(filePath) {
     // 0x1f8b is the gzip magic; world/server files are usually gzipped but not always.
     const data = raw[0] === 0x1f && raw[1] === 0x8b ? zlib.gunzipSync(raw) : raw;
     let offset = 0;
-    const readU8  = () => data.readUInt8(offset++);
+    const readU8 = () => data.readUInt8(offset++);
     const readI16 = () => { const v = data.readInt16BE(offset); offset += 2; return v; };
     const readU16 = () => { const v = data.readUInt16BE(offset); offset += 2; return v; };
     const readI32 = () => { const v = data.readInt32BE(offset); offset += 4; return v; };
@@ -997,7 +997,7 @@ function parseNbtFile(filePath) {
         case 7: { const l = readI32(); offset += l; return null; }
         case 8: return readStr();
         case 9: { const t = readU8(); const n = readI32(); const a = []; for (let i = 0; i < n; i++) a.push(readPayload(t)); return a; }
-        case 10: { const o = {}; for (;;) { const t = readU8(); if (!t) break; const k = readStr(); o[k] = readPayload(t); } return o; }
+        case 10: { const o = {}; for (; ;) { const t = readU8(); if (!t) break; const k = readStr(); o[k] = readPayload(t); } return o; }
         case 11: { const l = readI32(); offset += l * 4; return null; }
         case 12: { const l = readI32(); offset += l * 8; return null; }
         default: return null;
@@ -1168,7 +1168,7 @@ function reportLaunchMetric(event, extra = {}) {
     method: "POST",
     headers: metricsHeaders({ "Content-Type": "application/json" }),
     body
-  }).catch(() => {});
+  }).catch(() => { });
 }
 
 function recordSessionStart(instance) {
@@ -1355,7 +1355,7 @@ function readBuildVersion() {
     const raw = fs.readFileSync(path.join(__dirname, "config", "build-version.json"), "utf8");
     const parsed = String(JSON.parse(raw).version || "").trim();
     if (parsed) { cachedBuildVersion = parsed; return parsed; }
-  } catch {}
+  } catch { }
   cachedBuildVersion = app.getVersion();
   return cachedBuildVersion;
 }
@@ -1454,7 +1454,7 @@ function resolveZoomFactor(win, settings = readSettings()) {
 function applyUiScale(win = mainWindow, settings = readSettings()) {
   if (!win || win.isDestroyed()) return;
   const zoom = resolveZoomFactor(win, settings);
-  try { win.webContents.setZoomFactor(zoom); } catch {}
+  try { win.webContents.setZoomFactor(zoom); } catch { }
   try {
     const area = screen.getDisplayMatching(win.getBounds()).workAreaSize;
     const minWidth = Math.min(Math.ceil(BASE_MIN_WIDTH * zoom), area.width);
@@ -1464,7 +1464,7 @@ function applyUiScale(win = mainWindow, settings = readSettings()) {
     if (width < minWidth || height < minHeight) {
       win.setSize(Math.max(width, minWidth), Math.max(height, minHeight));
     }
-  } catch {}
+  } catch { }
 }
 
 /**
@@ -1542,7 +1542,7 @@ function createWindow() {
     idleTimer = setTimeout(() => {
       const current = readSettings();
       if (current.socialStatus !== "online") return;
-      announceSocialStatus(writeSettings({ ...current, socialStatus: "idle" })).catch(() => {});
+      announceSocialStatus(writeSettings({ ...current, socialStatus: "idle" })).catch(() => { });
       emitStatus();
     }, settings.autoIdleMinutes * 60 * 1000);
   });
@@ -1550,7 +1550,7 @@ function createWindow() {
     clearTimeout(idleTimer);
     const settings = readSettings();
     if (settings.socialStatus !== "idle") return;
-    announceSocialStatus(writeSettings({ ...settings, socialStatus: "online" })).catch(() => {});
+    announceSocialStatus(writeSettings({ ...settings, socialStatus: "online" })).catch(() => { });
     emitStatus();
   });
 
@@ -1574,17 +1574,17 @@ function createWindow() {
   mainWindow.webContents.on("console-message", (_event, level, message, line, sourceId) => {
     try {
       console.log(`[renderer:${level}] ${message} (${sourceId || "unknown"}:${line || 0})`);
-    } catch {}
+    } catch { }
   });
   mainWindow.webContents.on("render-process-gone", (_event, details) => {
     try {
       console.error("[launcher] Renderer process went away:", details);
-    } catch {}
+    } catch { }
   });
   mainWindow.webContents.on("did-fail-load", (_event, code, description, url) => {
     try {
       console.error(`[launcher] Failed to load renderer: ${code} ${description} ${url || ""}`.trim());
-    } catch {}
+    } catch { }
   });
 
   mainWindow.on("close", (event) => {
@@ -1617,11 +1617,11 @@ function activeAccountKey() {
   try {
     const auth = readAuth();
     if (auth?.profile?.name) return sanitizeFilename(auth.profile.name);
-  } catch {}
+  } catch { }
   try {
     const settings = readSettings();
     if (settings?.offlineName) return sanitizeFilename(settings.offlineName);
-  } catch {}
+  } catch { }
   return "default";
 }
 
@@ -1649,7 +1649,7 @@ function getYggdrasilKeys() {
         return localYggdrasilKeys;
       }
     }
-  } catch {}
+  } catch { }
 
   const pair = crypto.generateKeyPairSync("rsa", {
     modulusLength: 2048,
@@ -1661,14 +1661,14 @@ function getYggdrasilKeys() {
     const keyPath = path.join(app.getPath("userData"), "yggdrasil-key.json");
     fs.mkdirSync(path.dirname(keyPath), { recursive: true });
     fs.writeFileSync(keyPath, JSON.stringify(pair, null, 2));
-  } catch {}
+  } catch { }
   return localYggdrasilKeys;
 }
 
 function ensureAuthlibInjectorJar() {
   const target = path.join(app.getPath("userData"), "authlib-injector.jar");
   if (fs.existsSync(target) && fs.statSync(target).size > 100000) return target;
-  
+
   const bundled = path.join(__dirname, "authlib", "authlib-injector.jar");
   const srcBundled = path.join(__dirname, "..", "src", "authlib", "authlib-injector.jar");
   const source = fs.existsSync(bundled) ? bundled : (fs.existsSync(srcBundled) ? srcBundled : "");
@@ -1677,7 +1677,7 @@ function ensureAuthlibInjectorJar() {
       fs.mkdirSync(path.dirname(target), { recursive: true });
       fs.copyFileSync(source, target);
       return target;
-    } catch {}
+    } catch { }
   }
   return "";
 }
@@ -2389,8 +2389,8 @@ function discordRpcLooksLikeClosed(error) {
 function destroyDiscordRpcClient(client) {
   if (!client) return;
   try {
-    Promise.resolve(client.destroy()).catch(() => {});
-  } catch {}
+    Promise.resolve(client.destroy()).catch(() => { });
+  } catch { }
 }
 
 function queueDiscordRpcReconnect(delayMs = 4000, reason = "Trying to reconnect to Discord...") {
@@ -2423,14 +2423,14 @@ async function clearDiscordRichPresence() {
   if (!discordRpcClient) return;
   try {
     await discordRpcClient.clearActivity();
-  } catch {}
+  } catch { }
 }
 
 async function disconnectDiscordRpc(reason = "Discord Rich Presence is off.") {
   stopDiscordRpcRefreshLoop();
   stopDiscordRpcReconnectLoop();
   if (discordRpcClient) {
-    try { await clearDiscordRichPresence(); } catch {}
+    try { await clearDiscordRichPresence(); } catch { }
     destroyDiscordRpcClient(discordRpcClient);
   }
   discordRpcClient = null;
@@ -2531,7 +2531,7 @@ async function pushDiscordRichPresence(status = getStatus()) {
       });
       try {
         await client.setActivity(buildDiscordPresencePayload(getStatus()));
-      } catch {}
+      } catch { }
     });
     client.on("disconnected", () => {
       queueDiscordRpcReconnect(3500, "Discord closed the connection. Reconnecting...");
@@ -2582,7 +2582,7 @@ async function pushDiscordRichPresence(status = getStatus()) {
 function scheduleDiscordPresenceRefresh() {
   clearTimeout(scheduleDiscordPresenceRefresh.timer);
   scheduleDiscordPresenceRefresh.timer = setTimeout(() => {
-    pushDiscordRichPresence(getStatus()).catch(() => {});
+    pushDiscordRichPresence(getStatus()).catch(() => { });
   }, 120);
 }
 scheduleDiscordPresenceRefresh.timer = null;
@@ -2608,7 +2608,7 @@ async function refreshKeptSeasons() {
     if (!earned.length) return;
     writeSettings({ ...settings, keptSeasons: [...settings.keptSeasons, ...earned] });
     emitStatus();
-  } catch {}
+  } catch { }
 }
 
 function writeSettings(next) {
@@ -2618,7 +2618,7 @@ function writeSettings(next) {
   // Switching to or from the Halloween theme swaps the window and taskbar icon too.
   try {
     if (mainWindow && !mainWindow.isDestroyed()) mainWindow.setIcon(currentAppIcon(normalized));
-  } catch {}
+  } catch { }
   return normalized;
 }
 
@@ -2737,12 +2737,12 @@ function normalizeAuth(auth) {
     sessionExpiresAt,
     profile: auth.profile && auth.profile.id && auth.profile.name
       ? {
-          id: String(auth.profile.id),
-          name: String(auth.profile.name),
-          skinUrl: String(auth.profile.skinUrl || ""),
-          capeUrl: String(auth.profile.capeUrl || ""),
-          capes: Array.isArray(auth.profile.capes) ? auth.profile.capes.map(normalizeCapeEntry).filter(Boolean) : []
-        }
+        id: String(auth.profile.id),
+        name: String(auth.profile.name),
+        skinUrl: String(auth.profile.skinUrl || ""),
+        capeUrl: String(auth.profile.capeUrl || ""),
+        capes: Array.isArray(auth.profile.capes) ? auth.profile.capes.map(normalizeCapeEntry).filter(Boolean) : []
+      }
       : null,
     profileId: String(auth.profileId || "")
   };
@@ -2824,7 +2824,7 @@ function readBundledPartnerServers() {
         if (normalized) normalized.icon = String(entry.icon || "");
         return normalized;
       }).filter(Boolean);
-    } catch {}
+    } catch { }
   }
   return [];
 }
@@ -2968,7 +2968,7 @@ async function mapWithConcurrency(items, limit, work) {
   const results = new Array(items.length);
   let next = 0;
   const runners = Array.from({ length: Math.min(limit, items.length) }, async () => {
-    for (;;) {
+    for (; ;) {
       const index = next++;
       if (index >= items.length) return;
       try {
@@ -3020,7 +3020,7 @@ function getSkinHistory() {
       let previewDataUrl = "";
       try {
         previewDataUrl = skinPreviewDataUrl(abs);
-      } catch {}
+      } catch { }
       const previewFileUrl = fs.existsSync(abs) ? pathToFileURL(abs).href : "";
       return {
         id: entry.id,
@@ -3172,7 +3172,7 @@ function getStatus() {
     try {
       ensureBundledClientCoreMod(settings.instancePath);
       stageRiverRuntimeForInstance(settings.instancePath);
-    } catch {}
+    } catch { }
   }
   scheduleInstalledIconBackfill(settings.instancePath);
 
@@ -3448,7 +3448,7 @@ function readJarModInfo(jarPath) {
       name: String(fabric.name || ""),
       version: String(fabric.version || "")
     };
-  } catch {}
+  } catch { }
 
   try {
     const quilt = JSON.parse(readZipTextFile(jarPath, "quilt.mod.json"));
@@ -3458,7 +3458,7 @@ function readJarModInfo(jarPath) {
       name: String(meta.metadata?.name || ""),
       version: String(meta.version || "")
     };
-  } catch {}
+  } catch { }
 
   return {};
 }
@@ -3530,8 +3530,8 @@ async function cacheProjectIcon(projectKey, iconUrl) {
     const contentType = String(response.headers.get("content-type") || "").toLowerCase();
     const ext = contentType.includes("webp") ? ".webp"
       : contentType.includes("jpeg") || contentType.includes("jpg") ? ".jpg"
-      : contentType.includes("svg") ? ".svg"
-      : ".png";
+        : contentType.includes("svg") ? ".svg"
+          : ".png";
     const iconsDir = path.join(app.getPath("userData"), "icon-cache");
     fs.mkdirSync(iconsDir, { recursive: true });
     const target = path.join(iconsDir, `${sanitizeFilename(projectKey || crypto.randomUUID())}${ext}`);
@@ -3614,7 +3614,7 @@ function getLogFiles(instancePath) {
           size: stat.size
         });
         seen.add(full);
-      } catch {}
+      } catch { }
     }
   }
 
@@ -3790,7 +3790,7 @@ function traceUpdate(kind, text) {
   try {
     fs.mkdirSync(path.dirname(updateTracePath()), { recursive: true });
     fs.appendFileSync(updateTracePath(), `${line}\n`);
-  } catch {}
+  } catch { }
 }
 
 function traceUpdateActivity(payload) {
@@ -3929,7 +3929,7 @@ async function compressPathsToRiverArchive(sourcePaths, destinationRvrPath) {
     }
     fs.copyFileSync(tempZip, destinationRvrPath);
   } finally {
-    try { fs.rmSync(tempZip, { force: true }); } catch {}
+    try { fs.rmSync(tempZip, { force: true }); } catch { }
   }
 }
 
@@ -3950,7 +3950,7 @@ async function extractRiverArchive(archivePath, destinationDir) {
     ]);
   } finally {
     if (needsTempCopy) {
-      try { fs.rmSync(extractSource, { force: true }); } catch {}
+      try { fs.rmSync(extractSource, { force: true }); } catch { }
     }
   }
 }
@@ -4151,7 +4151,7 @@ function detectExternalMinecraftInstances() {
         pushIfInstance(path.join(childDir, "minecraft"), label, candidate.launcher);
         pushIfInstance(childDir, label, candidate.launcher);
       }
-    } catch {}
+    } catch { }
   }
 
   const seen = new Set();
@@ -4246,7 +4246,7 @@ function sumWorldPlaytimeTicks(gameDir) {
           // Legacy pre-1.13 flat stat file.
           ticks += data["stat.playOneMinute"];
         }
-      } catch {}
+      } catch { }
     }
   }
   return ticks;
@@ -4317,7 +4317,7 @@ function detectInstanceVersionAndLoader(gameDir) {
       const file = path.join(root, ...parts);
       try {
         if (fs.existsSync(file)) return JSON.parse(fs.readFileSync(file, "utf8"));
-      } catch {}
+      } catch { }
     }
     return null;
   };
@@ -4400,7 +4400,7 @@ function detectInstanceVersionAndLoader(gameDir) {
           return { version: m[1].trim(), loader: hasMods ? "fabric" : "vanilla", source: "instance.cfg" };
         }
       }
-    } catch {}
+    } catch { }
   }
 
   // River's own exported/previously-imported instances carry their own descriptor.
@@ -4419,7 +4419,7 @@ function detectInstanceVersionAndLoader(gameDir) {
         const m = String(entry).match(/^minecraft-(\d+\.\d+(?:\.\d+)?)-/);
         if (m) return { version: m[1], loader: "fabric", source: ".fabric/remappedJars" };
       }
-    } catch {}
+    } catch { }
 
     // The launch line in latest.log records the version for both Fabric and Forge.
     try {
@@ -4435,7 +4435,7 @@ function detectInstanceVersionAndLoader(gameDir) {
       if (fml) {
         return { version: fml[1], loader: /neoforge/i.test(head) ? "neoforge" : "forge", source: "logs/latest.log" };
       }
-    } catch {}
+    } catch { }
   }
 
   // Nothing authoritative. A loader can still often be inferred, but a guessed VERSION is
@@ -4447,7 +4447,7 @@ function detectInstanceVersionAndLoader(gameDir) {
       const mods = fs.readdirSync(path.join(root, "mods"));
       if (mods.some((f) => /^fabric-api/i.test(f))) { loader = "fabric"; break; }
       if (mods.some((f) => /forge/i.test(f))) { loader = "forge"; break; }
-    } catch {}
+    } catch { }
   }
   return { version: "", loader, source: "" };
 }
@@ -4486,11 +4486,11 @@ async function importExternalMinecraftInstance(entry = {}) {
   fs.mkdirSync(targetPath, { recursive: true });
   try {
     for (const folder of (plan?.folders || ["mods", "resourcepacks", "shaderpacks", "config", "saves", "screenshots"])) {
-    /*
-      Reported as it goes, because saves can be gigabytes. Without something on screen an
-      import of a big world looks exactly like the launcher having hung.
-    */
-    emitActivity({ title: "Importing instance", detail: "Copying " + folder + "...", current: 0, total: 1 });
+      /*
+        Reported as it goes, because saves can be gigabytes. Without something on screen an
+        import of a big world looks exactly like the launcher having hung.
+      */
+      emitActivity({ title: "Importing instance", detail: "Copying " + folder + "...", current: 0, total: 1 });
       await copyExistingFolderContents(path.join(sourceDir, folder), path.join(targetPath, folder), null, migration);
     }
     for (const file of (plan?.files || ["options.txt", "servers.dat", "hotbar.nbt"])) {
@@ -4605,7 +4605,7 @@ ipcMain.handle("launcher:get-performance-stats", async () => {
     const first = devices[0] || {};
     const maybeVram = Number(first.videoMemory || first.vram || 0);
     if (maybeVram > 0) vramTotalMb = maybeVram;
-  } catch {}
+  } catch { }
   return {
     cpuUsagePercent: readCpuUsagePercent(),
     ramUsedMb: Math.max(0, systemMemoryMb - freeMemoryMb),
@@ -4670,12 +4670,12 @@ function inheritInstanceSettings(sourcePath, targetPath) {
     const source = path.join(from, file);
     const target = path.join(to, file);
     if (!fs.existsSync(source) || fs.existsSync(target)) continue;
-    try { fs.copyFileSync(source, target); carried.push(file); } catch {}
+    try { fs.copyFileSync(source, target); carried.push(file); } catch { }
   }
   const sourceConfig = path.join(from, "config");
   const targetConfig = path.join(to, "config");
   if (fs.existsSync(sourceConfig) && !fs.existsSync(targetConfig)) {
-    try { fs.cpSync(sourceConfig, targetConfig, { recursive: true }); carried.push("config"); } catch {}
+    try { fs.cpSync(sourceConfig, targetConfig, { recursive: true }); carried.push("config"); } catch { }
   }
   return carried;
 }
@@ -5133,7 +5133,7 @@ async function runFullRepair() {
         const full = path.join(dir, entry.name);
         if (entry.isDirectory()) sweep(full);
         else if (/\.(jar|zip)$/i.test(entry.name)) {
-          try { if (fs.statSync(full).size === 0) { fs.rmSync(full, { force: true }); removed++; } } catch {}
+          try { if (fs.statSync(full).size === 0) { fs.rmSync(full, { force: true }); removed++; } } catch { }
         }
       }
     };
@@ -5162,7 +5162,7 @@ async function runFullRepair() {
     let removed = 0;
     for (const rel of ["session.lock", ".fabric/lock", "usercache.json.lock"]) {
       const full = path.join(instancePath, rel);
-      try { if (fs.existsSync(full)) { fs.rmSync(full, { force: true }); removed++; } } catch {}
+      try { if (fs.existsSync(full)) { fs.rmSync(full, { force: true }); removed++; } } catch { }
     }
     return removed ? `Cleared ${removed} stale lock(s)` : null;
   });
@@ -5193,7 +5193,7 @@ async function runFullRepair() {
 function setOfflineAccount(name, skinDataUrl = null) {
   const cleanName = String(name || "").trim() || "DaisyPlayer";
   const uuid = offlineUuid(cleanName);
-  
+
   let skinUrl = "";
   if (skinDataUrl) {
     skinUrl = skinDataUrl;
@@ -5362,7 +5362,7 @@ ipcMain.handle("launcher:equip-skin", async (_event, skinId) => {
     let previewDataUrl = "";
     try {
       previewDataUrl = skinPreviewDataUrl(entry.path);
-    } catch {}
+    } catch { }
 
     const updatedProfile = {
       ...(auth.profile || {}),
@@ -5423,7 +5423,7 @@ ipcMain.handle("launcher:update-skin-entry", async (_event, patch = {}) => {
       let previewDataUrl = "";
       try {
         previewDataUrl = skinPreviewDataUrl(next.path);
-      } catch {}
+      } catch { }
       const updatedProfile = {
         ...(auth.profile || {}),
         skinUrl: previewDataUrl || auth.profile?.skinUrl || "",
@@ -5674,7 +5674,7 @@ function listDirForReport(root, limit = 250) {
       try {
         const stat = ofs.statSync(full);
         detail = `${stat.size} B  ${stat.mtime.toISOString()}`;
-      } catch {}
+      } catch { }
       out.push(`  ${path.relative(root, full)}  ${detail}`);
     }
   };
@@ -5700,7 +5700,7 @@ async function probeForReport(url) {
       signal: AbortSignal.timeout(10000)
     });
     const ms = Date.now() - started;
-    try { await response.body?.cancel(); } catch {}
+    try { await response.body?.cancel(); } catch { }
     return `  ${response.status} in ${ms} ms  ${url}`;
   } catch (error) {
     return `  FAILED after ${Date.now() - started} ms (${error?.name || ""} ${error?.message || error})  ${url}`;
@@ -5719,7 +5719,7 @@ async function buildUpdateStuckReport() {
   const lines = [];
   const add = (line = "") => lines.push(line);
   let job = null;
-  try { job = readUpdaterJob(updaterJobPath); } catch {}
+  try { job = readUpdaterJob(updaterJobPath); } catch { }
   const update = job?.update || {};
   const installDir = String(job?.installDir || "");
   const now = Date.now();
@@ -5851,7 +5851,7 @@ ipcMain.handle("launcher:clear-logs", () => {
   let cleared = 0;
   for (const file of fs.readdirSync(logsDir)) {
     if (/\.(log|gz|txt)$/.test(file)) {
-      try { fs.unlinkSync(path.join(logsDir, file)); cleared++; } catch {}
+      try { fs.unlinkSync(path.join(logsDir, file)); cleared++; } catch { }
     }
   }
   return { ok: true, message: `Cleared ${cleared} log file${cleared !== 1 ? "s" : ""}.` };
@@ -5881,7 +5881,7 @@ ipcMain.handle("launcher:clear-cache", () => {
   let cleared = 0;
   if (fs.existsSync(cacheDir)) {
     for (const entry of fs.readdirSync(cacheDir)) {
-      try { fs.rmSync(path.join(cacheDir, entry), { recursive: true, force: true }); cleared++; } catch {}
+      try { fs.rmSync(path.join(cacheDir, entry), { recursive: true, force: true }); cleared++; } catch { }
     }
   }
   return { ok: true, message: `Cleared ${cleared} cache item${cleared !== 1 ? "s" : ""}.` };
@@ -6108,7 +6108,7 @@ async function launchStandaloneMinecraft(status, joinAddress = "", plainInstance
     const launchInstPath = plainInstance ? plainInstance.path : status.instancePath;
     const launchPlayer = freshAuth?.profile?.name || status.settings?.offlineName || "DaisyPlayer";
     syncOfflineSkinToInstance(launchInstPath, launchPlayer);
-  } catch {}
+  } catch { }
 
   try {
     launchProcess = spawn(launchExe, launch.args, {
@@ -6135,7 +6135,7 @@ async function launchStandaloneMinecraft(status, joinAddress = "", plainInstance
   // Opened before the first log line so nothing is missed, and inactive so it never
   // steals focus from the game window coming up.
   if (status.settings.showGameLogWindow !== false) openLogWindow({ focus: false });
-  try { nowPlaying.start(); } catch {}
+  try { nowPlaying.start(); } catch { }
   setLaunchState("launching");
   scheduleRunningLaunchState();
   setLaunchStep(5, "Starting Minecraft");
@@ -6201,7 +6201,7 @@ function attachLaunchProcess(status) {
     }
     launchProcess = null;
     // The now-playing feed only exists for the in-game module, so it stops with the game.
-    try { nowPlaying.stop(); } catch {}
+    try { nowPlaying.stop(); } catch { }
     setLaunchState("idle");
     emitStatus();
   });
@@ -6772,7 +6772,7 @@ function jarModIdentity(jarPath) {
         name: (text.match(/displayName\s*=\s*"([^"]+)"/) || [])[1] || ""
       };
     }
-  } catch {}
+  } catch { }
   return { id: "", name: "" };
 }
 
@@ -6787,7 +6787,7 @@ async function findModrinthProjectForJar(jarPath) {
     try {
       const project = await fetchJson(`https://api.modrinth.com/v2/project/${encodeURIComponent(slug)}`);
       if (project?.id && project.project_type === "mod") return project.id;
-    } catch {}
+    } catch { }
   }
   if (name) {
     try {
@@ -6797,7 +6797,7 @@ async function findModrinthProjectForJar(jarPath) {
       // Titles often carry a nickname: "YetAnotherConfigLib (YACL)".
       const match = hits.find((hit) => clean(String(hit.title).replace(/\(.*?\)/g, "")) === clean(name) || (id && clean(hit.slug) === clean(id)));
       if (match) return match.project_id;
-    } catch {}
+    } catch { }
   }
   return "";
 }
@@ -6819,7 +6819,7 @@ async function transferMods({ fromInstanceId, toInstanceId } = {}) {
   const byHash = new Map();
   for (const mod of mods) {
     if (manifest.mods[mod.file]?.projectId) continue;
-    try { byHash.set(fileSha1(mod.path), mod); } catch {}
+    try { byHash.set(fileSha1(mod.path), mod); } catch { }
   }
   let known = {};
   if (byHash.size) {
@@ -7142,7 +7142,7 @@ function buildCompactContentIndex(instancePath, manifest, known = new Map(), bun
  * hand-made mod, a pack from a forum) cannot be downloaded by anyone, so it is copied in:
  * an export has to bring the instance back whole, not just the part that is easy to fetch.
  */
-async function buildRvrStagingDir(instance, progress = () => {}) {
+async function buildRvrStagingDir(instance, progress = () => { }) {
   const stagingDir = path.join(os.tmpdir(), `river-export-${instance.id}-${Date.now()}`);
   fs.mkdirSync(stagingDir, { recursive: true });
 
@@ -7203,7 +7203,7 @@ async function buildRvrStagingDir(instance, progress = () => {}) {
   if (fs.existsSync(instanceMetaPath)) {
     try {
       instanceMeta = { ...instanceMeta, ...JSON.parse(fs.readFileSync(instanceMetaPath, "utf8")) };
-    } catch {}
+    } catch { }
   }
   instanceMeta.loader = knownLoader(instance.loader) || knownLoader(instanceMeta.loader) || "fabric";
   fs.writeFileSync(path.join(stagingDir, "instance.json"), JSON.stringify(instanceMeta, null, 2));
@@ -7217,7 +7217,7 @@ async function buildRvrStagingDir(instance, progress = () => {}) {
     if (!fs.existsSync(source)) continue;
     try {
       lightweightSettings[relative.replace(/\\/g, "/")] = fs.readFileSync(source, "utf8");
-    } catch {}
+    } catch { }
   }
   fs.writeFileSync(path.join(stagingDir, "instance-settings.json"), JSON.stringify(lightweightSettings, null, 2));
 
@@ -7270,7 +7270,7 @@ function importRvrArchive(rootPath, manifest, fallbackName) {
   if (fs.existsSync(instanceMetaPath)) {
     try {
       instanceMeta = { ...instanceMeta, ...JSON.parse(fs.readFileSync(instanceMetaPath, "utf8")) };
-    } catch {}
+    } catch { }
   }
 
   const baseName = sanitizeFilename(instanceMeta.name || fallbackName || "Imported River");
@@ -7334,7 +7334,7 @@ function importRvrArchive(rootPath, manifest, fallbackName) {
         fs.mkdirSync(path.dirname(targetPath), { recursive: true });
         fs.writeFileSync(targetPath, content, "utf8");
       }
-    } catch {}
+    } catch { }
   }
   // .rvr archives are River exports, so fabric/1.21.11 is a safe fallback for older files
   // written before instances carried a version - but flag support the same way external
@@ -7432,7 +7432,7 @@ function directorySizeBytes(dir, budget = { files: 20000 }) {
       if (entry.isDirectory()) walk(full);
       else {
         budget.files -= 1;
-        try { total += fs.statSync(full).size; } catch {}
+        try { total += fs.statSync(full).size; } catch { }
       }
     }
   };
@@ -7469,7 +7469,7 @@ function getInstanceWorlds(instancePath) {
       if (typeof data.GameType === "number") gameMode = modes[data.GameType] || "";
     }
     if (!lastPlayed) {
-      try { lastPlayed = fs.statSync(fs.existsSync(levelDat) ? levelDat : worldPath).mtimeMs; } catch {}
+      try { lastPlayed = fs.statSync(fs.existsSync(levelDat) ? levelDat : worldPath).mtimeMs; } catch { }
     }
     let icon = "";
     const iconPath = path.join(worldPath, "icon.png");
@@ -7479,7 +7479,7 @@ function getInstanceWorlds(instancePath) {
       if (stat.size > 0 && stat.size < 512 * 1024) {
         icon = "data:image/png;base64," + fs.readFileSync(iconPath).toString("base64");
       }
-    } catch {}
+    } catch { }
     worlds.push({
       folder,
       name,
@@ -7551,7 +7551,7 @@ function newestEntry(dir, accept) {
     try {
       const stat = fs.statSync(file);
       if (stat.size > 0 && (!newest || stat.mtimeMs > newest.mtimeMs)) newest = { file, mtimeMs: stat.mtimeMs, size: stat.size };
-    } catch {}
+    } catch { }
   }
   return newest;
 }
@@ -7566,7 +7566,7 @@ function instanceScreenshotArt(instancePath) {
   try {
     const image = nativeImage.createFromPath(shot.file);
     if (!image.isEmpty()) url = `data:image/jpeg;base64,${image.resize({ width: 640, quality: "good" }).toJPEG(80).toString("base64")}`;
-  } catch {}
+  } catch { }
   instanceArtCache.set(key, url);
   return url;
 }
@@ -7605,7 +7605,7 @@ ipcMain.handle("launcher:open-instance-path", (_event, request) => {
   const instance = readInstances().find((item) => item.id === instanceId);
   if (!instance) return { ok: false, message: "Instance was not found." };
   const target = sub ? path.join(instance.path, sub) : instance.path;
-  try { fs.mkdirSync(target, { recursive: true }); } catch {}
+  try { fs.mkdirSync(target, { recursive: true }); } catch { }
   shell.openPath(target);
   return { ok: true };
 });
@@ -7770,7 +7770,7 @@ ipcMain.handle("launcher:change-instance-version", async (_event, request) => {
         const oldPath = path.join(instance.path, info.folder, entry.file);
         const replaced = Array.isArray(result.installed) && result.installed.includes(entry.file);
         if (fs.existsSync(oldPath) && !replaced) {
-          try { fs.rmSync(oldPath, { force: true }); } catch {}
+          try { fs.rmSync(oldPath, { force: true }); } catch { }
         }
         updated.push(entry.title);
       } else {
@@ -7858,7 +7858,7 @@ ipcMain.handle("launcher:export-instance", async (_event, instanceId) => {
     return { ok: false, message: `Export failed: ${error.message}` };
   } finally {
     if (stagingDir) {
-      try { fs.rmSync(stagingDir, { recursive: true, force: true }); } catch {}
+      try { fs.rmSync(stagingDir, { recursive: true, force: true }); } catch { }
     }
   }
 });
@@ -7885,7 +7885,7 @@ async function importRvrArchiveFromFile(archivePath) {
       // Nothing in the archive but names: with no connection the instance would come out empty.
       const offline = await offlineResult("Importing this instance");
       if (offline) {
-        try { fs.rmSync(imported.instance.path, { recursive: true, force: true }); } catch {}
+        try { fs.rmSync(imported.instance.path, { recursive: true, force: true }); } catch { }
         return { ok: false, message: "No network connection. This file only lists the mods, so River has to download them. Connect and try again." };
       }
     }
@@ -7922,7 +7922,7 @@ async function importRvrArchiveFromFile(archivePath) {
   } catch (error) {
     return { ok: false, message: `Import failed: ${error.message}` };
   } finally {
-    try { fs.rmSync(extractRoot, { recursive: true, force: true }); } catch {}
+    try { fs.rmSync(extractRoot, { recursive: true, force: true }); } catch { }
   }
 }
 
@@ -7998,7 +7998,7 @@ function resolveUsableJava(settings, minMajor = 21, options = {}) {
       for (const e of entries) {
         const full = path.join(dir, e);
         let isDir = false;
-        try { isDir = fs.statSync(full).isDirectory(); } catch {}
+        try { isDir = fs.statSync(full).isDirectory(); } catch { }
         if (e.toLowerCase() === javaName && !isDir) candidates.push(full);
         else if (isDir) walk(full, depth + 1);
       }
@@ -8031,7 +8031,7 @@ function resolveUsableJava(settings, minMajor = 21, options = {}) {
         const jexe = path.join(root, dir, "bin", javaName);
         if (fs.existsSync(jexe)) candidates.push(jexe);
       }
-    } catch {}
+    } catch { }
   }
 
   if (process.env.JAVA_HOME) candidates.push(path.join(process.env.JAVA_HOME, "bin", javaName));
@@ -8088,7 +8088,7 @@ async function installJavaRuntime(majorVersion = 21, options = {}) {
   const javaStartedAt = Date.now();
   const reader = dlRes.body.getReader();
   const output = fs.createWriteStream(downloadPath);
-  for (;;) {
+  for (; ;) {
     const { done, value } = await reader.read();
     if (done) break;
     downloaded += value.byteLength;
@@ -8118,7 +8118,7 @@ async function installJavaRuntime(majorVersion = 21, options = {}) {
     // Run installer silently
     await runPowerShell(["-NoProfile", "-ExecutionPolicy", "Bypass", "-Command",
       `Start-Process -FilePath '${escapePowerShell(downloadPath)}' -ArgumentList '/s INSTALLDIR="${escapePowerShell(extractDir)}"' -Wait`
-    ]).catch(() => {});
+    ]).catch(() => { });
   } else {
     await runPowerShell(["-NoProfile", "-ExecutionPolicy", "Bypass", "-Command",
       `Expand-Archive -LiteralPath '${escapePowerShell(downloadPath)}' -DestinationPath '${escapePowerShell(extractDir)}' -Force`
@@ -8283,15 +8283,15 @@ function readStoredRiverSession(uuid) {
     if (stored.uuid === uuid && stored.token && Number(stored.expiresAt) > Date.now() + 60_000) {
       return { token: String(stored.token), expiresAt: Number(stored.expiresAt) };
     }
-  } catch {}
+  } catch { }
   return null;
 }
 function storeRiverSession(uuid, session) {
-  try { fs.writeFileSync(riverSessionFile(), JSON.stringify({ uuid, token: session.token, expiresAt: session.expiresAt })); } catch {}
+  try { fs.writeFileSync(riverSessionFile(), JSON.stringify({ uuid, token: session.token, expiresAt: session.expiresAt })); } catch { }
 }
 function forgetRiverSession() {
   riverSessionCache = { token: "", expiresAt: 0 };
-  try { fs.rmSync(riverSessionFile(), { force: true }); } catch {}
+  try { fs.rmSync(riverSessionFile(), { force: true }); } catch { }
 }
 function failRiverSignIn(message) {
   riverSignInError = message;
@@ -8547,7 +8547,7 @@ function sendPresenceStatus(status) {
     try {
       presenceSocket.send(JSON.stringify({ type: "status", status }));
       return true;
-    } catch {}
+    } catch { }
   }
   return false;
 }
@@ -8559,7 +8559,7 @@ function stopPresenceSocket() {
   if (presenceSocketPing) { clearInterval(presenceSocketPing); presenceSocketPing = null; }
   if (presenceSocketRetry) { clearTimeout(presenceSocketRetry); presenceSocketRetry = null; }
   if (presenceSocket) {
-    try { presenceSocket.close(); } catch {}
+    try { presenceSocket.close(); } catch { }
     presenceSocket = null;
   }
 }
@@ -8570,8 +8570,8 @@ function stopPresenceSocket() {
 */
 function startPresenceFallback() {
   if (statusHeartbeat || presenceStopped) return;
-  statusHeartbeat = setInterval(() => { announceSocialStatus().catch(() => {}); }, 20000);
-  announceSocialStatus().catch(() => {});
+  statusHeartbeat = setInterval(() => { announceSocialStatus().catch(() => { }); }, 20000);
+  announceSocialStatus().catch(() => { });
 }
 
 function startPresenceSocket() {
@@ -8593,14 +8593,14 @@ function startPresenceSocket() {
     presenceSocketAttempts = 0;
     // The socket carried no identity through the handshake, so say who this is now.
     const hello = presenceHello();
-    if (hello) { try { socket.send(JSON.stringify(hello)); } catch {} }
+    if (hello) { try { socket.send(JSON.stringify(hello)); } catch { } }
 
     // The socket got through, so the fallback loop is not needed.
     if (statusHeartbeat) { clearInterval(statusHeartbeat); statusHeartbeat = null; }
 
     if (presenceSocketPing) clearInterval(presenceSocketPing);
     presenceSocketPing = setInterval(() => {
-      try { socket.send("ping"); } catch {}
+      try { socket.send("ping"); } catch { }
     }, PRESENCE_PING_MS);
   });
 
@@ -8740,7 +8740,7 @@ function stopSocialSocket() {
   if (socialSocketPing) { clearInterval(socialSocketPing); socialSocketPing = null; }
   if (socialSocketRetry) { clearTimeout(socialSocketRetry); socialSocketRetry = null; }
   if (socialSocket) {
-    try { socialSocket.close(); } catch {}
+    try { socialSocket.close(); } catch { }
     socialSocket = null;
   }
   socialToken = "";
@@ -8768,7 +8768,7 @@ async function startSocialSocket() {
     socialSocketAttempts = 0;
     if (socialSocketPing) clearInterval(socialSocketPing);
     socialSocketPing = setInterval(() => {
-      try { socket.send("ping"); } catch {}
+      try { socket.send("ping"); } catch { }
     }, SOCIAL_PING_MS);
   });
 
@@ -8801,7 +8801,7 @@ function scheduleSocialReconnect() {
   const wait = base / 2 + Math.random() * (base / 2);
   socialSocketRetry = setTimeout(() => {
     socialSocketRetry = null;
-    startSocialSocket().catch(() => {});
+    startSocialSocket().catch(() => { });
   }, wait);
 }
 
@@ -8857,9 +8857,9 @@ function startStatusHeartbeat() {
   presenceStopped = false;
   socialStopped = false;
   startPresenceSocket();
-  startSocialSocket().catch(() => {});
+  startSocialSocket().catch(() => { });
   // One announcement now so the roster is right even before the socket finishes opening.
-  announceSocialStatus().catch(() => {});
+  announceSocialStatus().catch(() => { });
 }
 
 // The social-address feature was fully implemented (checkSocialAddressAvailability /
@@ -8974,7 +8974,7 @@ ipcMain.handle("launcher:analyze-crash", async () => {
     let logText = "";
     try {
       logText = fs.readFileSync(path.join(status.instancePath, "logs", "latest.log"), "utf8");
-    } catch {}
+    } catch { }
     const analysis = analyzeCrash(crashText, logText, status.installedMods);
     if (!analysis) return null;
     return { ...analysis, report };
@@ -9352,7 +9352,7 @@ function stopUpdatePushSocket() {
   if (updateSocketPing) { clearInterval(updateSocketPing); updateSocketPing = null; }
   if (updateSocketRetry) { clearTimeout(updateSocketRetry); updateSocketRetry = null; }
   if (updateSocket) {
-    try { updateSocket.close(); } catch {}
+    try { updateSocket.close(); } catch { }
     updateSocket = null;
   }
 }
@@ -9380,7 +9380,7 @@ function startUpdatePushSocket(onUpdate) {
       quietly drop the connection and neither side would notice.
     */
     updateSocketPing = setInterval(() => {
-      try { socket.send("ping"); } catch {}
+      try { socket.send("ping"); } catch { }
     }, UPDATE_PUSH_PING_MS);
   });
 
@@ -9474,20 +9474,20 @@ async function checkLauncherUpdates() {
         latestVersion: "",
         currentVersion,
         minimumVersion: "",
-      url: "",
-      installerUrl: "",
-      portableUrl: "",
-      linuxUrl: "",
-      packageUrl: "",
-      packageParts: [],
-      fileManifestUrl: "",
-      appFileManifestUrl: "",
-      appFileBaseUrl: "",
-      fileManifestSha256: "",
-      fileCount: 0,
-      packageSha256: "",
-      packageSize: 0,
-      message: "No public update metadata found yet."
+        url: "",
+        installerUrl: "",
+        portableUrl: "",
+        linuxUrl: "",
+        packageUrl: "",
+        packageParts: [],
+        fileManifestUrl: "",
+        appFileManifestUrl: "",
+        appFileBaseUrl: "",
+        fileManifestSha256: "",
+        fileCount: 0,
+        packageSha256: "",
+        packageSize: 0,
+        message: "No public update metadata found yet."
       };
       return launcherUpdateState;
     }
@@ -9600,7 +9600,7 @@ function readBundledUpdateManifest() {
     try {
       if (!candidate || !fs.existsSync(candidate)) continue;
       return { url: pathToFileURL(candidate).href, payload: JSON.parse(fs.readFileSync(candidate, "utf8")) };
-    } catch {}
+    } catch { }
   }
 
   return null;
@@ -9742,9 +9742,9 @@ async function prepareUpdateStagingDir(preferredDir) {
     for (const entry of ofs.readdirSync(stagingRoot)) {
       const full = path.join(stagingRoot, entry);
       if (full === preferredDir) continue;
-      try { ofs.rmSync(full, { recursive: true, force: true, maxRetries: 2, retryDelay: 100 }); } catch {}
+      try { ofs.rmSync(full, { recursive: true, force: true, maxRetries: 2, retryDelay: 100 }); } catch { }
     }
-  } catch {}
+  } catch { }
 
   let lastError = null;
   for (let attempt = 1; attempt <= 4; attempt += 1) {
@@ -9801,7 +9801,7 @@ async function installLauncherUpdate(forcedUpdate = null) {
       launchDedicatedUpdaterProcess(update);
       appIsQuitting = true;
       setTimeout(() => {
-        try { app.quit(); } catch {}
+        try { app.quit(); } catch { }
       }, 120);
       return { ok: true, message: "Daisy Updater is starting." };
     } catch (error) {
@@ -9844,7 +9844,7 @@ async function installLauncherUpdate(forcedUpdate = null) {
   // the updater elevated via a native UAC prompt before touching any install files.
   if (!canWriteToInstallDir(installDir)) {
     await relaunchUpdaterElevated(updaterJobPath);
-    setTimeout(() => { try { app.exit(0); } catch {} }, 120);
+    setTimeout(() => { try { app.exit(0); } catch { } }, 120);
     return { ok: true, message: "Requesting administrator permission to continue the update." };
   }
 
@@ -9965,12 +9965,12 @@ async function installLauncherUpdate(forcedUpdate = null) {
       mainWindow.hide();
       mainWindow.destroy();
     }
-  } catch {}
+  } catch { }
   setTimeout(() => {
-    try { app.exit(0); } catch {}
-    try { process.exit(0); } catch {}
+    try { app.exit(0); } catch { }
+    try { process.exit(0); } catch { }
   }, 120);
-  try { app.quit(); } catch {}
+  try { app.quit(); } catch { }
   return { ok: true, message: "Daisy is restarting to finish the update." };
 }
 
@@ -10016,7 +10016,7 @@ async function runUpdaterModeOnce() {
   // Keep the trace file from growing across months of updates.
   try {
     if (ofs.statSync(updateTracePath()).size > 2 * 1024 * 1024) ofs.rmSync(updateTracePath(), { force: true });
-  } catch {}
+  } catch { }
   traceUpdate("start", `updater ${clientModVersion}, pid ${process.pid}, job ${updaterJobPath || "(none)"}`);
   emitActivity({
     title: "Daisy Updater",
@@ -10308,8 +10308,8 @@ async function downloadFileViaBlockmap(file, localPath, target, onProgress) {
   } catch {
     return false;
   } finally {
-    if (readFd !== null) { try { ofs.closeSync(readFd); } catch {} }
-    if (writeFd !== null) { try { ofs.closeSync(writeFd); } catch {} }
+    if (readFd !== null) { try { ofs.closeSync(readFd); } catch { } }
+    if (writeFd !== null) { try { ofs.closeSync(writeFd); } catch { } }
   }
 
   // The whole point of the exercise is that this cannot be taken on trust.
@@ -10321,7 +10321,7 @@ async function downloadFileViaBlockmap(file, localPath, target, onProgress) {
   }
   if (rebuilt !== file.sha256) {
     emit("launcher:log", `[update] ${file.path}: rebuilt copy did not match, downloading it in full`);
-    try { ofs.rmSync(target, { force: true }); } catch {}
+    try { ofs.rmSync(target, { force: true }); } catch { }
     return false;
   }
 
@@ -10507,7 +10507,7 @@ async function downloadFileWithProgress(url, target, options = {}) {
   const output = ofs.createWriteStream(temp);
 
   try {
-    for (;;) {
+    for (; ;) {
       const { done, value } = await reader.read();
       if (done) break;
       armStallTimer();
@@ -10865,7 +10865,7 @@ async function saveAndUploadSkin(sourcePath, variant, auth) {
   let previewDataUrl = "";
   try {
     previewDataUrl = skinPreviewDataUrl(target);
-  } catch {}
+  } catch { }
 
   const updatedProfile = {
     ...(auth.profile || {}),
@@ -11493,12 +11493,12 @@ async function preparePlainMinecraftLaunch(status, auth, authenticated, joinAddr
   const injectorArgs = (injectorJar && yggPort > 0)
     ? [`-javaagent:${injectorJar}=http://127.0.0.1:${yggPort}`]
     : [
-        "-Dminecraft.api.env=custom",
-        "-Dminecraft.api.auth.host=http://127.0.0.1:0",
-        "-Dminecraft.api.account.host=http://127.0.0.1:0",
-        "-Dminecraft.api.session.host=http://127.0.0.1:0",
-        "-Dminecraft.api.services.host=http://127.0.0.1:0"
-      ];
+      "-Dminecraft.api.env=custom",
+      "-Dminecraft.api.auth.host=http://127.0.0.1:0",
+      "-Dminecraft.api.account.host=http://127.0.0.1:0",
+      "-Dminecraft.api.session.host=http://127.0.0.1:0",
+      "-Dminecraft.api.services.host=http://127.0.0.1:0"
+    ];
 
   const args = [
     `-Xms${Math.min(1024, maxHeapMb)}M`,
@@ -11621,12 +11621,12 @@ async function prepareStandaloneMinecraftLaunch(status, auth, authenticated, joi
   const injectorArgs = (injectorJar && yggPort > 0)
     ? [`-javaagent:${injectorJar}=http://127.0.0.1:${yggPort}`]
     : [
-        "-Dminecraft.api.env=custom",
-        "-Dminecraft.api.auth.host=http://127.0.0.1:0",
-        "-Dminecraft.api.account.host=http://127.0.0.1:0",
-        "-Dminecraft.api.session.host=http://127.0.0.1:0",
-        "-Dminecraft.api.services.host=http://127.0.0.1:0"
-      ];
+      "-Dminecraft.api.env=custom",
+      "-Dminecraft.api.auth.host=http://127.0.0.1:0",
+      "-Dminecraft.api.account.host=http://127.0.0.1:0",
+      "-Dminecraft.api.session.host=http://127.0.0.1:0",
+      "-Dminecraft.api.services.host=http://127.0.0.1:0"
+    ];
 
   const javaArgs = [
     // A starting heap, as Prism Launcher and Mojang's launcher give, so Java is not
@@ -11706,7 +11706,7 @@ async function downloadIfMissing(url, target, sha1 = "", options = {}) {
 function removeQuietly(file) {
   try {
     fs.rmSync(file, { force: true });
-  } catch {}
+  } catch { }
 }
 
 function fileSha1(file) {
@@ -11919,7 +11919,7 @@ async function prepareAssets(assetIndex, assetsDir) {
   // failed part way through is retried in full next launch rather than stamped.
   try {
     fs.writeFileSync(stampPath, JSON.stringify({ sha1: assetIndex.sha1, count: objects.length, at: Date.now() }));
-  } catch {}
+  } catch { }
   emitActivity({ title: "Preparing assets", detail: `${objects.length} / ${objects.length} assets ready.`, current: objects.length, total: objects.length });
 }
 
@@ -12496,7 +12496,7 @@ function readFabricModMetadata(jarPath, file) {
           version: String(nestedMetadata.version || ""),
           isNested: true
         });
-      } catch {}
+      } catch { }
     }
     return {
       file,
@@ -13288,8 +13288,8 @@ function maybeCheckModUpdatesInBackground(instancePath) {
   try {
     const last = Date.parse(readModManifest(instancePath)?.checkedAt || "") || 0;
     if (Date.now() - last < MOD_UPDATE_CHECK_TTL_MS) return;
-  } catch {}
-  checkModUpdates(instancePath).then(() => emitStatus()).catch(() => {});
+  } catch { }
+  checkModUpdates(instancePath).then(() => emitStatus()).catch(() => { });
 }
 
 async function checkModUpdates(instancePath) {
@@ -13619,10 +13619,10 @@ function shutdownRunningClient(reason = "Daisy launcher closed.") {
   if (!launchProcess) return;
   try {
     emit("launcher:log", `[launcher] ${reason} Stopping Minecraft.`);
-  } catch {}
+  } catch { }
   try {
     launchProcess.kill();
-  } catch {}
+  } catch { }
   recordSessionEnd();
   launchProcess = null;
 }
@@ -13669,7 +13669,7 @@ app.on("window-all-closed", () => {
 app.on("will-quit", () => {
   try {
     globalShortcut.unregisterAll();
-  } catch {}
+  } catch { }
   // Otherwise the reconnect timers keep the process alive after the windows are gone.
   stopUpdatePushSocket();
   stopPresenceSocket();
@@ -13693,6 +13693,6 @@ app.on("before-quit", (event) => {
   }
   appIsQuitting = true;
   stopDiscordRpcRefreshLoop();
-  disconnectDiscordRpc("Discord Rich Presence stopped.").catch(() => {});
+  disconnectDiscordRpc("Discord Rich Presence stopped.").catch(() => { });
   shutdownRunningClient("Launcher is quitting.");
 });

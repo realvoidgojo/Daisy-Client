@@ -5,9 +5,11 @@ Daisy Client is an open-source Minecraft Fabric client and desktop launcher desi
 ## Features
 
 - **Offline Account Manager**: Multi-offline account support with custom skins and models.
-- **Custom Skin & Cape System**: Client-side appearance system allowing Daisy users to see each other's custom skins and capes on any server without server plugins.
+- **Custom Skin & Cape System**: Client-side appearance system:
+  - **Local Player Skin Rendering**: Custom skin and model (Classic/Slim) rendered locally for your own player across any server (vanilla, modded, LAN, or SMP) without requiring server-side plugins or mods. Other players and the server will continue to see your server-provided skin or Steve/Alex default.
+  - **Non-blocking asynchronous asset caching**: Dynamic texture registration with SHA-256 integrity validation and dimension checks.
 - **Modern Desktop Launcher**: Fast and modern Electron UI.
-- **Integrated Fabric Client**: Built on modern Fabric with optimizations and HUD utilities.
+- **Integrated Fabric Client**: Built on Fabric (Fabric-only; Forge/NeoForge/Quilt loaders are not supported). Configured with multi-version Stonecutter targeting versions from 1.21 through 1.21.11, 26.1.2, and 26.2.
 
 ## Building
 

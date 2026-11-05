@@ -4,6 +4,13 @@ import com.google.gson.Gson
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 
+//? if >=1.21.9 {
+import net.minecraft.world.entity.player.PlayerSkin
+import java.util.Optional
+//?} else {
+/*import net.minecraft.client.resources.PlayerSkin
+*///?}
+
 /**
  * Shared appearance model for offline/custom skins and capes.
  */
@@ -77,6 +84,23 @@ data class PlayerAppearance(
 
             return PlayerAppearance(uuid, skin, cape, model, updatedAt)
         }
+
+//? if <1.21.9 {
+/*        @JvmStatic
+        fun applyLegacySkin(current: PlayerSkin, appearance: PlayerAppearance): PlayerSkin {
+            val skinAsset = appearance.skin ?: return current
+            val skinId = AppearanceAssetCache.getOrLoadTexture(skinAsset, false) ?: return current
+            val model = if (appearance.model == SkinModel.SLIM) PlayerSkin.Model.SLIM else PlayerSkin.Model.WIDE
+            return PlayerSkin(
+                skinId,
+                current.textureUrl(),
+                current.capeTexture(),
+                current.elytraTexture(),
+                model,
+                current.secure()
+            )
+        }
+*///?}
     }
 }
 

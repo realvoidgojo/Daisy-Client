@@ -2,10 +2,10 @@ package dev.wyz.clientcore.mixin;
 
 import dev.wyz.clientcore.cosmetic.AppearanceAsset;
 import dev.wyz.clientcore.cosmetic.AppearanceAssetCache;
-import dev.wyz.clientcore.cosmetic.AppearanceRoster;
+import dev.wyz.clientcore.cosmetic.LocalAppearanceService;
 import dev.wyz.clientcore.cosmetic.PlayerAppearance;
 import dev.wyz.clientcore.cosmetic.SkinModel;
-import dev.wyz.clientcore.net.AppearanceLookupService;
+import net.minecraft.client.Minecraft;
 
 //? if >=1.21.10 {
 import net.minecraft.client.renderer.entity.player.AvatarRenderer;
@@ -37,7 +37,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
  * Mixin that replaces vanilla/default Steve/Alex skin textures and models with custom Daisy
- * skins from AppearanceRoster, allowing offline players on SMP servers to see each other's custom skins.
+ * skins exclusively for the local player using LocalAppearanceService.
+ * Does not query or modify remote players.
  */
 //? if >=1.21.10 {
 @Mixin(AvatarRenderer.class)
@@ -49,10 +50,16 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class AvatarSkinMixin {
 
 //? if >=1.21.10 {
-    @Inject(method = "extractCapeState", at = @At("TAIL"))
+    @Inject(
+        method = "extractRenderState(Lnet/minecraft/world/entity/Avatar;Lnet/minecraft/client/renderer/entity/state/AvatarRenderState;F)V",
+        at = @At("TAIL")
+    )
     private void clientcore$applyDaisySkin(Avatar avatar, AvatarRenderState state, float partialTick, CallbackInfo ci) {
-        String name = avatar.getCustomName() != null ? avatar.getCustomName().getString() : null;
-        PlayerAppearance appearance = AppearanceLookupService.INSTANCE.getOrQuery(avatar.getUUID(), name);
+        if (avatar != Minecraft.getInstance().player && !LocalAppearanceService.isLocalPlayer(avatar.getUUID())) {
+            return;
+        }
+
+        PlayerAppearance appearance = LocalAppearanceService.getLocalAppearance();
         if (appearance != null && state.skin != null) {
             AppearanceAsset skinAsset = appearance.getSkin();
             if (skinAsset != null) {
@@ -79,6 +86,55 @@ public abstract class AvatarSkinMixin {
             }
         }
     }
-//?}
-}
+//?} elif >=1.21.2 {
+/*    @Inject(
+        method = "extractRenderState(Lnet/minecraft/client/player/AbstractClientPlayer;Lnet/minecraft/client/renderer/entity/state/PlayerRenderState;F)V",
+        at = @At("TAIL")
+    )
+    private void clientcore$applyDaisySkin(AbstractClientPlayer avatar, PlayerRenderState state, float partialTick, CallbackInfo ci) {
+        if (avatar != Minecraft.getInstance().player && !LocalAppearanceService.isLocalPlayer(avatar.getUUID())) {
+            return;
+        }
 
+        PlayerAppearance appearance = LocalAppearanceService.getLocalAppearance();
+        if (appearance != null && state.skin != null) {
+            AppearanceAsset skinAsset = appearance.getSkin();
+            if (skinAsset != null) {
+//? if >=1.21.9 {
+                ClientAsset.ResourceTexture texture = AppearanceAssetCache.INSTANCE.getOrLoadClientAsset(skinAsset, false);
+                if (texture != null) {
+                    PlayerModelType model = appearance.getModel() == SkinModel.SLIM ? PlayerModelType.SLIM : PlayerModelType.WIDE;
+                    PlayerSkin.Patch patch = PlayerSkin.Patch.create(Optional.of(texture), Optional.empty(), Optional.empty(), Optional.of(model));
+                    state.skin = state.skin.with(patch);
+                }
+//?}
+            }
+
+            AppearanceAsset capeAsset = appearance.getCape();
+            if (capeAsset != null) {
+//? if >=1.21.9 {
+                ClientAsset.ResourceTexture capeTexture = AppearanceAssetCache.INSTANCE.getOrLoadClientAsset(capeAsset, true);
+                if (capeTexture != null) {
+                    state.showCape = true;
+                    PlayerSkin.Patch patch = PlayerSkin.Patch.create(Optional.empty(), Optional.of(capeTexture), Optional.empty(), Optional.empty());
+                    state.skin = state.skin.with(patch);
+                }
+//?}
+            }
+        }
+    }
+*///?} else {
+/*    @Inject(method = "getSkin", at = @At("RETURN"), cancellable = true)
+    private void clientcore$applyDaisySkin(CallbackInfoReturnable<PlayerSkin> cir) {
+        AbstractClientPlayer self = (AbstractClientPlayer) (Object) this;
+        if (self != Minecraft.getInstance().player && !LocalAppearanceService.isLocalPlayer(self.getUUID())) {
+            return;
+        }
+
+        PlayerAppearance appearance = LocalAppearanceService.getLocalAppearance();
+        if (appearance != null && appearance.getSkin() != null) {
+            cir.setReturnValue(PlayerAppearance.applyLegacySkin(cir.getReturnValue(), appearance));
+        }
+    }
+*///?}
+}
