@@ -6171,7 +6171,8 @@ async function launchStandaloneMinecraft(status, joinAddress = "", plainInstance
     const launchInstPath = plainInstance ? plainInstance.path : status.instancePath;
     const launchPlayer = freshAuth?.profile?.name || status.settings?.offlineName || "DaisyPlayer";
     syncOfflineSkinToInstance(launchInstPath, launchPlayer);
-    if (instance && instance.daisySkin) { ensureDaisySkinMod(launchInstPath, instance.version || DEFAULT_MC_VERSION, true); }
+    const targetInst = plainInstance || launchInstance;
+    if (targetInst && targetInst.daisySkin) { ensureDaisySkinMod(launchInstPath, targetInst.version || DEFAULT_MC_VERSION, true); }
   } catch { }
 
   try {
