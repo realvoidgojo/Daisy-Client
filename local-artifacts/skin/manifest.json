@@ -4,7 +4,7 @@
   "id": "daisyskin",
   "author": "realvoidgojo",
   "version": "0.1.0",
-  "updatedAt": "2026-11-06T17:29:17.780Z",
+  "updatedAt": "2026-11-06T17:43:20.932Z",
   "artifacts": {
     "1.21": {
       "minecraft": "1.21",
@@ -14,8 +14,8 @@
       "status": "ready",
       "fileName": "daisy-skin-0.1.0+1.21.jar",
       "path": "local-artifacts/skin/1.21/daisy-skin-0.1.0+1.21.jar",
-      "sha256": "2e2341c95e02cb52d2441ba8f4c0598e2ff790beaef67823c308815eb0b54c06",
-      "builtAt": "2026-11-06T17:29:18.210Z",
+      "sha256": "4b6897a7383ea61bb7f340e2066a49f8b4a98303e4a6f929fa6512d1a418f4b8",
+      "builtAt": "2026-11-06T17:43:21.710Z",
       "reason": null
     },
     "1.21.1": {
@@ -26,8 +26,8 @@
       "status": "ready",
       "fileName": "daisy-skin-0.1.0+1.21.1.jar",
       "path": "local-artifacts/skin/1.21.1/daisy-skin-0.1.0+1.21.1.jar",
-      "sha256": "e4ddbc4c8940f0bb514477d106c881d38baf3e20c548c2e69f107213e8411724",
-      "builtAt": "2026-11-06T17:29:18.508Z",
+      "sha256": "4f5bacf3ae4fc8f5f7382294c1efbf5c16ae05fb437b7320170ff0bd9ffe5f0a",
+      "builtAt": "2026-11-06T17:43:22.518Z",
       "reason": null
     },
     "1.21.2": {
@@ -38,8 +38,8 @@
       "status": "ready",
       "fileName": "daisy-skin-0.1.0+1.21.2.jar",
       "path": "local-artifacts/skin/1.21.2/daisy-skin-0.1.0+1.21.2.jar",
-      "sha256": "171b26abfd108d1d75a1b7246251f38b71e64ee85b4f3b37d0443fa7aebcd92e",
-      "builtAt": "2026-11-06T17:29:18.792Z",
+      "sha256": "040b2be89dd0982a9c0e0a0b0a1d0a6e0bd56cefa24b8427e8222058f07c5889",
+      "builtAt": "2026-11-06T17:43:23.166Z",
       "reason": null
     },
     "1.21.3": {
@@ -50,8 +50,8 @@
       "status": "ready",
       "fileName": "daisy-skin-0.1.0+1.21.3.jar",
       "path": "local-artifacts/skin/1.21.3/daisy-skin-0.1.0+1.21.3.jar",
-      "sha256": "75f073bae02b10fbeb03067a78440965c10809d7ac017aab59008412b57cd018",
-      "builtAt": "2026-11-06T17:29:19.118Z",
+      "sha256": "ab40e90f788509734694099478a40747d29a948692dd457013b1b4875b5e6f10",
+      "builtAt": "2026-11-06T17:43:23.956Z",
       "reason": null
     },
     "1.21.4": {
@@ -62,8 +62,8 @@
       "status": "ready",
       "fileName": "daisy-skin-0.1.0+1.21.4.jar",
       "path": "local-artifacts/skin/1.21.4/daisy-skin-0.1.0+1.21.4.jar",
-      "sha256": "6a4fdb4985e315105b6dac0f7be11ec9c1abb8fd4a31e6a23f9549fe55252507",
-      "builtAt": "2026-11-06T17:29:19.436Z",
+      "sha256": "1c21941f935f476bac8ab1b895f961edb7459563aa604af9f6e1bdee2e4fe93e",
+      "builtAt": "2026-11-06T17:43:24.771Z",
       "reason": null
     },
     "1.21.5": {
@@ -74,8 +74,8 @@
       "status": "ready",
       "fileName": "daisy-skin-0.1.0+1.21.5.jar",
       "path": "local-artifacts/skin/1.21.5/daisy-skin-0.1.0+1.21.5.jar",
-      "sha256": "db891563b15d41d56a887ccb724f6c7b422b4a81a091927b77280bef7ae87af7",
-      "builtAt": "2026-11-06T17:29:19.740Z",
+      "sha256": "778187416c0eb3530cf3bd3ce3eb6cf2260ab93efaebf099464f5a6bf6d4f495",
+      "builtAt": "2026-11-06T17:43:25.554Z",
       "reason": null
     },
     "1.21.6": {
@@ -86,8 +86,8 @@
       "status": "ready",
       "fileName": "daisy-skin-0.1.0+1.21.6.jar",
       "path": "local-artifacts/skin/1.21.6/daisy-skin-0.1.0+1.21.6.jar",
-      "sha256": "052cfa1dcd374268a0b6f26b21ed6bc69c09d477898d9d0da2b5de2b13a0d249",
-      "builtAt": "2026-11-06T17:29:20.005Z",
+      "sha256": "95a4d1488a4dcb071ed34a43acc06b3d3003f22f159a8b08cba02dacc9594bc9",
+      "builtAt": "2026-11-06T17:43:26.320Z",
       "reason": null
     },
     "1.21.7": {
@@ -98,8 +98,8 @@
       "status": "ready",
       "fileName": "daisy-skin-0.1.0+1.21.7.jar",
       "path": "local-artifacts/skin/1.21.7/daisy-skin-0.1.0+1.21.7.jar",
-      "sha256": "537bf580d21f5a1953e85e9fb1995eebbc5a00b74b012e2e54a98939ae89fafa",
-      "builtAt": "2026-11-06T17:29:20.268Z",
+      "sha256": "c06adda0b927a67c547edc58f835e92ad322d8cdf4f0e0df1edd96bbeb9ccd51",
+      "builtAt": "2026-11-06T17:43:27.031Z",
       "reason": null
     },
     "1.21.8": {
@@ -110,8 +110,8 @@
       "status": "ready",
       "fileName": "daisy-skin-0.1.0+1.21.8.jar",
       "path": "local-artifacts/skin/1.21.8/daisy-skin-0.1.0+1.21.8.jar",
-      "sha256": "29818b8a36bad54c411322f08df456ad3ff31965635564014163cd17f269942d",
-      "builtAt": "2026-11-06T17:29:20.540Z",
+      "sha256": "b7b4e278168710fcc3c78caee5ddb794c84950d5e36b392ebeb3757e076b8aaa",
+      "builtAt": "2026-11-06T17:43:27.707Z",
       "reason": null
     },
     "1.21.10": {
@@ -122,8 +122,8 @@
       "status": "ready",
       "fileName": "daisy-skin-0.1.0+1.21.10.jar",
       "path": "local-artifacts/skin/1.21.10/daisy-skin-0.1.0+1.21.10.jar",
-      "sha256": "c0fe2140c5753eb8c49af787bb61da6f65fa25f94b71e5c749be1c3677f245e4",
-      "builtAt": "2026-11-06T17:29:20.856Z",
+      "sha256": "6928b0fd6bf309712ec5b00b4031cc6cf7bfc9f54025ccf187ac7a889fea133d",
+      "builtAt": "2026-11-06T17:43:28.491Z",
       "reason": null
     },
     "1.21.11": {
@@ -134,8 +134,8 @@
       "status": "ready",
       "fileName": "daisy-skin-0.1.0+1.21.11.jar",
       "path": "local-artifacts/skin/1.21.11/daisy-skin-0.1.0+1.21.11.jar",
-      "sha256": "438a7325439b1ce5b92e886f010b00693b181f37e7a652c7e486af96e2b3b99e",
-      "builtAt": "2026-11-06T17:29:21.173Z",
+      "sha256": "c39ef49917e7c28c68bc1137258cb7cdd50d5f8556ab1282ecb745f1e64696c1",
+      "builtAt": "2026-11-06T17:43:29.320Z",
       "reason": null
     },
     "26.1.2": {
@@ -146,8 +146,8 @@
       "status": "ready",
       "fileName": "daisy-skin-0.1.0+26.1.2.jar",
       "path": "local-artifacts/skin/26.1.2/daisy-skin-0.1.0+26.1.2.jar",
-      "sha256": "fb8dac81a2749638a910231eea4b8fd97e6c104c3d0896f4e2e1db359a332747",
-      "builtAt": "2026-11-06T17:29:21.457Z",
+      "sha256": "a99239163778b36dab1a7d0c922c65039a1f92b4c3a7eb2a5c5da22bbc82c215",
+      "builtAt": "2026-11-06T17:43:30.122Z",
       "reason": null
     },
     "26.2": {
@@ -158,8 +158,8 @@
       "status": "ready",
       "fileName": "daisy-skin-0.1.0+26.2.jar",
       "path": "local-artifacts/skin/26.2/daisy-skin-0.1.0+26.2.jar",
-      "sha256": "72e4301716e0c5407efa4479124d09f0be922d46c9d78d901e5228bd68996569",
-      "builtAt": "2026-11-06T17:29:21.754Z",
+      "sha256": "5c525c94446d7d847ffdb8a987c2ef952283ed0792730ef6dd5b946ce0f666da",
+      "builtAt": "2026-11-06T17:43:30.967Z",
       "reason": null
     }
   }
