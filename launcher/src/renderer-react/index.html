@@ -101,7 +101,7 @@
         Someone who has asked for less movement gets a still logo and a bar that is simply
         present rather than travelling.
       */
-      html[data-season="halloween"] #boot img { content: url("../assets/river-logo-halloween.png"); }
+      html[data-season="halloween"] #boot img { content: url("../assets/daisy-logo-halloween.png"); }
       html[data-season="halloween"] #boot .boot-bar i { background: #ff7a1e; }
       @media (prefers-reduced-motion: reduce) {
         #boot img { animation: none; }
@@ -111,7 +111,7 @@
     </style>
     <script>
       try {
-        var s = window.localStorage.getItem("river:bootSeason");
+        var s = window.localStorage.getItem("daisy:bootSeason");
         if (s) document.documentElement.dataset.season = s;
         /* The launcher is always drawn in the Modern layout, and so is the splash. */
         document.documentElement.dataset.bootUi = "modern";

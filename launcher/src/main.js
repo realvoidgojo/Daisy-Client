@@ -138,12 +138,12 @@ let processingRvrImport = false;
 let updaterRunPromise = null;
 const pendingRvrImports = [];
 const updaterJobPath = findUpdaterJobArgument(process.argv);
-const updateFailureLogPath = findNamedArgument(process.argv, "--river-update-failed");
+const updateFailureLogPath = findNamedArgument(process.argv, "--daisy-update-failed") || findNamedArgument(process.argv, "--river-update-failed");
 const isUpdaterDemo = process.argv.includes("--river-updater-demo");
-const isUpdaterMode = Boolean(updaterJobPath) || process.argv.includes("--river-updater") || isUpdaterDemo;
+const isUpdaterMode = Boolean(updaterJobPath) || (process.argv.includes("--daisy-updater") || process.argv.includes("--river-updater")) || isUpdaterDemo;
 const startupRvrPath = findRvrArgument(process.argv);
 // Windows passes this when it starts River at sign-in (see syncLoginItem): open minimized.
-const startedAtLogin = process.argv.includes("--river-startup");
+const startedAtLogin = (process.argv.includes("--daisy-startup") || process.argv.includes("--river-startup"));
 const singleInstanceLock = isUpdaterMode ? true : app.requestSingleInstanceLock();
 
 if (!singleInstanceLock) {
@@ -199,7 +199,7 @@ function findNamedArgument(argv = [], name = "") {
 function syncLoginItem(settings) {
   if (!app.isPackaged) return;
   try {
-    app.setLoginItemSettings({ openAtLogin: Boolean(settings?.launchOnStartup), args: ["--river-startup"] });
+    app.setLoginItemSettings({ openAtLogin: Boolean(settings?.launchOnStartup), args: ["--daisy-startup"] });
   } catch { }
 }
 
@@ -307,7 +307,7 @@ function queueRvrImport(filePath) {
   flushPendingRvrImports().catch((error) => {
     emitActivity({
       title: "Import failed",
-      detail: error.message || "Could not import River instance.",
+      detail: error.message || "Could not import Daisy instance.",
       done: true,
       error: true
     });
@@ -357,7 +357,7 @@ try {
   app.setVersion(clientModVersion);
 } catch { }
 const clientModJarName = `clientcore-${clientModVersion}.jar`;
-const launcherUserAgent = `RiverClientLauncher/${clientModVersion} (realvoidgojo)`;
+const launcherUserAgent = `DaisyClientLauncher/${clientModVersion} (realvoidgojo)`;
 
 /*
   A stable, anonymous id for this installation.
@@ -411,8 +411,10 @@ function metricsHeaders(extra = {}) {
 }
 const AUTH_SESSION_MS = 30 * 24 * 60 * 60 * 1000;
 const AUTH_REFRESH_SKEW_MS = 5 * 60 * 1000;
-const RIVER_WEBSITE_URL = "https://riverclient.xyz";
-const RIVER_DISCORD_URL = "https://discord.gg/neQzwBTvp3";
+const DAISY_WEBSITE_URL = "https://github.com/realvoidgojo/Daisy-Client";
+const RIVER_WEBSITE_URL = DAISY_WEBSITE_URL;
+const DAISY_DISCORD_URL = "https://github.com/realvoidgojo/Daisy-Client";
+const RIVER_DISCORD_URL = DAISY_DISCORD_URL;
 const DEFAULT_DISCORD_RPC_CLIENT_ID = "1501146934486892554";
 let discordRpcClient = null;
 let discordRpcReady = false;
@@ -2832,7 +2834,7 @@ function readBundledPartnerServers() {
 async function fetchPartnerServers() {
   try {
     const res = await fetch(partnerDataUrl, {
-      headers: { "Accept": "application/json", "User-Agent": `RiverClientLauncher/${app.getVersion()} (realvoidgojo)` }
+      headers: { "Accept": "application/json", "User-Agent": `DaisyClientLauncher/${clientModVersion} (realvoidgojo)` }
     });
     if (!res.ok) throw new Error(`partner feed responded ${res.status}`);
     const data = await res.json();
@@ -3512,7 +3514,7 @@ async function searchModrinthProjectForIcon(query, projectType) {
   url.searchParams.set("limit", "1");
   url.searchParams.set("facets", JSON.stringify([[`project_type:${projectType}`]]));
   const response = await fetch(url, {
-    headers: { "User-Agent": `RiverClientLauncher/${app.getVersion()} (realvoidgojo)` }
+    headers: { "User-Agent": `DaisyClientLauncher/${clientModVersion} (realvoidgojo)` }
   });
   if (!response.ok) return null;
   const body = await response.json();
@@ -3523,7 +3525,7 @@ async function searchModrinthProjectForIcon(query, projectType) {
 async function cacheProjectIcon(projectKey, iconUrl) {
   try {
     const response = await fetch(iconUrl, {
-      headers: { "User-Agent": `RiverClientLauncher/${app.getVersion()} (realvoidgojo)` }
+      headers: { "User-Agent": `DaisyClientLauncher/${clientModVersion} (realvoidgojo)` }
     });
     if (!response.ok) return "";
 
@@ -4686,7 +4688,7 @@ function createInstance(request, options = {}) {
   const loader = LAUNCHABLE_LOADERS.includes(requestedLoader) ? requestedLoader : "fabric";
   const river = loader === "fabric" && request?.river !== false;
   const loaderVersion = river || loader === "vanilla" ? "" : String(request && request.loaderVersion || "").trim();
-  const defaultName = `${river ? "River" : loader === "vanilla" ? "Minecraft" : loaderLabel(loader)} ${version}`;
+  const defaultName = `${river ? "Daisy" : loader === "vanilla" ? "Minecraft" : loaderLabel(loader)} ${version}`;
   const rawName = String(request && request.name || defaultName).trim() || defaultName;
   const now = new Date().toISOString();
   const safeName = sanitizeFilename(rawName).toLowerCase().replace(/\s+/g, "-");
@@ -6826,7 +6828,7 @@ async function transferMods({ fromInstanceId, toInstanceId } = {}) {
     try {
       const response = await fetchWithTimeout("https://api.modrinth.com/v2/version_files", {
         method: "POST",
-        headers: { "Content-Type": "application/json", "User-Agent": `RiverClientLauncher/${app.getVersion()} (realvoidgojo)` },
+        headers: { "Content-Type": "application/json", "User-Agent": `DaisyClientLauncher/${clientModVersion} (realvoidgojo)` },
         body: JSON.stringify({ hashes: [...byHash.keys()], algorithm: "sha1" })
       }, 45000);
       if (response.ok) known = await response.json();
@@ -8413,6 +8415,7 @@ async function riverSocialCall(route, body = {}, retried = false) {
  * the in-game client uses - so both surfaces show one friends list rather than the local
  * settings.friends list this panel used to keep to itself.
  */
+ipcMain.handle("launcher:daisy-social", (event, arg) => handleDaisySocial(event, arg));
 ipcMain.handle("launcher:river-social", async (_event, request = {}) => {
   const action = String(request.action || "");
   const payload = request.payload || {};
@@ -8495,7 +8498,7 @@ async function announceSocialStatus(settings = readSettings()) {
       signal: controller.signal,
       headers: {
         "Content-Type": "application/json",
-        "User-Agent": `RiverClientLauncher/${app.getVersion()} (realvoidgojo)`
+        "User-Agent": `DaisyClientLauncher/${clientModVersion} (realvoidgojo)`
       },
       body: JSON.stringify({ uuid: profile.id, name: profile.name, status })
     });
@@ -8932,7 +8935,7 @@ ipcMain.handle("launcher:get-friend-presence", async () => {
       signal: controller.signal,
       headers: {
         "Content-Type": "application/json",
-        "User-Agent": `RiverClientLauncher/${app.getVersion()} (realvoidgojo)`
+        "User-Agent": `DaisyClientLauncher/${clientModVersion} (realvoidgojo)`
       },
       body: JSON.stringify({ names: friends.map((f) => f.name).filter(Boolean) })
     });
@@ -9425,7 +9428,7 @@ function scheduleUpdatePushReconnect(onUpdate) {
 }
 
 function startLauncherUpdateWatcher() {
-  // Remote River updater disabled for Daisy Client local development
+  // Remote Daisy updater disabled for Daisy Client local development
 }
 
 async function checkLauncherUpdates() {
@@ -10160,7 +10163,7 @@ async function downloadFileWithProgress(url, target, options = {}) {
   let response;
   try {
     response = await fetch(url, {
-      headers: { "User-Agent": `RiverClientLauncher/${app.getVersion()} (realvoidgojo)` },
+      headers: { "User-Agent": `DaisyClientLauncher/${clientModVersion} (realvoidgojo)` },
       signal: controller.signal
     });
   } catch (error) {
@@ -11342,7 +11345,7 @@ async function fetchFabricProfileJson(versionId, loaderVersion) {
 
 async function fetchJson(url) {
   const response = await fetchWithTimeout(url, {
-    headers: { "User-Agent": `RiverClientLauncher/${app.getVersion()} (realvoidgojo)` }
+    headers: { "User-Agent": `DaisyClientLauncher/${clientModVersion} (realvoidgojo)` }
   }, 45000);
   if (!response.ok) throw new Error(`Request failed with ${response.status}: ${url}`);
   return response.json();

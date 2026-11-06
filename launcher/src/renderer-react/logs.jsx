@@ -5,7 +5,7 @@ import { translate } from "./i18n/translate.js";
 
 // Everything this window can reach is declared in preload-logs.js. It has no Node
 // access of its own.
-const bridge = window.riverLogs;
+const bridge = window.daisyLogs || window.riverLogs;
 const windowAction = (action) => bridge.window(action);
 
 /**

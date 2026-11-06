@@ -90,7 +90,7 @@ object MediaSession {
                 "-File", script.toString(), "-GamePid", ProcessHandle.current().pid().toString()
             ).redirectErrorStream(true).start()
             process = started
-            Thread({ read(started) }, "River Media Session").apply { isDaemon = true }.start()
+            Thread({ read(started) }, "Daisy Media Session").apply { isDaemon = true }.start()
         }
     }
 

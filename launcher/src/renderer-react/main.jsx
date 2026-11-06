@@ -181,8 +181,8 @@ function App() {
     else delete root.dataset.season;
     // Remembered so the boot screen, drawn before settings load, shows the right logo.
     try {
-      if (season) window.localStorage.setItem("river:bootSeason", season.id);
-      else window.localStorage.removeItem("river:bootSeason");
+      if (season) window.localStorage.setItem("daisy:bootSeason", season.id);
+      else window.localStorage.removeItem("daisy:bootSeason");
     } catch {}
   }, [season?.id]);
   // Everyone is on the Modern layout (0.2.8); Classic is no longer offered. Stamped on the
@@ -192,7 +192,7 @@ function App() {
   useEffect(() => {
     document.documentElement.dataset.ui = uiStyle;
     // Remembered so the next start's boot screen is drawn in the same style before React loads.
-    try { window.localStorage.setItem("river:bootUi", uiStyle); } catch {}
+    try { window.localStorage.setItem("daisy:bootUi", uiStyle); } catch {}
   }, [uiStyle]);
   // Decoration only runs while this window is the one being used.
   useWindowFocusFlag();

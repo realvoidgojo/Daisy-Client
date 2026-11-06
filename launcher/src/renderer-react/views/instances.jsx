@@ -72,7 +72,7 @@ function LoaderIcon({ id, className }) {
     return (
       <span className="inline-flex items-center gap-1">
         <FabricIcon className={className} />
-        <img src="../assets/river-logo.png" alt="" draggable={false} className="size-6 object-contain" />
+        <img src="../assets/daisy-logo.png" alt="" draggable={false} className="size-6 object-contain" />
       </span>
     );
   }

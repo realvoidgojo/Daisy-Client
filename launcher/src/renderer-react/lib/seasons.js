@@ -30,10 +30,10 @@ function inWindow(season, now) {
   return from <= to ? here >= from && here <= to : here >= from || here <= to;
 }
 
-/** The season that is on today, or null. localStorage "river:forceSeason" is for testing only. */
+/** The season that is on today, or null. localStorage "daisy:forceSeason" is for testing only. */
 export function seasonToday(now = new Date()) {
   try {
-    const forced = window.localStorage.getItem("river:forceSeason");
+    const forced = window.localStorage.getItem("daisy:forceSeason");
     if (forced) return SEASONS.find((s) => s.id === forced) || null;
   } catch {}
   return SEASONS.find((s) => inWindow(s, now)) || null;

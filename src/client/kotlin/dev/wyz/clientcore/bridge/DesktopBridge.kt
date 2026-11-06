@@ -21,7 +21,7 @@ object DesktopBridge {
         return Path.of(home, "AppData", "Roaming")
     }
 
-    private val bridgeDir: Path by lazy { riverDataRoot().resolve("River Client").resolve("bridge") }
+    private val bridgeDir: Path by lazy { riverDataRoot().resolve("Daisy Client").resolve("bridge") }
     private val heartbeatPath: Path by lazy { bridgeDir.resolve("heartbeat.json") }
     private val commandPath: Path by lazy { bridgeDir.resolve("command.json") }
     private val statePath: Path by lazy { bridgeDir.resolve("state.json") }

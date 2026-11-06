@@ -5,7 +5,7 @@ const { contextBridge, ipcRenderer } = require("electron");
  * showed the game's stdout with full Node access, which is a lot of authority for a
  * text view. Only the channels it actually uses are exposed.
  */
-contextBridge.exposeInMainWorld("riverLogs", {
+contextBridge.exposeInMainWorld("daisyLogs", {
   ready: () => ipcRenderer.invoke("logs:ready"),
   copy: (text) => ipcRenderer.invoke("logs:copy", text),
   openFolder: () => ipcRenderer.invoke("logs:open-folder"),
@@ -27,3 +27,5 @@ contextBridge.exposeInMainWorld("riverLogs", {
     return () => ipcRenderer.removeListener("logs:maximized", handler);
   }
 });
+
+try { window.riverLogs = window.daisyLogs; } catch (e) {}

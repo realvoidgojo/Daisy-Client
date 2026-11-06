@@ -8,7 +8,7 @@ import { Minus, X } from "lucide-react";
 
 // Everything this window can reach is declared in preload-updater.js. It has no Node
 // access of its own.
-const bridge = window.riverUpdater;
+const bridge = window.daisyUpdater || window.riverUpdater;
 const windowAction = (action) => bridge.window(action);
 
 function clampPercent(value) {

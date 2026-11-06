@@ -309,11 +309,11 @@
 }
 
 /* The Daisy logo turns orange with the theme, wherever an <img> shows it. */
-:root[data-season="halloween"] img[src$="river-logo.png"] {
-  content: url("../assets/river-logo-halloween.png");
+:root[data-season="halloween"] img[src$="daisy-logo.png"] {
+  content: url("../assets/daisy-logo-halloween.png");
 }
-:root[data-season="halloween"] img[src$="riv3r-client.png"] {
-  content: url("../assets/riv3r-client-halloween.png");
+:root[data-season="halloween"] img[src$="daisy-logo.png"] {
+  content: url("../assets/daisy-logo-halloween.png");
 }
 
 .season-decor {

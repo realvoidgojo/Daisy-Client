@@ -160,7 +160,7 @@ export function LaunchOverlay({ status, notify }) {
         {halloween ? <Mist className="opacity-50" /> : null}
 
         <div className="relative flex flex-col items-center gap-6 px-8 text-center">
-          <img src="../assets/river-logo.png" alt="" draggable={false} className="size-14 select-none object-contain" />
+          <img src="../assets/daisy-logo.png" alt="" draggable={false} className="size-14 select-none object-contain" />
           <div>
             <p className="m-kicker text-primary">{t("Launching")}</p>
             <div className="mt-3 max-w-xl truncate text-[34px] font-extrabold leading-tight tracking-[-0.025em]">
@@ -199,7 +199,7 @@ export function LaunchOverlay({ status, notify }) {
 
       <div className="relative flex flex-col items-center gap-5 px-8 text-center">
         <img
-          src="../assets/river-logo.png"
+          src="../assets/daisy-logo.png"
           alt=""
           draggable={false}
           className="size-16 select-none object-contain"

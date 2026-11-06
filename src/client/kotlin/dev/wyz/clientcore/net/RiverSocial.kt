@@ -167,8 +167,8 @@ object RiverSocial {
         pool.submit {
             var refusedAsBlocked = false
             val result = runCatching {
-                val begin = post("/auth/begin", JsonObject()) ?: error("River is unreachable.")
-                val nonce = begin.get("nonce")?.asString ?: error("River did not start a sign-in.")
+                val begin = post("/auth/begin", JsonObject()) ?: error("Daisy is unreachable.")
+                val nonce = begin.get("nonce")?.asString ?: error("Daisy did not start a sign-in.")
 
                 val certificate = fetchCertificate(client.user.accessToken)
                     ?: error("Could not get your Minecraft certificate from Mojang.")
@@ -185,7 +185,7 @@ object RiverSocial {
                 val complete = post("/auth/complete", body) ?: error("River is unreachable.")
                 if (complete.get("ok")?.asBoolean != true) {
                     refusedAsBlocked = complete.get("blocked")?.asBoolean == true
-                    error(complete.get("message")?.asString ?: "River could not verify your account.")
+                    error(complete.get("message")?.asString ?: "Daisy could not verify your account.")
                 }
                 complete
             }
@@ -204,7 +204,7 @@ object RiverSocial {
                     }
                 }.onFailure {
                     accountBlocked = refusedAsBlocked
-                    error = it.message ?: "Could not sign in to River social."
+                    error = it.message ?: "Could not sign in to Daisy social."
                     onDone(false)
                 }
             }

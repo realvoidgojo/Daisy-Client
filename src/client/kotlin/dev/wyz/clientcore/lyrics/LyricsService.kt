@@ -36,7 +36,7 @@ sealed interface LyricsState {
  */
 object LyricsService {
     private const val API = "https://lrclib.net/api/"
-    private const val USER_AGENT = "River Client (https://riverclient.xyz)"
+    private const val USER_AGENT = "Daisy Client (https://github.com/realvoidgojo/Daisy-Client)"
     private const val MISSING_RETRY_MS = 6L * 60 * 60 * 1000
     private const val FAILED_RETRY_MS = 30_000L
     private const val NEVER = Long.MAX_VALUE
@@ -47,7 +47,7 @@ object LyricsService {
         .connectTimeout(Duration.ofSeconds(5))
         .followRedirects(HttpClient.Redirect.NORMAL)
         .build()
-    private val pool = Executors.newSingleThreadExecutor { Thread(it, "River Lyrics").apply { isDaemon = true } }
+    private val pool = Executors.newSingleThreadExecutor { Thread(it, "Daisy Lyrics").apply { isDaemon = true } }
     private val entries = ConcurrentHashMap<String, Entry>()
 
     /** The lyrics for a song: the answer if there is one, otherwise [LyricsState.Loading] while it is fetched. */

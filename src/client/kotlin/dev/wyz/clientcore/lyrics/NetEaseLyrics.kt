@@ -61,7 +61,7 @@ object NetEaseLyrics {
     private fun get(url: String): JsonObject? {
         val request = HttpRequest.newBuilder(URI.create(url))
             .timeout(Duration.ofSeconds(8))
-            .header("User-Agent", "Mozilla/5.0 (River Client)")
+            .header("User-Agent", "Mozilla/5.0 (Daisy Client)")
             .header("Referer", "https://music.163.com/")
             .GET()
             .build()

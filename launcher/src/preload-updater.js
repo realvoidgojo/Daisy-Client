@@ -9,7 +9,7 @@ const { contextBridge, ipcRenderer } = require("electron");
  * rather than handing the page a general ipcRenderer, so the page cannot reach a channel
  * simply because one exists.
  */
-contextBridge.exposeInMainWorld("riverUpdater", {
+contextBridge.exposeInMainWorld("daisyUpdater", {
   retry: () => ipcRenderer.invoke("launcher:retry-updater"),
   // "Downloading stuck?" - uploads a diagnostic report and resolves { ok, id | message }.
   reportStuck: () => ipcRenderer.invoke("launcher:report-update-stuck"),
@@ -23,3 +23,5 @@ contextBridge.exposeInMainWorld("riverUpdater", {
     return () => ipcRenderer.removeListener("launcher:activity", handler);
   }
 });
+
+try { window.riverUpdater = window.daisyUpdater; } catch (e) {}

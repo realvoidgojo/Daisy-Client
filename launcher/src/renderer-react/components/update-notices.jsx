@@ -12,7 +12,7 @@ import { useT } from "../i18n/context.jsx";
 /** #updates on the Daisy Discord - where every release's changes are posted. */
 const UPDATES_CHANNEL_URL = "https://discord.com/channels/1501139838311596103/1541128335529345114";
 
-const DISMISS_KEY = "river:dismissedUpdateVersion";
+const DISMISS_KEY = "daisy:dismissedUpdateVersion";
 
 /** Same two river shots Home uses for its hero. */
 const BANNER = `../assets/home-bg-${1 + Math.floor(Math.random() * 2)}.jpg`;
@@ -176,7 +176,7 @@ export function WhatsNewDialog({ status, refresh }) {
           <img src={document.documentElement.dataset.season === "halloween" ? "../assets/home-bg-halloween.jpg" : BANNER} alt="" className="absolute inset-0 size-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-t from-popover via-popover/70 to-popover/10" />
           <div className="absolute inset-x-5 bottom-3 flex items-end gap-3">
-            <img src="../assets/riv3r-client.png" alt="" className="size-10 shrink-0" />
+            <img src="../assets/daisy-logo.png" alt="" className="size-10 shrink-0" />
             <DialogHeader className="min-w-0 gap-0.5 text-left">
               <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">{t("Updated")}</p>
               <DialogTitle className="text-lg leading-tight">{t("Daisy Client {version}", { version: current })}</DialogTitle>

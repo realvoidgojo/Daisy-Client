@@ -75,9 +75,9 @@ object ModUpdateCheck {
         if (latest.isEmpty() || behind <= 0) return
         val font = client.font
         val line = when {
-            turnedOff -> "River Client $ownVersion is too old and is turned off. Get $latest at riverclient.xyz"
-            maxBehind > 0 -> "River Client $latest is out. Update at riverclient.xyz, versions $maxBehind updates behind stop working."
-            else -> "River Client $latest is out. Update at riverclient.xyz"
+            turnedOff -> "Daisy Client $ownVersion is too old. Get $latest"
+            maxBehind > 0 -> "Daisy Client $latest is out."
+            else -> "Daisy Client $latest is out."
         }
         g.drawString(font, line, (screenWidth - font.width(line)) / 2, 6, if (turnedOff) ClientUi.DANGER else ClientUi.TEXT, true)
     }

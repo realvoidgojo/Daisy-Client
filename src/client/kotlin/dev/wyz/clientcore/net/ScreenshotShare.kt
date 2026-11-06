@@ -48,7 +48,7 @@ object ScreenshotShare {
 
     private val files = HashMap<String, File>()
     private val pool = Executors.newSingleThreadExecutor { runnable ->
-        Thread(runnable, "River screenshot share").apply { isDaemon = true }
+        Thread(runnable, "Daisy screenshot share").apply { isDaemon = true }
     }
 
     /** Appends the buttons when [message] is vanilla's screenshot-saved line. */

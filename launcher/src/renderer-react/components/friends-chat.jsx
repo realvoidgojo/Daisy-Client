@@ -24,7 +24,7 @@ export function FriendsChat({ friend, skinUrl, onBack, onRemove, onBlock, notify
 
   const load = useCallback(async () => {
     try {
-      const res = await api()?.riverSocial?.("history", { uuid: friend.uuid });
+      const res = await api()?.daisySocial || api()?.riverSocial?.("history", { uuid: friend.uuid });
       if (Array.isArray(res?.messages)) setMessages(res.messages);
     } catch {} finally { setLoading(false); }
   }, [friend.uuid]);
@@ -45,7 +45,7 @@ export function FriendsChat({ friend, skinUrl, onBack, onRemove, onBlock, notify
     setSending(true);
     setDraft("");
     try {
-      const res = await api()?.riverSocial?.("send", { uuid: friend.uuid, text });
+      const res = await api()?.daisySocial || api()?.riverSocial?.("send", { uuid: friend.uuid, text });
       if (res?.ok === false) notify?.(res.message || t("Could not send that."), "error");
       await load();
     } finally { setSending(false); }
