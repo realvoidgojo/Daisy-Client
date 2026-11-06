@@ -112,9 +112,8 @@ function ContentRow({ entry, kind, onToggle, onRemove, busy }) {
       </div>
 
       <div className="flex shrink-0 items-center gap-1">
-        {/* Daisy's own mod is what makes the instance a Daisy instance, so it is never
-            togglable or removable from here - repairing re-adds it anyway. */}
-        {kind === "mods" && !entry.required ? (
+        {/* Daisy clientcore is now fully togglable and removable */}
+        {kind === "mods" ? (
           <div className="flex items-center gap-2 mr-2">
             <Switch
               checked={!disabled}
@@ -126,11 +125,9 @@ function ContentRow({ entry, kind, onToggle, onRemove, busy }) {
             />
           </div>
         ) : null}
-        {!entry.required ? (
-          <Button variant="ghost" size="icon" title={t("Remove")} disabled={busy} onClick={() => onRemove(entry)}>
-            <Trash2 className="size-3.5 text-destructive" />
-          </Button>
-        ) : null}
+        <Button variant="ghost" size="icon" title={t("Remove")} disabled={busy} onClick={() => onRemove(entry)}>
+          <Trash2 className="size-3.5 text-destructive" />
+        </Button>
       </div>
     </div>
   );

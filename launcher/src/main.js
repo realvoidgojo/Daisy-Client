@@ -752,7 +752,8 @@ function ensureBundledClientCoreMod(instancePath, mcVersion = instanceMcVersion(
   const disabledTargetPath = `${targetPath}.disabled`;
 
   if (fs.existsSync(disabledTargetPath)) {
-    try { fs.rmSync(disabledTargetPath, { force: true }); } catch { }
+    // Keep it disabled if the user explicitly disabled it
+    return disabledTargetPath;
   }
 
   // Drop stale clientcore jars for this same version, keeping only the target.
@@ -6363,7 +6364,7 @@ ipcMain.handle("launcher:set-mod-enabled", (_event, request, enabledArg) => {
   // enabled)); fall back to it when the request object doesn't carry `enabled`,
   // otherwise enabling a disabled mod always read false and did nothing.
   const enabled = typeof payload.enabled === "boolean" ? payload.enabled : Boolean(enabledArg);
-  if (isCoreClientMod(file)) return { ok: false, message: "Daisy Core is required and cannot be disabled." };
+  // clientcore toggle allowed by user request
   const instancePath = resolveInstancePath(payload);
   if (!instancePath) return { ok: false, message: "Instance path was not found." };
   const modsDir = path.join(instancePath, "mods");
@@ -6400,7 +6401,7 @@ ipcMain.handle("launcher:set-mod-enabled", (_event, request, enabledArg) => {
 ipcMain.handle("launcher:remove-mod", (_event, request) => {
   const payload = typeof request === "object" && request !== null ? request : { file: request };
   const file = String(payload.file || "").trim();
-  if (isCoreClientMod(file)) return { ok: false, message: "Daisy Core is required and cannot be removed." };
+  // clientcore removal allowed by user request
   const instancePath = resolveInstancePath(payload);
   if (!instancePath) return { ok: false, message: "Instance path was not found." };
   const modsDir = path.join(instancePath, "mods");
@@ -6421,9 +6422,7 @@ ipcMain.handle("launcher:remove-content", (_event, request = {}) => {
   const info = contentTypeInfo(contentType);
   const file = String(request.file || "").trim();
   if (!file) return { ok: false, message: `No ${info.label} file was selected.` };
-  if (contentType === "mod" && isCoreClientMod(file)) {
-    return { ok: false, message: "Daisy's in-game mod is required and cannot be removed." };
-  }
+  // clientcore mod removal allowed by user request
   const instancePath = resolveInstancePath(request);
   if (!instancePath) return { ok: false, message: "Instance path was not found." };
   const target = path.join(instancePath, info.folder, file);
