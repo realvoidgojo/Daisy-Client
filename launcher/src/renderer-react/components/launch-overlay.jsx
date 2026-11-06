@@ -164,7 +164,7 @@ export function LaunchOverlay({ status, notify }) {
           <div>
             <p className="m-kicker text-primary">{t("Launching")}</p>
             <div className="mt-3 max-w-xl truncate text-[34px] font-extrabold leading-tight tracking-[-0.025em]">
-              {selected?.name || "River Client"}
+              {selected?.name || "Daisy Client"}
             </div>
           </div>
           <div className="flex flex-col items-center gap-2">
@@ -191,7 +191,7 @@ export function LaunchOverlay({ status, notify }) {
       aria-live="polite"
       className="fixed inset-x-0 bottom-0 top-8 z-40 flex flex-col items-center justify-center gap-5 overflow-hidden bg-background animate-in fade-in duration-200"
     >
-      {/* Same drifting art as the Home launch panel, so the wait still looks like River. */}
+      {/* Same drifting art as the Home launch panel, so the wait still looks like Daisy. */}
       <div className="pointer-events-none absolute inset-0 select-none">
         <img src={HERO_BG} alt="" draggable={false} className="hero-drift size-full object-cover opacity-70" />
         <div className="absolute inset-0 bg-gradient-to-b from-background/85 via-background/92 to-background" />
@@ -207,7 +207,7 @@ export function LaunchOverlay({ status, notify }) {
 
         <div className="space-y-1">
           <div className="text-lg font-semibold leading-tight">
-            {status?.selectedInstance?.name || "River Client"}
+            {status?.selectedInstance?.name || "Daisy Client"}
           </div>
           <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
             <Loader2 className="size-3.5 animate-spin" />

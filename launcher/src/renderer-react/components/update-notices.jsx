@@ -9,7 +9,7 @@ import {
 } from "./ui/dialog";
 import { useT } from "../i18n/context.jsx";
 
-/** #updates on the River Discord - where every release's changes are posted. */
+/** #updates on the Daisy Discord - where every release's changes are posted. */
 const UPDATES_CHANNEL_URL = "https://discord.com/channels/1501139838311596103/1541128335529345114";
 
 const DISMISS_KEY = "river:dismissedUpdateVersion";
@@ -36,7 +36,7 @@ function isMandatory(update) {
  *
  * Mandatory updates already take over the screen (UpdateGate). Optional ones used to
  * live only in Settings, so unless someone went looking, they never knew there was a
- * newer River. This is a slim bar across the top instead: one click to update, or
+ * newer Daisy. This is a slim bar across the top instead: one click to update, or
  * closed until the launcher is opened again.
  */
 export function UpdateBanner({ status, notify }) {
@@ -73,7 +73,7 @@ export function UpdateBanner({ status, notify }) {
     <div className={cn("flex shrink-0 items-center gap-3 border-b border-border bg-primary/10 py-1.5 animate-in fade-in slide-in-from-top-1 duration-200", modern ? "px-8" : "px-4")}>
       <Download className="size-3.5 shrink-0 text-primary" />
       <span className="min-w-0 flex-1 truncate text-xs">
-        {t("River Client {version} is available.", { version: latest })}
+        {t("Daisy Client {version} is available.", { version: latest })}
       </span>
       <Button size="sm" className="h-6 px-3 text-xs" onClick={install} disabled={installing}>
         {installing ? <Loader2 className="size-3 animate-spin" /> : null}
@@ -127,7 +127,7 @@ function sortNotes(items) {
  *
  * A brand-new install has nothing to catch up on, so its first run just records the
  * version. The test for "brand new" is the tutorial: someone who finished it has used
- * River before, even if this version stamp is the first they have ever had - which is
+ * Daisy before, even if this version stamp is the first they have ever had - which is
  * everyone, the first time this ships.
  */
 export function WhatsNewDialog({ status, refresh }) {
@@ -179,7 +179,7 @@ export function WhatsNewDialog({ status, refresh }) {
             <img src="../assets/riv3r-client.png" alt="" className="size-10 shrink-0" />
             <DialogHeader className="min-w-0 gap-0.5 text-left">
               <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">{t("Updated")}</p>
-              <DialogTitle className="text-lg leading-tight">{t("River Client {version}", { version: current })}</DialogTitle>
+              <DialogTitle className="text-lg leading-tight">{t("Daisy Client {version}", { version: current })}</DialogTitle>
             </DialogHeader>
           </div>
         </div>

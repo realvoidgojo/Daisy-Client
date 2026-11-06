@@ -2,11 +2,11 @@
   "schemaVersion": 1,
   "id": "clientcore",
   "version": "${version}",
-  "name": "River Client",
+  "name": "Fabric + Daisy",
   "icon": "assets/clientcore/icon.png",
-  "description": "A Fabric ${minecraft_version} PvP-friendly client by WyZ_EU.",
+  "description": "A Fabric ${minecraft_version} PvP-friendly client by realvoidgojo.",
   "authors": [
-    "WyZ_EU"
+    "realvoidgojo"
   ],
   "contact": {},
   "license": "All-Rights-Reserved",

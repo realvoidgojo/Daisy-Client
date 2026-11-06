@@ -55,7 +55,11 @@ public abstract class AvatarSkinMixin {
         at = @At("TAIL")
     )
     private void clientcore$applyDaisySkin(Avatar avatar, AvatarRenderState state, float partialTick, CallbackInfo ci) {
-        if (avatar != Minecraft.getInstance().player && !LocalAppearanceService.isLocalPlayer(avatar.getUUID())) {
+        Minecraft client = Minecraft.getInstance();
+        boolean isLocal = (avatar == client.player)
+            || (client.player != null && avatar.getId() == client.player.getId())
+            || LocalAppearanceService.isLocalPlayer(avatar.getUUID(), avatar.getId(), avatar.getName().getString());
+        if (!isLocal) {
             return;
         }
 
@@ -92,7 +96,11 @@ public abstract class AvatarSkinMixin {
         at = @At("TAIL")
     )
     private void clientcore$applyDaisySkin(AbstractClientPlayer avatar, PlayerRenderState state, float partialTick, CallbackInfo ci) {
-        if (avatar != Minecraft.getInstance().player && !LocalAppearanceService.isLocalPlayer(avatar.getUUID())) {
+        Minecraft client = Minecraft.getInstance();
+        boolean isLocal = (avatar == client.player)
+            || (client.player != null && avatar.getId() == client.player.getId())
+            || LocalAppearanceService.isLocalPlayer(avatar.getUUID(), avatar.getId(), avatar.getName().getString());
+        if (!isLocal) {
             return;
         }
 
@@ -127,7 +135,11 @@ public abstract class AvatarSkinMixin {
 /*    @Inject(method = "getSkin", at = @At("RETURN"), cancellable = true)
     private void clientcore$applyDaisySkin(CallbackInfoReturnable<PlayerSkin> cir) {
         AbstractClientPlayer self = (AbstractClientPlayer) (Object) this;
-        if (self != Minecraft.getInstance().player && !LocalAppearanceService.isLocalPlayer(self.getUUID())) {
+        Minecraft client = Minecraft.getInstance();
+        boolean isLocal = (self == client.player)
+            || (client.player != null && self.getId() == client.player.getId())
+            || LocalAppearanceService.isLocalPlayer(self.getUUID(), self.getId(), self.getName().getString());
+        if (!isLocal) {
             return;
         }
 

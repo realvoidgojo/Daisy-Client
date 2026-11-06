@@ -41,7 +41,7 @@ function StuckReport({ stalled }) {
     return (
       <div className="stuck">
         <span className="stuck-msg ok">
-          Report sent. Your code: <b>{report.text}</b> - post it in the River Discord.
+          Report sent. Your code: <b>{report.text}</b> - post it in the Daisy Discord.
         </span>
       </div>
     );
@@ -112,7 +112,7 @@ function UpdaterApp() {
   return (
     <>
       <header className="titlebar">
-        <div className="brand"><strong>River Client</strong><span>Updater</span></div>
+        <div className="brand"><strong>Daisy Client</strong><span>Updater</span></div>
         <div className="window-actions">
           <button className="wbtn" title="Minimize" onClick={() => windowAction("minimize")}><Minus /></button>
           <button className="wbtn wbtn-close" title="Close" onClick={() => windowAction("close")}><X /></button>
@@ -123,7 +123,7 @@ function UpdaterApp() {
         <div className="line">
           {!done && <span className="dot busy" aria-hidden />}
           {done && <span className={`dot ${state}`} aria-hidden />}
-          <h1 className="title">{activity.title || "Updating River Client"}</h1>
+          <h1 className="title">{activity.title || "Updating Daisy Client"}</h1>
         </div>
         <p className="detail">{activity.detail || ""}</p>
 

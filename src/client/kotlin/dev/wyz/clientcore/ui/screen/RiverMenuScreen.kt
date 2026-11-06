@@ -52,7 +52,7 @@ import kotlin.math.roundToInt
  * how the HUD editor's cog gets here - the editor no longer carries its own copy of the
  * settings UI in the middle of the screen.
  */
-class RiverMenuScreen(private val parent: Screen?, focusModule: Module? = null) : Screen(Component.literal("River Client")), RiverScreen {
+class RiverMenuScreen(private val parent: Screen?, focusModule: Module? = null) : Screen(Component.literal("Daisy Client")), RiverScreen {
 
     private enum class Page(val label: String, val icon: String, val category: ModuleCategory?) {
         FAVORITES("Favorites", "star", null),
@@ -198,9 +198,9 @@ class RiverMenuScreen(private val parent: Screen?, focusModule: Module? = null) 
         // The brand, in the header row every River screen has.
         if (RiverTheme.current.key == "halloween") {
             SeasonalFx.drawPumpkinIcon(g, x + 10, y + 9, 14)
-            ClientUi.drawGradientTitle(g, font, "River Client", x + 28, y + 13)
+            ClientUi.drawGradientTitle(g, font, "Daisy Client", x + 28, y + 13)
         } else {
-            ClientUi.drawGradientTitle(g, font, "River Client", x + 12, y + 13)
+            ClientUi.drawGradientTitle(g, font, "Daisy Client", x + 12, y + 13)
         }
         g.fill(x + 1, y + HEADER_H - 1, x + w, y + HEADER_H, ClientUi.BORDER)
 

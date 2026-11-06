@@ -4,7 +4,7 @@ import { cn, formatLastPlayed } from "../lib/utils";
 import { InstanceArt, PlayBlock } from "./instance-art";
 import { useT } from "../i18n/context.jsx";
 
-/** Instances made without River (any loader but Fabric, or plain Fabric) lack it on purpose, so that is no warning there. */
+/** Instances made without Daisy (any loader but Fabric, or plain Fabric) lack it on purpose, so that is no warning there. */
 export function isPlainInstance(instance) {
   const loader = String(instance?.loader || "fabric").toLowerCase();
   return (loader !== "fabric" && ["forge", "neoforge", "quilt", "vanilla"].includes(loader)) || instance?.river === false;
@@ -68,7 +68,7 @@ export function ModernInstanceCard({ instance, card, selected, busy, disabled, o
           {instance.riverSupported === false && !isPlainInstance(instance) ? (
             <div className="mt-1 flex items-center gap-1 text-[11px] text-warning">
               <TriangleAlert className="size-3 shrink-0" />
-              <span className="truncate">{t("River not available in game")}</span>
+              <span className="truncate">{t("Daisy not available in game")}</span>
             </div>
           ) : null}
         </button>

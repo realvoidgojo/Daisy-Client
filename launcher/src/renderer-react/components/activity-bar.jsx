@@ -55,7 +55,7 @@ export function ActivityBar() {
     );
     const offBoot = api()?.onBoot?.((payload) =>
       show({
-        title: payload?.step || t("Preparing River Client"),
+        title: payload?.step || t("Preparing Daisy Client"),
         detail: payload?.detail || "",
         percent: null,
         done: Boolean(payload?.done),

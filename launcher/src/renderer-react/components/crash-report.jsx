@@ -178,7 +178,7 @@ export function CrashReport({ status, refresh, notify }) {
           size="sm"
           variant="outline"
           disabled={Boolean(busy)}
-          title={t("Verify game files and River's own mods")}
+          title={t("Verify game files and Daisy's own mods")}
           onClick={() => run("repair", () => api()?.repairInstance({ instanceId: status?.selectedInstance?.id || "" }), t("Repair complete."))}
         >
           {busy === "repair" ? <Loader2 className="size-3.5 animate-spin" /> : <ShieldCheck className="size-3.5" />}
@@ -225,7 +225,7 @@ export function CrashReport({ status, refresh, notify }) {
           variant="ghost"
           onClick={() => {
             const lines = [
-              `River Client ${status?.version || ""}`.trim(),
+              `Daisy Client ${status?.version || ""}`.trim(),
               `Problem: ${analysis.failure.detail}`,
               analysis.suspects.length
                 ? `Candidates: ${analysis.suspects.map((s) => s.id + (s.outdated ? " (out of date)" : "")).join(", ")}`

@@ -369,7 +369,7 @@ object RiverMainMenu {
 
         // Corner labels: accent tick + dimmed text.
         ClientUi.fillRounded(g, 6, sh - 13, 2, 9, 1, ClientUi.ACCENT_B)
-        g.drawString(font, "River Client", 12, sh - 12, 0xE6C7CDDC.toInt(), true)
+        g.drawString(font, "Daisy Client", 12, sh - 12, 0xE6C7CDDC.toInt(), true)
 //? if >=1.21.6 {
         val version = SharedConstants.getCurrentVersion().name()
 //?} else {

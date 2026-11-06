@@ -33,7 +33,7 @@ export function formatPlaytime(ms) {
 
 /**
  * Total time played, inline and compact: one small line of text that doubles as a
- * toggle - click it to flip between River-only and every other Minecraft client
+ * toggle - click it to flip between Daisy-only and every other Minecraft client
  * detected on this PC (vanilla, Lunar, Feather, Prism, CurseForge, ...). Combined
  * uses a slow one-time disk scan (cached in main), so it is fetched once here rather
  * than on every status poll.
@@ -63,10 +63,10 @@ export function PlaytimeStat({ settings, notify, className }) {
     <button
       onClick={toggle}
       className={cn("inline-flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground", className)}
-      title={mode === "river" ? t("River Client only - click to include every Minecraft client on this PC") : t("Every Minecraft client on this PC - click to show River only")}
+      title={mode === "river" ? t("Daisy Client only - click to include every Minecraft client on this PC") : t("Every Minecraft client on this PC - click to show Daisy only")}
     >
       <Clock className="size-3" />
-      {formatPlaytime(shownMs || 0)} {mode === "river" ? t("on River") : t("played")}
+      {formatPlaytime(shownMs || 0)} {mode === "river" ? t("on Daisy") : t("played")}
     </button>
   );
 }
@@ -278,7 +278,7 @@ export function useServerList() {
   }, []);
 
   /*
-    Only a server River actually confirmed is down counts as offline. One whose status
+    Only a server Daisy actually confirmed is down counts as offline. One whose status
     lookup failed is still unknown, and folding those away would hide working servers
     behind a collapsed heading on nothing more than a failed request.
   */
@@ -331,7 +331,7 @@ export function HomeView({ status, refresh, notify }) {
     <div className="flex h-full min-h-0">
       <div className="min-w-0 flex-1">
     <Page
-      title={profile ? t("Welcome back, {name}", { name: profile.name }) : t("Welcome to River")}
+      title={profile ? t("Welcome back, {name}", { name: profile.name }) : t("Welcome to Daisy")}
       description={status?.mode || `Fabric ${status?.selectedVersion || "1.21.11"}`}
       actions={<PlayerHead skinUrl={resolveSkinTexture(status)} name={profile?.name} size={36} />}
     >
@@ -340,7 +340,7 @@ export function HomeView({ status, refresh, notify }) {
         <CrashReport status={status} refresh={refresh} notify={notify} />
 
         <section className="relative overflow-hidden rounded-lg border border-border bg-card">
-          {/* River art that already shipped with the launcher but was never wired up.
+          {/* Daisy art that already shipped with the launcher but was never wired up.
               The scrim keeps it as texture so the label and Launch stay high-contrast,
               and it is built from theme tokens so light mode works the same way. */}
           <div className="pointer-events-none absolute inset-0 select-none">
@@ -361,7 +361,7 @@ export function HomeView({ status, refresh, notify }) {
           <div className="relative flex min-h-32 items-center gap-4 p-6">
             <div className="min-w-0 flex-1">
               <div className="truncate text-xl font-semibold leading-tight">
-                {status?.selectedInstance?.name || "River Default"}
+                {status?.selectedInstance?.name || "Daisy Default"}
               </div>
               <div className="mt-1.5 flex items-center gap-2 truncate text-xs text-muted-foreground">
                 {/* Only shown while something is actually happening - idle needs no
@@ -416,10 +416,10 @@ export function HomeView({ status, refresh, notify }) {
         <section className="flex flex-wrap items-center justify-between gap-3 border border-border bg-card px-4 py-3">
           <div>
             <h2 className="text-sm font-medium">{t("Coming from another launcher?")}</h2>
-            <p className="mt-0.5 text-xs text-muted-foreground">{t("Bring your worlds, packs and servers into River. Your old profile stays untouched.")}</p>
+            <p className="mt-0.5 text-xs text-muted-foreground">{t("Bring your worlds, packs and servers into Daisy. Your old profile stays untouched.")}</p>
           </div>
           <Button variant="outline" size="sm" onClick={() => setSwitching(true)}>
-            <FolderInput className="size-3.5" />{t("Switch to River")}
+            <FolderInput className="size-3.5" />{t("Switch to Daisy")}
           </Button>
         </section>
 

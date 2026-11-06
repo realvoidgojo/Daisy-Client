@@ -106,7 +106,7 @@ function StorageSection({ notify }) {
       <div className="flex items-center justify-between gap-6 py-2.5">
         <div className="flex items-center gap-2 text-sm font-medium">
           <HardDrive className="size-3.5 text-muted-foreground" />
-          {t("Used by River Client")}
+          {t("Used by Daisy Client")}
         </div>
         <span className="font-mono text-xs text-muted-foreground">{formatBytes(total)}</span>
       </div>
@@ -638,7 +638,7 @@ export function SettingsView({ status, refresh, notify, startTour }) {
   if (modern) {
     const active = sections.find((entry) => entry.id === section) || sections[0];
     return (
-      <Page title={t("Settings")} description={`River Client ${status?.version || ""}`.trim()}>
+      <Page title={t("Settings")} description={`Daisy Client ${status?.version || ""}`.trim()}>
         <div className="flex items-start gap-8">
           <nav className="sticky top-0 flex w-52 shrink-0 flex-col gap-1" aria-label={t("Settings")}>
             {sections.map((entry) => {
@@ -660,7 +660,7 @@ export function SettingsView({ status, refresh, notify, startTour }) {
                 </button>
               );
             })}
-            <p className="mt-4 px-3 text-[11px] text-muted-foreground">{t("River Client by WyZ_EU")}</p>
+            <p className="mt-4 px-3 text-[11px] text-muted-foreground">{t("Daisy Client by realvoidgojo")}</p>
           </nav>
           <div className="min-w-0 max-w-3xl flex-1">{draw(active)}</div>
         </div>
@@ -669,12 +669,12 @@ export function SettingsView({ status, refresh, notify, startTour }) {
   }
 
   return (
-    <Page title={t("Settings")} description={`River Client ${status?.version || ""}`.trim()}>
+    <Page title={t("Settings")} description={`Daisy Client ${status?.version || ""}`.trim()}>
       <div className="space-y-6">
         {sections.map(draw)}
 
         <Separator />
-        <p className="pb-2 text-center text-xs text-muted-foreground">{t("River Client by WyZ_EU")}</p>
+        <p className="pb-2 text-center text-xs text-muted-foreground">{t("Daisy Client by realvoidgojo")}</p>
       </div>
     </Page>
   );

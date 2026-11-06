@@ -48,13 +48,13 @@ public abstract class MinecraftMixin {
 
     // Minecraft rebuilds its own window title ("Minecraft* <version>") on screen changes,
     // overriding any one-off setTitle. Overriding it at the source keeps the OS window
-    // titled "River Client <version>" for good.
+    // titled "Daisy Client <version>" for good.
     @Inject(method = "createTitle", at = @At("RETURN"), cancellable = true)
     private void clientcore$riverWindowTitle(CallbackInfoReturnable<String> cir) {
 //? if >=1.21.6 {
-        cir.setReturnValue("River Client " + SharedConstants.getCurrentVersion().name());
+        cir.setReturnValue("Daisy Client " + SharedConstants.getCurrentVersion().name());
 //?} else {
-/*        cir.setReturnValue("River Client " + SharedConstants.getCurrentVersion().getName());
+/*        cir.setReturnValue("Daisy Client " + SharedConstants.getCurrentVersion().getName());
 *///?}
     }
 }

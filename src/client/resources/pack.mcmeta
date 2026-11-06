@@ -1,6 +1,6 @@
 {
   "pack": {
-    "description": "River Client assets",
+    "description": "Daisy Client assets",
     "pack_format": ${pack_format}${pack_format_range}
   }
 }

@@ -84,7 +84,7 @@ function LoaderIcon({ id, className }) {
 }
 
 /*
-  What a new instance runs. Only "Fabric + River" gets River in game; plain Fabric, Forge and
+  What a new instance runs. Only "Fabric + Daisy" gets Daisy in game; plain Fabric, Forge and
   vanilla are Minecraft without it. `api` is what main lists versions under.
 */
 const LOADERS = [
@@ -227,10 +227,10 @@ function CreateInstanceDialog({ open, onOpenChange, onCreated, notify, versions 
   const description = loader === "river"
     ? t("A separate mods, worlds and settings folder on its own Fabric version.")
     : loader === "fabric"
-      ? t("Plain Fabric with your own mods, without River in game.")
+      ? t("Plain Fabric with your own mods, without Daisy in game.")
       : loader === "forge" || loader === "neoforge" || loader === "quilt"
-      ? t("Plain {loader} with your own mods, without River in game.", { loader: loaderOption(loader).label })
-        : t("Plain Minecraft, without River in game.");
+      ? t("Plain {loader} with your own mods, without Daisy in game.", { loader: loaderOption(loader).label })
+        : t("Plain Minecraft, without Daisy in game.");
 
   const [installNow, setInstallNow] = useState(true);
 
@@ -546,12 +546,12 @@ function InstanceRow({ instance, selected, onSelect, onAction, busyId, onOpen })
           </div>
           <div className="mt-0.5 flex items-center gap-2 text-xs text-muted-foreground">
             <span>{[instance.loader, instance.version].filter(Boolean).join(" ") || t("unknown version")}</span>
-            {/* Only ever set explicitly on import - existing River instances leave it
+            {/* Only ever set explicitly on import - existing Daisy instances leave it
                 undefined, so they are not mislabelled as unsupported. */}
             {instance.riverSupported === false ? (
               <span className="flex items-center gap-1 text-warning">
                 <TriangleAlert className="size-3" />
-                {t("River not available in game")}
+                {t("Daisy not available in game")}
               </span>
             ) : null}
           </div>

@@ -2,7 +2,7 @@
 @import "tw-animate-css";
 
 /*
- * River Client launcher - shadcn/ui on Tailwind v4.
+ * Daisy Client launcher - shadcn/ui on Tailwind v4.
  *
  * Tokens mirror the in-game client's ClientUi palette so the launcher and the
  * Right Shift menu read as one product. Keep them in sync with
@@ -98,7 +98,7 @@
   --radius-lg: calc(var(--radius) + 2px);
 
   --font-sans: Inter, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
-  /* River's pixel face, the one riverclient.xyz uses. Bundled in assets/fonts, so it works offline. */
+  /* Daisy's pixel face, the one riverclient.xyz uses. Bundled in assets/fonts, so it works offline. */
   --font-pixel: "Press Start 2P", ui-monospace, "Cascadia Mono", monospace;
 }
 
@@ -308,7 +308,7 @@
   --ring: #c4560f;
 }
 
-/* The River logo turns orange with the theme, wherever an <img> shows it. */
+/* The Daisy logo turns orange with the theme, wherever an <img> shows it. */
 :root[data-season="halloween"] img[src$="river-logo.png"] {
   content: url("../assets/river-logo-halloween.png");
 }

@@ -19,14 +19,14 @@ import { useT } from "../i18n/context.jsx";
 
 const STEPS = [
   {
-    title: "Welcome to River",
+    title: "Welcome to Daisy",
     body: "Quick tour of where things are. Replayable from Settings."
   },
   {
     target: "launch",
     view: "home",
     title: "Launch the game",
-    body: "Starts Minecraft with River loaded."
+    body: "Starts Minecraft with Daisy loaded."
   },
   {
     target: "rail-home",

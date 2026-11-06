@@ -4,7 +4,7 @@ import { api } from "../lib/useStatus";
 import { cn } from "../lib/utils";
 import { useSeasonId } from "../lib/seasons";
 
-/** River's own art, for an instance with no screenshots and no worlds yet. */
+/** Daisy's own art, for an instance with no screenshots and no worlds yet. */
 const FALLBACK_ART = ["../assets/home-bg-1.jpg", "../assets/home-bg-2.jpg"];
 
 /** Same instance, same picture: picked from the id rather than at random on every render. */

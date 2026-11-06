@@ -83,7 +83,7 @@ function renderStatus(status) {
   const statusText = status.setupRunning ? "Setting up" : status.running ? "Launching" : status.jarReady ? "Ready" : "Needs build";
   els.topStatus.textContent = statusText;
   els.subline.textContent = status.mode;
-  els.heroVersion.textContent = "River Client";
+  els.heroVersion.textContent = "Daisy Client";
   els.heroCopy.textContent = `${settings.selectedVersion} Fabric`;
   els.heroImage.style.backgroundImage = `linear-gradient(90deg, rgba(0,0,0,.78), rgba(0,0,0,.22)), url("${selectedVersion.image}")`;
 
@@ -473,8 +473,8 @@ document.querySelector("#create-pvp-instance").addEventListener("click", async (
     showToast("PvP setup failed", "Choose a Minecraft version first.");
     return;
   }
-  showToast("Creating River PvP", `${version} Fabric preset`);
-  appendLog(`[preset] Creating River PvP ${version}...`);
+  showToast("Creating Daisy PvP", `${version} Fabric preset`);
+  appendLog(`[preset] Creating Daisy PvP ${version}...`);
   const result = await window.clientcore.createPresetInstance({ presetId: "pvp", version });
   showToast(result.ok ? "PvP instance ready" : "PvP setup failed", result.message);
   appendLog(`[preset] ${result.message}`);
@@ -632,7 +632,7 @@ refresh().then(() => {
     appendLog(`[launcher] Project: ${currentStatus.root}`);
     appendLog(`[launcher] Instance: ${currentStatus.instancePath}`);
   } else {
-    appendLog("[launcher] Running in standalone mode with bundled Riv3r Client jar.");
+    appendLog("[launcher] Running in standalone mode with bundled Daisy Client jar.");
   }
 });
 

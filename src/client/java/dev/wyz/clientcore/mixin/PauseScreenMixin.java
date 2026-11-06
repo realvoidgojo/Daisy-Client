@@ -36,7 +36,7 @@ public abstract class PauseScreenMixin extends Screen {
             }
         }
 
-        Component label = Component.literal("River Client");
+        Component label = Component.literal("Daisy Client");
         int textW = this.font.width(label);
         int width = Math.max(anchorW, textW + 24);
         int x = anchorX + (anchorW - width) / 2;

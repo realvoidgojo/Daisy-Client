@@ -9,9 +9,9 @@ import { Separator } from "./ui/separator";
 import { useT } from "../i18n/context.jsx";
 
 /**
- * Shown when River refuses to launch because mods in the instance cannot load together.
+ * Shown when Daisy refuses to launch because mods in the instance cannot load together.
  *
- * River already worked all of this out before it blocked the launch: which mods clash,
+ * Daisy already worked all of this out before it blocked the launch: which mods clash,
  * which rule each one breaks, and which jar to disable to resolve it. None of that used
  * to reach the screen. People were told "1 confirmed mod compatibility issue must be
  * fixed before launch" and left to work out which of a hundred jars it meant, which is
@@ -71,7 +71,7 @@ export function ModCompatibility({ status, refresh, notify }) {
             {issues.length === 1 ? t("A mod conflict is stopping the game") : t("{count} mod conflicts are stopping the game", { count: issues.length })}
           </h2>
           <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
-            {t("Fabric refuses to start with these, so River stopped before Minecraft did.")}
+            {t("Fabric refuses to start with these, so Daisy stopped before Minecraft did.")}
           </p>
         </div>
       </div>
@@ -155,7 +155,7 @@ export function ModCompatibility({ status, refresh, notify }) {
           size="sm"
           variant="outline"
           disabled={Boolean(busy)}
-          title={t("Verify game files and River's own mods")}
+          title={t("Verify game files and Daisy's own mods")}
           onClick={() => run(
             "repair",
             () => api()?.repairInstance({ instanceId: status?.selectedInstance?.id || "" }),

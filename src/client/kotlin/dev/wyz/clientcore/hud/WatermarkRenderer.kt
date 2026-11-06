@@ -39,7 +39,7 @@ object WatermarkRenderer {
     private const val GAP = 5
     private const val MARGIN = 6
     private const val SHADOW = 0xEE000000.toInt()
-    private const val LABEL = "River Client"
+    private const val LABEL = "Daisy Client"
 
 //? if >=1.21.11 {
     private var logoTexture: Identifier? = null

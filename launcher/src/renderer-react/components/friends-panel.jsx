@@ -352,7 +352,7 @@ export function FriendsPanel({ status, refresh, notify, variant = "aside" }) {
           <h2 className={variant === "card" ? "text-[15px] font-extrabold" : "text-sm font-semibold"}>{showBlocked ? t("Blocked") : t("Friends")}</h2>
           <p className="text-[11px] text-muted-foreground" title={!reachable ? reason : undefined}>
             {!reachable
-              ? t("River unreachable")
+              ? t("Daisy unreachable")
               : showBlocked
                 ? t("{count} blocked", { count: blocked.length })
                 : !friends.length
@@ -471,7 +471,7 @@ export function FriendsPanel({ status, refresh, notify, variant = "aside" }) {
         <DialogContent className="max-w-sm">
           <DialogHeader>
             <DialogTitle>{t("Add friend")}</DialogTitle>
-            <DialogDescription>{t("Enter their Minecraft name or River friend code.")}</DialogDescription>
+            <DialogDescription>{t("Enter their Minecraft name or Daisy friend code.")}</DialogDescription>
           </DialogHeader>
           <div className="space-y-2">
             <Label htmlFor="friend-name">{t("Player name")}</Label>

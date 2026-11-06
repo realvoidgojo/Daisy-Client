@@ -4,7 +4,7 @@ import net.fabricmc.api.ClientModInitializer
 
 object ClientCore : ClientModInitializer {
     const val MOD_ID = "clientcore"
-    const val DISPLAY_NAME = "River Client"
+    const val DISPLAY_NAME = "Fabric + Daisy"
 
     val config
         get() = RiverRuntime.config

@@ -30,7 +30,7 @@ export function ImportInstancesDialog({ open, onOpenChange, refresh, notify, tar
   const importOne = async (entry) => {
     setImportingKey(entry.gameDir);
     try {
-      const res = await api()?.importExternalInstance({ ...entry, migrateToRiver: true, preferSourceVersion: true, targetVersion });
+      const res = await api()?.importExternalInstance({ ...entry, migrateToDaisy: true, preferSourceVersion: true, targetVersion });
       if (res && res.ok === false) notify(res.message || t("Import failed."), "error");
       else if (res) {
         notify(res.warning ? `${res.message} ${res.warning}` : res.message || t("Imported {name}.", { name: entry.name }), "info");
@@ -102,7 +102,7 @@ export function ImportInstancesDialog({ open, onOpenChange, refresh, notify, tar
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg gap-0 p-0">
         <DialogHeader className="px-6 pb-4 pt-6">
-          <DialogTitle>{t("Switch to River")}</DialogTitle>
+          <DialogTitle>{t("Switch to Daisy")}</DialogTitle>
           <DialogDescription>
             {t("Pick where you played before. Your old files are never changed.")}
           </DialogDescription>

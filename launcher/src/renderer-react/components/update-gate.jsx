@@ -46,7 +46,7 @@ export function UpdateGate({ status, notify }) {
         <DialogHeader>
           <DialogTitle>{t("Update required")}</DialogTitle>
           <DialogDescription>
-            {t("Install River Client {version} before you can play.", { version: update.latestVersion })}
+            {t("Install Daisy Client {version} before you can play.", { version: update.latestVersion })}
           </DialogDescription>
         </DialogHeader>
 

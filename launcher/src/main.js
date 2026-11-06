@@ -357,7 +357,7 @@ try {
   app.setVersion(clientModVersion);
 } catch { }
 const clientModJarName = `clientcore-${clientModVersion}.jar`;
-const launcherUserAgent = `RiverClientLauncher/${clientModVersion} (WyZ_EU)`;
+const launcherUserAgent = `RiverClientLauncher/${clientModVersion} (realvoidgojo)`;
 
 /*
   A stable, anonymous id for this installation.
@@ -776,7 +776,7 @@ function ensureBundledClientCoreMod(instancePath, mcVersion = instanceMcVersion(
     ...(manifest.mods[targetName] || {}),
     file: targetName,
     title: "Daisy",
-    author: "WyZ_EU",
+    author: "realvoidgojo",
     source: "river",
     disabled: false
   };
@@ -2832,7 +2832,7 @@ function readBundledPartnerServers() {
 async function fetchPartnerServers() {
   try {
     const res = await fetch(partnerDataUrl, {
-      headers: { "Accept": "application/json", "User-Agent": `RiverClientLauncher/${app.getVersion()} (WyZ_EU)` }
+      headers: { "Accept": "application/json", "User-Agent": `RiverClientLauncher/${app.getVersion()} (realvoidgojo)` }
     });
     if (!res.ok) throw new Error(`partner feed responded ${res.status}`);
     const data = await res.json();
@@ -3292,9 +3292,9 @@ function listRiverRuntimeEntries(instancePath) {
   const runtimeDir = path.join(instancePath, "river-runtime");
   if (!fs.existsSync(runtimeDir)) return [];
   const runtimeMeta = [
-    { pattern: /^clientcore-[\w.+-]*\.jar$/i, title: "Daisy", author: "WyZ_EU" },
-    { pattern: /^river-bootstrap-[\w.+-]*\.jar$/i, title: "River Bootstrap", author: "WyZ_EU" },
-    { pattern: /^river-ingame-ui-[\w.+-]*\.jar$/i, title: "River In-Game UI", author: "WyZ_EU" }
+    { pattern: /^clientcore-[\w.+-]*\.jar$/i, title: "Daisy", author: "realvoidgojo" },
+    { pattern: /^river-bootstrap-[\w.+-]*\.jar$/i, title: "River Bootstrap", author: "realvoidgojo" },
+    { pattern: /^river-ingame-ui-[\w.+-]*\.jar$/i, title: "River In-Game UI", author: "realvoidgojo" }
   ];
 
   return fs.readdirSync(runtimeDir)
@@ -3512,7 +3512,7 @@ async function searchModrinthProjectForIcon(query, projectType) {
   url.searchParams.set("limit", "1");
   url.searchParams.set("facets", JSON.stringify([[`project_type:${projectType}`]]));
   const response = await fetch(url, {
-    headers: { "User-Agent": `RiverClientLauncher/${app.getVersion()} (WyZ_EU)` }
+    headers: { "User-Agent": `RiverClientLauncher/${app.getVersion()} (realvoidgojo)` }
   });
   if (!response.ok) return null;
   const body = await response.json();
@@ -3523,7 +3523,7 @@ async function searchModrinthProjectForIcon(query, projectType) {
 async function cacheProjectIcon(projectKey, iconUrl) {
   try {
     const response = await fetch(iconUrl, {
-      headers: { "User-Agent": `RiverClientLauncher/${app.getVersion()} (WyZ_EU)` }
+      headers: { "User-Agent": `RiverClientLauncher/${app.getVersion()} (realvoidgojo)` }
     });
     if (!response.ok) return "";
 
@@ -6024,7 +6024,7 @@ ipcMain.handle("launcher:launch-client", async (_event, opts = {}) => {
 
     writeInstanceMeta(status.instancePath, {
       name: "Daisy",
-      author: "WyZ_EU",
+      author: "realvoidgojo",
       minecraft: status.settings.selectedVersion || DEFAULT_MC_VERSION,
       loader: "0.19.2",
       installedAt: new Date().toISOString(),
@@ -6442,7 +6442,7 @@ ipcMain.handle("launcher:sync-client-settings", () => {
   fs.mkdirSync(configDir, { recursive: true });
   fs.writeFileSync(path.join(configDir, "clientcore-launcher.json"), JSON.stringify({
     name: "Daisy",
-    author: "WyZ_EU",
+    author: "realvoidgojo",
     version: settings.selectedVersion,
     syncedAt: new Date().toISOString(),
     memoryMb: settings.memoryMb,
@@ -6826,7 +6826,7 @@ async function transferMods({ fromInstanceId, toInstanceId } = {}) {
     try {
       const response = await fetchWithTimeout("https://api.modrinth.com/v2/version_files", {
         method: "POST",
-        headers: { "Content-Type": "application/json", "User-Agent": `RiverClientLauncher/${app.getVersion()} (WyZ_EU)` },
+        headers: { "Content-Type": "application/json", "User-Agent": `RiverClientLauncher/${app.getVersion()} (realvoidgojo)` },
         body: JSON.stringify({ hashes: [...byHash.keys()], algorithm: "sha1" })
       }, 45000);
       if (response.ok) known = await response.json();
@@ -8495,7 +8495,7 @@ async function announceSocialStatus(settings = readSettings()) {
       signal: controller.signal,
       headers: {
         "Content-Type": "application/json",
-        "User-Agent": `RiverClientLauncher/${app.getVersion()} (WyZ_EU)`
+        "User-Agent": `RiverClientLauncher/${app.getVersion()} (realvoidgojo)`
       },
       body: JSON.stringify({ uuid: profile.id, name: profile.name, status })
     });
@@ -8932,7 +8932,7 @@ ipcMain.handle("launcher:get-friend-presence", async () => {
       signal: controller.signal,
       headers: {
         "Content-Type": "application/json",
-        "User-Agent": `RiverClientLauncher/${app.getVersion()} (WyZ_EU)`
+        "User-Agent": `RiverClientLauncher/${app.getVersion()} (realvoidgojo)`
       },
       body: JSON.stringify({ names: friends.map((f) => f.name).filter(Boolean) })
     });
@@ -9425,168 +9425,35 @@ function scheduleUpdatePushReconnect(onUpdate) {
 }
 
 function startLauncherUpdateWatcher() {
-  if (updateWatcher) clearInterval(updateWatcher);
-
-  const watch = async () => {
-    if (updateCheckRunning) return;
-    updateCheckRunning = true;
-    const wasBlocking = launcherUpdateState.blocking;
-    const previousVersion = launcherUpdateState.latestVersion;
-    try {
-      const next = await checkLauncherUpdates();
-      if (next.blocking || wasBlocking !== next.blocking || previousVersion !== next.latestVersion) {
-        emitStatus();
-      }
-    } finally {
-      updateCheckRunning = false;
-    }
-  };
-
-  /*
-    The check on startup is the one that matters, and it is also the one the server
-    counts - see the note on the socket below.
-
-    The interval behind it is now only a safety net. River is told when a release lands
-    rather than asking, so this exists for the case where the socket cannot be
-    established at all: a proxy that blocks WebSockets, or a runtime without one. Half
-    an hour is frequent enough to matter to somebody who leaves River open all day and
-    rare enough to be invisible in the figures. It used to be every fifteen seconds,
-    which filed nearly six thousand requests a day per person and buried the usage
-    numbers under its own noise.
-  */
-  watch();
-  updateWatcher = setInterval(watch, UPDATE_POLL_MS);
-  startUpdatePushSocket(watch);
+  // Remote River updater disabled for Daisy Client local development
 }
 
 async function checkLauncherUpdates() {
   const currentVersion = readBuildVersion();
-  try {
-    const bundledManifest = readBundledUpdateManifest();
-    const remoteManifest = await fetchRemoteUpdateManifest();
-    const manifest = selectLauncherUpdateManifest(currentVersion, bundledManifest, remoteManifest);
-    if (!manifest) {
-      launcherUpdateState = {
-        checkedAt: Date.now(),
-        available: false,
-        blocking: false,
-        required: false,
-        latestVersion: "",
-        currentVersion,
-        minimumVersion: "",
-        url: "",
-        installerUrl: "",
-        portableUrl: "",
-        linuxUrl: "",
-        packageUrl: "",
-        packageParts: [],
-        fileManifestUrl: "",
-        appFileManifestUrl: "",
-        appFileBaseUrl: "",
-        fileManifestSha256: "",
-        fileCount: 0,
-        packageSha256: "",
-        packageSize: 0,
-        message: "No public update metadata found yet."
-      };
-      return launcherUpdateState;
-    }
-    const payload = manifest.payload;
-    const latestVersion = String(payload.version || "");
-    const minimumVersion = String(payload.minimumVersion || payload.minVersion || "");
-    const available = Boolean(latestVersion && compareVersions(latestVersion, currentVersion) > 0);
-    const belowMinimum = Boolean(minimumVersion && compareVersions(minimumVersion, currentVersion) > 0);
-    const required = belowMinimum || Boolean(payload.required && available);
-    /*
-      A newer version existing is not a reason to stop somebody playing. This used to be
-      `available || required`, so every release locked everyone out of their own game until
-      they had downloaded it - which for this launcher means several hundred megabytes
-      before you can press Play.
-
-      An update is now offered and can wait. The only thing that still blocks is a version
-      that can no longer work: below the manifest's minimum, meaning its files are gone from
-      the bucket and there is nothing left to run or repair from, or a release explicitly
-      marked required because shipping it was the point.
-    */
-    const blocking = required;
-    const installerUrl = resolveUpdateUrl(payload.installerUrl || payload.url || "", updateManifestUrl);
-    const portableUrl = resolveUpdateUrl(payload.portableUrl || "", updateManifestUrl);
-    const linuxUrl = resolveUpdateUrl(payload.linuxUrl || "", updateManifestUrl);
-    const packageUrl = resolveUpdateUrl(payload.packageUrl || payload.appPackageUrl || "", updateManifestUrl);
-    // A package too big for a single upload is published as numbered parts instead.
-    const packageParts = (Array.isArray(payload.packageParts) ? payload.packageParts : [])
-      .map((part) => ({
-        url: resolveUpdateUrl(String(part?.url || ""), updateManifestUrl),
-        size: Number(part?.size || 0),
-        sha256: String(part?.sha256 || "")
-      }))
-      .filter((part) => part.url);
-    const fileManifestUrl = resolveUpdateUrl(payload.fileManifestUrl || payload.filesetUrl || "", updateManifestUrl);
-    const appFileManifestUrl = resolveUpdateUrl(payload.appFileManifestUrl || "", updateManifestUrl);
-    const appFileBaseUrl = resolveUpdateUrl(payload.appFileBaseUrl || "", updateManifestUrl);
-    const packageFile = payload.files && (payload.files.package || payload.files.appPackage);
-    const fileManifestFile = payload.files && (payload.files.fileManifest || payload.files.fileset);
-    const pageUrl = resolveUpdateUrl(payload.pageUrl || payload.homepage || "https://riverclient.xyz/", updateManifestUrl);
-    launcherUpdateState = {
-      checkedAt: Date.now(),
-      available,
-      blocking,
-      required,
-      latestVersion,
-      currentVersion,
-      minimumVersion,
-      url: appFileManifestUrl || fileManifestUrl || packageUrl || installerUrl || pageUrl,
-      installerUrl,
-      portableUrl,
-      linuxUrl,
-      packageUrl,
-      packageParts,
-      fileManifestUrl,
-      appFileManifestUrl,
-      appFileBaseUrl,
-      fileManifestSha256: String(fileManifestFile?.sha256 || payload.fileManifestSha256 || ""),
-      fileCount: Number(payload.fileCount || fileManifestFile?.count || 0),
-      packageSha256: String(packageFile?.sha256 || payload.packageSha256 || ""),
-      packageSize: Number(packageFile?.size || payload.packageSize || 0),
-      /*
-        No answer from any update server. The bundled manifest above is only this build's
-        own version, so comparing against it can only ever say "up to date" - which is what
-        players behind a broken connection (an antivirus or filter intercepting HTTPS, a
-        blocked domain) were told while they sat on an old version forever.
-      */
-      checkFailed: !remoteManifest,
-      message: blocking
-        ? `Daisy ${latestVersion || minimumVersion} is ready to install.`
-        : !remoteManifest
-          ? "Couldn't reach River's update server."
-          : "Daisy is up to date."
-    };
-  } catch (error) {
-    launcherUpdateState = {
-      checkedAt: Date.now(),
-      available: false,
-      blocking: false,
-      required: false,
-      latestVersion: "",
-      currentVersion,
-      minimumVersion: "",
-      url: "",
-      installerUrl: "",
-      portableUrl: "",
-      linuxUrl: "",
-      packageUrl: "",
-      packageParts: [],
-      fileManifestUrl: "",
-      appFileManifestUrl: "",
-      appFileBaseUrl: "",
-      fileManifestSha256: "",
-      fileCount: 0,
-      packageSha256: "",
-      packageSize: 0,
-      checkFailed: true,
-      message: `Update check failed: ${error.message}`
-    };
-  }
+  launcherUpdateState = {
+    checkedAt: Date.now(),
+    available: false,
+    blocking: false,
+    required: false,
+    latestVersion: currentVersion,
+    currentVersion,
+    minimumVersion: "",
+    url: "",
+    installerUrl: "",
+    portableUrl: "",
+    linuxUrl: "",
+    packageUrl: "",
+    packageParts: [],
+    fileManifestUrl: "",
+    appFileManifestUrl: "",
+    appFileBaseUrl: "",
+    fileManifestSha256: "",
+    fileCount: 0,
+    packageSha256: "",
+    packageSize: 0,
+    checkFailed: false,
+    message: "Daisy is up to date."
+  };
   return launcherUpdateState;
 }
 
@@ -9779,199 +9646,7 @@ async function prepareUpdateStagingDir(preferredDir) {
 }
 
 async function installLauncherUpdate(forcedUpdate = null) {
-  const update = forcedUpdate || await checkLauncherUpdates();
-  const updaterJob = isUpdaterMode ? readUpdaterJob(updaterJobPath) : null;
-  if (!forcedUpdate) emitStatus();
-
-  /*
-    Anything the user could see an Install button for has to actually install.
-
-    This used to check blocking, which was fine while blocking meant "there is an update".
-    It now means "you are below the minimum and must update", so every optional update -
-    which is nearly all of them - fell straight through this line and returned "already up
-    to date" with ok true. The button rendered, did nothing, and said nothing, because
-    nothing had technically failed.
-  */
-  if (!update.available && !update.blocking) {
-    return { ok: true, message: "Daisy is already up to date." };
-  }
-  if (!app.isPackaged) return { ok: false, message: "Package updates only run in the installed launcher build." };
-  if (!isUpdaterMode) {
-    try {
-      launchDedicatedUpdaterProcess(update);
-      appIsQuitting = true;
-      setTimeout(() => {
-        try { app.quit(); } catch { }
-      }, 120);
-      return { ok: true, message: "Daisy Updater is starting." };
-    } catch (error) {
-      return { ok: false, message: `Could not start Daisy Updater: ${error.message}` };
-    }
-  }
-  const differentialManifestUrl = update.fileManifestUrl || update.appFileManifestUrl || "";
-  const differentialBaseUrl = update.appFileBaseUrl || "";
-
-  const packageParts = Array.isArray(update.packageParts) ? update.packageParts : [];
-  const hasPackage = Boolean(update.packageUrl) || packageParts.length > 0;
-  if (!hasPackage && !differentialManifestUrl) {
-    return {
-      ok: false,
-      message: "This update was published without a smart file manifest or app package. Publish the release again, then try again."
-    };
-  }
-
-  const targetVersion = update.latestVersion || update.minimumVersion;
-  // Stage the download, extraction, apply script and rollback under the OS temp dir
-  // (%LOCALAPPDATA%\Temp) rather than %APPDATA%\Roaming. Roaming sits inside the folders
-  // Windows Controlled Folder Access (ransomware protection) guards, and CFA hard-blocks
-  // writes there with EPERM that no retry or fresh-folder fallback can beat - which is the
-  // recurring "EPERM, Permission denied ... \updates\<ver>\staging" failure. Temp is
-  // explicitly outside CFA, is the same volume as the install dir (so the apply copy never
-  // crosses drives), and is where every other temp operation in this app already stages.
-  // The app<->updater handoff file (updaterJobFilePath) stays in userData and is unaffected.
-  const updateRoot = path.join(os.tmpdir(), "river-client-updates");
-  const versionDir = path.join(updateRoot, sanitizeFilename(targetVersion || "latest"));
-  const packageFile = path.join(versionDir, "river-client-app.zip");
-  // May be swapped for a fresh path if Windows has this one locked (see prepareUpdateStagingDir).
-  let extractDir = path.join(versionDir, "staging", `${Date.now()}-${process.pid}`);
-
-  ofs.mkdirSync(versionDir, { recursive: true });
-  const exePath = String(updaterJob?.exePath || app.getPath("exe"));
-  const installDir = String(updaterJob?.installDir || path.dirname(exePath));
-
-  // Most installs are per-user (%LOCALAPPDATA%) and never need this, but if River was
-  // installed somewhere the current user can't write to (e.g. Program Files), relaunch
-  // the updater elevated via a native UAC prompt before touching any install files.
-  if (!canWriteToInstallDir(installDir)) {
-    await relaunchUpdaterElevated(updaterJobPath);
-    setTimeout(() => { try { app.exit(0); } catch { } }, 120);
-    return { ok: true, message: "Requesting administrator permission to continue the update." };
-  }
-
-  let applyMode = "package";
-  let releaseManifestPath = "";
-
-  if (differentialManifestUrl) {
-    try {
-      emit("launcher:log", `[update] Fetching Daisy ${targetVersion} file manifest...`);
-      const remoteFileManifest = await fetchRemoteJson(differentialManifestUrl);
-      if (update.fileManifestSha256) {
-        verifyJsonSha256(remoteFileManifest, update.fileManifestSha256);
-      }
-      const normalizedFileManifest = {
-        ...remoteFileManifest,
-        files: Array.isArray(remoteFileManifest?.files)
-          ? remoteFileManifest.files
-            .map((entry) => ({
-              ...entry,
-              path: normalizeUpdateFilePath(entry?.path || ""),
-              url: String(entry?.url || "").trim()
-                || (differentialBaseUrl
-                  ? new URL(normalizeUpdateFilePath(entry?.path || ""), differentialBaseUrl).toString()
-                  : "")
-            }))
-            .filter((entry) => entry.path && entry.url)
-          : []
-      };
-      const filePlan = await buildDifferentialUpdatePlan(normalizedFileManifest, installDir);
-      releaseManifestPath = path.join(versionDir, "release-files.json");
-      extractDir = await prepareUpdateStagingDir(extractDir);
-      ofs.writeFileSync(releaseManifestPath, JSON.stringify({
-        version: targetVersion,
-        files: filePlan.files.map((entry) => ({ path: entry.path })),
-        changedFiles: filePlan.downloads.map((entry) => entry.path)
-      }, null, 2));
-      await downloadChangedUpdateFiles(filePlan, extractDir, targetVersion);
-      applyMode = "delta";
-    } catch (error) {
-      emit("launcher:log", `[update] Smart update fallback: ${error.message}`);
-    }
-  }
-
-  if (applyMode !== "delta") {
-    if (!hasPackage) {
-      return { ok: false, message: "Smart update was unavailable and no full app package was published for fallback." };
-    }
-    emitActivity({ title: "Updating Daisy", detail: `Starting ${targetVersion} download...`, current: 0, total: update.packageSize || 0, unit: "bytes" });
-    emit("launcher:log", `[update] Downloading Daisy ${targetVersion} package...`);
-    if (packageParts.length) {
-      await downloadUpdatePackageParts(packageParts, packageFile, targetVersion);
-    } else {
-      await downloadUpdatePackage(update.packageUrl, packageFile, {
-        totalBytes: update.packageSize,
-        version: targetVersion
-      });
-    }
-    emitActivity({ title: "Updating Daisy", detail: "Verifying update package...", current: 2, total: 5 });
-    if (update.packageSha256) verifyFileSha256(packageFile, update.packageSha256);
-
-    emitActivity({ title: "Updating Daisy", detail: "Unpacking update package...", current: 3, total: 5 });
-    extractDir = await prepareUpdateStagingDir(extractDir);
-    await runPowerShell([
-      "-NoProfile",
-      "-ExecutionPolicy", "Bypass",
-      "-Command",
-      `Expand-Archive -LiteralPath '${escapePowerShell(packageFile)}' -DestinationPath '${escapePowerShell(extractDir)}' -Force`
-    ]);
-  }
-
-  if (path.resolve(installDir) === path.resolve(extractDir)) {
-    throw new Error(`Updater resolved the install folder to its own staging directory (${installDir}).`);
-  }
-
-  /** Must match electron-builder `win.executableName` + .exe (the app inside the update zip). */
-  const packagedMainExe = path.join(installDir, "RiverClient.exe");
-  const relaunchExe = packagedMainExe;
-  const relaunchFallbackExe = path.join(installDir, path.basename(exePath));
-  const scriptPath = path.join(versionDir, "apply-update.ps1");
-  const bootstrapPath = path.join(versionDir, "apply-update.cmd");
-  const logPath = path.join(versionDir, "apply-update.log");
-  const script = buildApplyUpdateScript({
-    pid: process.pid,
-    sourceDir: extractDir,
-    installDir,
-    relaunchExe,
-    relaunchFallbackExe,
-    logPath,
-    updateRoot,
-    mode: applyMode,
-    manifestPath: releaseManifestPath
-  });
-
-  const vbsPath = path.join(versionDir, "apply-update-launch.vbs");
-  ofs.writeFileSync(scriptPath, script, "utf8");
-  ofs.writeFileSync(bootstrapPath, buildApplyUpdateBootstrap({ scriptPath, logPath }), "utf8");
-  ofs.writeFileSync(vbsPath, buildApplyUpdateVbs({ bootstrapPath }), "utf8");
-  emitActivity({
-    title: "Updating Daisy",
-    detail: applyMode === "delta"
-      ? "Applying downloaded files and cleaning old launcher resources..."
-      : "Applying changed files and removing files no longer used...",
-    current: 4,
-    total: 5
-  });
-  emit("launcher:log", "[update] Applying changed files, deleting removed files, and restarting Daisy...");
-
-  const wscriptExe = path.join(process.env.SystemRoot || "C:\\Windows", "System32", "wscript.exe");
-  spawn(wscriptExe, ["//B", "//Nologo", vbsPath], {
-    detached: true,
-    stdio: "ignore",
-    windowsHide: true
-  }).unref();
-
-  emit("launcher:log", "[update] Update handoff complete. Closing Daisy so the updated build can relaunch.");
-  try {
-    if (mainWindow && !mainWindow.isDestroyed()) {
-      mainWindow.hide();
-      mainWindow.destroy();
-    }
-  } catch { }
-  setTimeout(() => {
-    try { app.exit(0); } catch { }
-    try { process.exit(0); } catch { }
-  }, 120);
-  try { app.quit(); } catch { }
-  return { ok: true, message: "Daisy is restarting to finish the update." };
+  return { ok: true, message: "Daisy is already up to date." };
 }
 
 /** Preview-only: animates a fake update so the updater window can be inspected without a real release. */
@@ -10485,7 +10160,7 @@ async function downloadFileWithProgress(url, target, options = {}) {
   let response;
   try {
     response = await fetch(url, {
-      headers: { "User-Agent": `RiverClientLauncher/${app.getVersion()} (WyZ_EU)` },
+      headers: { "User-Agent": `RiverClientLauncher/${app.getVersion()} (realvoidgojo)` },
       signal: controller.signal
     });
   } catch (error) {
@@ -11667,7 +11342,7 @@ async function fetchFabricProfileJson(versionId, loaderVersion) {
 
 async function fetchJson(url) {
   const response = await fetchWithTimeout(url, {
-    headers: { "User-Agent": `RiverClientLauncher/${app.getVersion()} (WyZ_EU)` }
+    headers: { "User-Agent": `RiverClientLauncher/${app.getVersion()} (realvoidgojo)` }
   }, 45000);
   if (!response.ok) throw new Error(`Request failed with ${response.status}: ${url}`);
   return response.json();

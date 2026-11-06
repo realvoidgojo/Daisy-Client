@@ -1,0 +1,126 @@
+{
+  "format": "daisy.artifacts.v1",
+  "client": "Daisy Client",
+  "author": "realvoidgojo",
+  "updatedAt": "2026-11-06T15:37:57.026Z",
+  "artifacts": {
+    "1.21": {
+      "minecraft": "1.21",
+      "version": "0.2.8.1",
+      "fileName": "clientcore-0.2.8.1+1.21.jar",
+      "path": "local-artifacts\\1.21\\clientcore-0.2.8.1+1.21.jar",
+      "sha256": "5b1de8a3fcb8eb50f58bb850dc154704cf5e93df72bd1a0baa90092f4657cc74",
+      "builtAt": "2026-11-05T16:33:45.610Z",
+      "status": "ready"
+    },
+    "1.21.1": {
+      "minecraft": "1.21.1",
+      "version": "0.2.8.1",
+      "fileName": "clientcore-0.2.8.1+1.21.1.jar",
+      "path": "local-artifacts\\1.21.1\\clientcore-0.2.8.1+1.21.1.jar",
+      "sha256": "bb0e7f022f9b60bab3cbba92eb69e188db94bbdd8237c5dd246d1f49b55d6ac7",
+      "builtAt": "2026-11-05T16:33:54.659Z",
+      "status": "ready"
+    },
+    "1.21.2": {
+      "minecraft": "1.21.2",
+      "version": "0.2.8.1",
+      "fileName": "clientcore-0.2.8.1+1.21.2.jar",
+      "path": "local-artifacts\\1.21.2\\clientcore-0.2.8.1+1.21.2.jar",
+      "sha256": "3899e103a14590301201ad61737522d5ad5e9cc63d2f793191555a07a6918cfa",
+      "builtAt": "2026-11-05T16:34:08.507Z",
+      "status": "ready"
+    },
+    "1.21.3": {
+      "minecraft": "1.21.3",
+      "version": "0.2.8.1",
+      "fileName": "clientcore-0.2.8.1+1.21.3.jar",
+      "path": "local-artifacts\\1.21.3\\clientcore-0.2.8.1+1.21.3.jar",
+      "sha256": "a98250fa627d643944a977d99a0419c3041743b3f8496940b7a0789e8ea85cb9",
+      "builtAt": "2026-11-05T16:34:13.719Z",
+      "status": "ready"
+    },
+    "1.21.4": {
+      "minecraft": "1.21.4",
+      "version": "0.2.8.1",
+      "fileName": "clientcore-0.2.8.1+1.21.4.jar",
+      "path": "local-artifacts\\1.21.4\\clientcore-0.2.8.1+1.21.4.jar",
+      "sha256": "9e912896c6176c792124e79abcf0f99853e6530c90c6ae0c8dd8d20c7838e88f",
+      "builtAt": "2026-11-05T16:34:17.704Z",
+      "status": "ready"
+    },
+    "1.21.5": {
+      "minecraft": "1.21.5",
+      "version": "0.2.8.1",
+      "fileName": "clientcore-0.2.8.1+1.21.5.jar",
+      "path": "local-artifacts\\1.21.5\\clientcore-0.2.8.1+1.21.5.jar",
+      "sha256": "44d10a17fd673551067bb4eb2561426d230ca35cb7b993b43cd31469581b0bfc",
+      "builtAt": "2026-11-05T16:34:23.939Z",
+      "status": "ready"
+    },
+    "1.21.6": {
+      "minecraft": "1.21.6",
+      "version": "0.2.8.1",
+      "fileName": "clientcore-0.2.8.1+1.21.6.jar",
+      "path": "local-artifacts\\1.21.6\\clientcore-0.2.8.1+1.21.6.jar",
+      "sha256": "6d91ca1433894d69f956772e9cf043aa061408650651e0eb3b293a5e25fc60fc",
+      "builtAt": "2026-11-05T16:35:31.159Z",
+      "status": "ready"
+    },
+    "1.21.7": {
+      "minecraft": "1.21.7",
+      "version": "0.2.8.1",
+      "fileName": "clientcore-0.2.8.1+1.21.7.jar",
+      "path": "local-artifacts\\1.21.7\\clientcore-0.2.8.1+1.21.7.jar",
+      "sha256": "bdb1d08263ee12b9b84ae7f304de79a573af0f4cd41d6f4a7cc1856942648dae",
+      "builtAt": "2026-11-05T16:35:31.723Z",
+      "status": "ready"
+    },
+    "1.21.8": {
+      "minecraft": "1.21.8",
+      "version": "0.2.8.1",
+      "fileName": "clientcore-0.2.8.1+1.21.8.jar",
+      "path": "local-artifacts\\1.21.8\\clientcore-0.2.8.1+1.21.8.jar",
+      "sha256": "a832beae8c2be1b0c88ab42af1b167410fe3894050e28f7ca76b7666e4907968",
+      "builtAt": "2026-11-05T16:35:38.146Z",
+      "status": "ready"
+    },
+    "1.21.10": {
+      "minecraft": "1.21.10",
+      "version": "0.2.8.1",
+      "fileName": "clientcore-0.2.8.1+1.21.10.jar",
+      "path": "local-artifacts\\1.21.10\\clientcore-0.2.8.1+1.21.10.jar",
+      "sha256": "55c7442be48ee1030133b5b1ee23417581d04abf0a7cbc130a00a56bf1e7f012",
+      "builtAt": "2026-11-05T16:34:02.843Z",
+      "status": "ready"
+    },
+    "1.21.11": {
+      "minecraft": "1.21.11",
+      "version": "0.2.8.1",
+      "fileName": "clientcore-0.2.8.1+1.21.11.jar",
+      "path": "local-artifacts\\1.21.11\\clientcore-0.2.8.1+1.21.11.jar",
+      "sha256": "924ed8890f619740eb0678224960d14598a7214648d8e71c57c1a99ecd336062",
+      "builtAt": "2026-11-06T15:37:57.024Z",
+      "status": "ready",
+      "size": 8304344
+    },
+    "26.1.2": {
+      "minecraft": "26.1.2",
+      "version": "0.2.8.1",
+      "fileName": "clientcore-0.2.8.1+26.1.2.jar",
+      "path": "local-artifacts\\26.1.2\\clientcore-0.2.8.1+26.1.2.jar",
+      "sha256": "67960392e23982aa8030e93fe96f93f0da916789a199f5a6799351dd3281953b",
+      "builtAt": "2026-11-05T16:35:41.942Z",
+      "status": "ready"
+    },
+    "26.2": {
+      "minecraft": "26.2",
+      "version": "0.2.8.1",
+      "fileName": "clientcore-0.2.8.1+26.2.jar",
+      "path": "local-artifacts\\26.2\\clientcore-0.2.8.1+26.2.jar",
+      "sha256": "2f72345cd8417c49322735654c336de9809bd988d30caec05587ea24dbebf9a6",
+      "builtAt": "2026-11-05T16:35:56.766Z",
+      "status": "ready"
+    }
+  }
+}

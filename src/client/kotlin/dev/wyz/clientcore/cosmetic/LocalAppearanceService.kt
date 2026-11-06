@@ -29,17 +29,61 @@ object LocalAppearanceService {
     }
 
     /**
-     * Checks if the given UUID matches the active local Minecraft user/player.
+     * Checks if the given UUID or name matches the active local Minecraft user/player.
+     * Matches by UUID, entity ID, or username to support offline/proxy/Bungee/Velocity SMPs.
      */
     @JvmStatic
-    fun isLocalPlayer(uuid: UUID?): Boolean {
+    fun isLocalPlayer(uuid: UUID?, entityId: Int = -1, name: String? = null): Boolean {
+        val client = Minecraft.getInstance()
+        val localPlayer = runCatching { client.player }.getOrNull()
+
+        // 1. Check entity instance identity or entity ID
+        if (localPlayer != null && entityId != -1 && localPlayer.id == entityId) {
+            return true
+        }
+
+        // 2. Check local user name / profile name
+        val activeUserName = runCatching { client.user.name }.getOrNull()
+        if (!name.isNullOrBlank() && !activeUserName.isNullOrBlank()) {
+            if (activeUserName.equals(name.trim(), ignoreCase = true)) {
+                return true
+            }
+        }
+        if (localPlayer != null && !name.isNullOrBlank()) {
+            val localPlayerName = runCatching { localPlayer.gameProfile.name }.getOrNull()
+            if (localPlayerName != null && localPlayerName.equals(name.trim(), ignoreCase = true)) {
+                return true
+            }
+        }
+
         if (uuid == null) return false
-        val userProfileId = runCatching { Minecraft.getInstance().user.profileId }.getOrNull()
+
+        // 3. Check user profile UUID
+        val userProfileId = runCatching { client.user.profileId }.getOrNull()
         if (userProfileId != null && userProfileId == uuid) {
             return true
         }
-        val localPlayerUuid = runCatching { Minecraft.getInstance().player?.uuid }.getOrNull()
-        return localPlayerUuid != null && localPlayerUuid == uuid
+
+        // 4. Check in-world player UUID
+        val localPlayerUuid = runCatching { localPlayer?.uuid }.getOrNull()
+        if (localPlayerUuid != null && localPlayerUuid == uuid) {
+            return true
+        }
+
+        // 5. Check offline UUID derived from user name
+        if (!activeUserName.isNullOrBlank()) {
+            val offlineUuid = UUID.nameUUIDFromBytes("OfflinePlayer:$activeUserName".toByteArray(Charsets.UTF_8))
+            if (offlineUuid == uuid) {
+                return true
+            }
+        }
+
+        return false
+    }
+
+    @JvmStatic
+    fun isLocalPlayer(uuid: UUID?): Boolean {
+        return isLocalPlayer(uuid, -1, null)
     }
 
     /**

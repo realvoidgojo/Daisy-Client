@@ -300,7 +300,7 @@ function App() {
           <Backdrop season={season?.id || null} />
           <ModernRail view={railView} setView={go} status={status} />
           <div className="flex min-w-0 flex-1 flex-col">
-            <TitleBar title="River Client" modern />
+            <TitleBar title="Daisy Client" modern />
             <UpdateBanner status={status} notify={notify} />
             <main className="min-h-0 min-w-0 flex-1">{content}</main>
             <ActivityBar />
@@ -309,7 +309,7 @@ function App() {
         </div>
       ) : (
         <div className="flex h-full flex-col overflow-hidden bg-background">
-          <TitleBar title="River Client" />
+          <TitleBar title="Daisy Client" />
           <UpdateBanner status={status} notify={notify} />
           <div className="flex min-h-0 flex-1">
             <Rail view={railView} setView={go} />

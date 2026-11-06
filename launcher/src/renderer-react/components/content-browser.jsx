@@ -404,7 +404,7 @@ export function ContentBrowser({ status, refresh, notify }) {
     <div className={cn("border border-dashed border-border p-6 text-center", modern ? "rounded-xl" : "rounded-md")}>
       <p className="text-sm font-medium">{t("CurseForge search is unavailable")}</p>
       <p className="mx-auto mt-1 max-w-sm text-xs text-muted-foreground">
-        {t("River no longer includes an API key in the launcher. Search Modrinth instead.")}
+        {t("Daisy no longer includes an API key in the launcher. Search Modrinth instead.")}
       </p>
       <Button className="mt-3" size="sm" variant="outline" onClick={() => setSource("modrinth")}>
         {t("Search Modrinth")}

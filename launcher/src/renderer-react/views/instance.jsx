@@ -98,7 +98,7 @@ function ContentRow({ entry, kind, onToggle, onRemove, busy }) {
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2">
           <span className={cn("truncate text-sm", modern ? "font-bold" : "font-medium")}>{contentName(entry)}</span>
-          {entry.required ? <Badge variant="secondary">{t("Required by River")}</Badge> : null}
+          {entry.required ? <Badge variant="secondary">{t("Required by Daisy")}</Badge> : null}
           {disabled ? <Badge variant="outline">{t("Disabled")}</Badge> : null}
           {update ? <Badge variant="success">{t("Update available")}</Badge> : null}
         </div>
@@ -112,7 +112,7 @@ function ContentRow({ entry, kind, onToggle, onRemove, busy }) {
       </div>
 
       <div className="flex shrink-0 items-center gap-1">
-        {/* River's own mod is what makes the instance a River instance, so it is never
+        {/* Daisy's own mod is what makes the instance a Daisy instance, so it is never
             togglable or removable from here - repairing re-adds it anyway. */}
         {kind === "mods" && !entry.required ? (
           <div className="flex items-center gap-2 mr-2">
@@ -384,7 +384,7 @@ export function InstanceView({ instanceId, status, refresh, notify, onBack }) {
     );
   }
 
-  // Forge and vanilla run without River on purpose, and vanilla has no mods or shaders.
+  // Forge and vanilla run without Daisy on purpose, and vanilla has no mods or shaders.
   const plainInstance = isPlainInstance(instance);
   const tabs = instance.loader === "vanilla" ? TABS.filter((entry) => entry.id === "resourcepacks" || entry.id === "worlds") : TABS;
   const tab = tabs.some((entry) => entry.id === pickedTab) ? pickedTab : tabs[0].id;
@@ -537,11 +537,11 @@ export function InstanceView({ instanceId, status, refresh, notify, onBack }) {
                   {plainInstance ? null : <RefreshCw className="size-3" />}
                 </button>
                 {plainInstance ? (
-                  <p className="mt-2 text-[11px] text-muted-foreground">{t("Without River in game")}</p>
+                  <p className="mt-2 text-[11px] text-muted-foreground">{t("Without Daisy in game")}</p>
                 ) : instance.riverSupported === false ? (
                   <div className="mt-2 flex items-start gap-1.5 text-[11px] leading-relaxed text-warning">
                     <TriangleAlert className="mt-px size-3 shrink-0" />
-                    <span>{instance.riverWarning || t("River will not load in game on this instance.")}</span>
+                    <span>{instance.riverWarning || t("Daisy will not load in game on this instance.")}</span>
                   </div>
                 ) : null}
               </div>
@@ -720,11 +720,11 @@ export function InstanceView({ instanceId, status, refresh, notify, onBack }) {
               {details.selected ? <Badge variant="success">{t("Selected")}</Badge> : null}
             </div>
             {plainInstance ? (
-              <p className="mt-1.5 text-[11px] text-muted-foreground">{t("Without River in game")}</p>
+              <p className="mt-1.5 text-[11px] text-muted-foreground">{t("Without Daisy in game")}</p>
             ) : instance.riverSupported === false ? (
               <div className="mt-1.5 flex items-start gap-1.5 text-[11px] leading-relaxed text-warning">
                 <TriangleAlert className="mt-px size-3 shrink-0" />
-                <span>{instance.riverWarning || t("River will not load in game on this instance.")}</span>
+                <span>{instance.riverWarning || t("Daisy will not load in game on this instance.")}</span>
               </div>
             ) : null}
           </div>

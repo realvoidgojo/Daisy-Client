@@ -110,7 +110,7 @@ function Hero({ status, card, busy, launch, stop, onPick, notify }) {
         <div className="flex min-w-0 flex-1 flex-col justify-end px-6 py-7">
           {state ? <p className={cn("m-kicker mb-3", running ? "text-success" : "text-primary")}>{state}</p> : null}
           <h2 className="truncate text-[32px] font-extrabold leading-[1.05] tracking-[-0.025em]">
-            {selected?.name || "River Default"}
+            {selected?.name || "Daisy Default"}
           </h2>
           <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
             {launching ? (
@@ -194,7 +194,7 @@ function Hero({ status, card, busy, launch, stop, onPick, notify }) {
 
 /** Mods tile: the selected instance's own mod icons as its picture, opening the browser. */
 function ModsTile({ status, count, onOpen }) {
-  const name = status?.selectedInstance?.name || "River Default";
+  const name = status?.selectedInstance?.name || "Daisy Default";
   const t = useT();
   const icons = useMemo(() => {
     const seen = new Set();
@@ -409,7 +409,7 @@ export function ModernHomeView({ status, refresh, notify, go, openInstance }) {
               <>
                 {t("Welcome back,")} <span className="text-primary">{profile.name}</span>
               </>
-            ) : t("Welcome to River")}
+            ) : t("Welcome to Daisy")}
           </h1>
         </header>
 
@@ -521,12 +521,12 @@ export function ModernHomeView({ status, refresh, notify, go, openInstance }) {
               <div className="min-w-0">
                 <h2 className="text-sm font-semibold">{t("Coming from another launcher?")}</h2>
                 <p className="mt-0.5 text-xs text-muted-foreground">
-                  {t("Bring your worlds, packs and servers into River. Your old profile stays untouched.")}
+                  {t("Bring your worlds, packs and servers into Daisy. Your old profile stays untouched.")}
                 </p>
               </div>
             </div>
             <Button variant="outline" size="sm" onClick={() => setSwitching(true)}>
-              {t("Switch to River")}
+              {t("Switch to Daisy")}
             </Button>
           </section>
         </div>
@@ -548,7 +548,7 @@ export function ModernHomeView({ status, refresh, notify, go, openInstance }) {
       <ContentDialog
         open={contentOpen}
         onOpenChange={setContentOpen}
-        title={t("Add content to {name}", { name: selected?.name || "River Default" })}
+        title={t("Add content to {name}", { name: selected?.name || "Daisy Default" })}
         description={t("Browse Modrinth and CurseForge for mods, resource packs and shaders.")}
         status={status}
         refresh={refresh}
