@@ -436,7 +436,7 @@ let discordRpcState = {
 
   Keep in step with site.mcVersions on the website, which advertises this list.
 */
-const SUPPORTED_MC_VERSIONS = ["26.2", "26.1.2", "1.21.11", "1.21.8", "1.21.7", "1.21.6", "1.21.5", "1.21.4", "1.21.3", "1.21.2", "1.21.1", "1.21"];
+const SUPPORTED_MC_VERSIONS = ["26.2", "26.1.2", "1.21.11", "1.21.10", "1.21.8", "1.21.7", "1.21.6", "1.21.5", "1.21.4", "1.21.3", "1.21.2", "1.21.1", "1.21"];
 /*
   Newest first for display, but the default is pinned rather than taken from the front
   of the list: 26.x is new enough that it should be something you pick, not something
