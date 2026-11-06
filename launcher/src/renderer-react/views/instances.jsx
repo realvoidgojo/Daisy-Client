@@ -233,6 +233,7 @@ function CreateInstanceDialog({ open, onOpenChange, onCreated, notify, versions 
         : t("Plain Minecraft, without Daisy in game.");
 
   const [installNow, setInstallNow] = useState(true);
+  const [daisySkin, setDaisySkin] = useState(false);
 
   const create = async () => {
     if (!version) return;
@@ -243,6 +244,7 @@ function CreateInstanceDialog({ open, onOpenChange, onCreated, notify, versions 
         version,
         loader: loaderOption(loader).loader,
         river: loader === "river",
+        daisySkin: (loader === "river" || loader === "fabric") && daisySkin,
         loaderVersion: loader === "river" || loader === "vanilla" ? undefined : plainEntry?.loaderVersion
       });
       if (res && res.ok === false) {
@@ -363,6 +365,21 @@ function CreateInstanceDialog({ open, onOpenChange, onCreated, notify, versions 
                 </div>
               ))}
             </div>
+            )}
+
+            
+            {/* Daisy Skin feature toggle for Fabric-based loaders */}
+            {(loader === "river" || loader === "fabric") && (
+              <div className="flex items-center justify-between rounded-lg border border-border/60 bg-card/60 px-3 py-2">
+                <div className="space-y-0.5">
+                  <div className="flex items-center gap-1.5">
+                    <Label htmlFor="daisy-skin-toggle" className="text-xs font-semibold">{t("Daisy Skin")}</Label>
+                    <Badge variant="outline" className="text-[10px] text-primary border-primary/40">{t("Client-side")}</Badge>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground">{t("Use wardrobe skin in this instance. Works offline & on SMPs.")}</p>
+                </div>
+                <Switch id="daisy-skin-toggle" checked={daisySkin} onCheckedChange={setDaisySkin} />
+              </div>
             )}
 
             <div className="flex items-center justify-between rounded-lg border border-border/60 bg-card/60 px-3 py-2">

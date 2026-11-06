@@ -719,6 +719,62 @@ function pruneRiverModCache(cacheDir, mcVersion, keepName) {
   } catch { }
 }
 
+
+// --- DAISY SKIN SEPARATE OPTIONAL MOD MANAGEMENT ---
+function resolveDaisySkinJar(mcVersion) {
+  const v = String(mcVersion || DEFAULT_MC_VERSION).trim();
+  const root = findClientRoot();
+  const candidates = [
+    root ? path.join(root, "local-artifacts", "skin", v, `daisy-skin-0.1.0+${v}.jar`) : "",
+    path.join(__dirname, "bundled", "skin", v, `daisy-skin-0.1.0+${v}.jar`),
+    process.resourcesPath ? path.join(process.resourcesPath, "bundled", "skin", v, `daisy-skin-0.1.0+${v}.jar`) : "",
+    path.join(app.getAppPath(), "bundled", "skin", v, `daisy-skin-0.1.0+${v}.jar`)
+  ].filter(Boolean);
+
+  for (const c of candidates) {
+    if (fs.existsSync(c)) return c;
+  }
+  return "";
+}
+
+function ensureDaisySkinMod(instancePath, mcVersion, enableSkin = true) {
+  try {
+    if (!instancePath || !fs.existsSync(instancePath)) return;
+    const modsDir = path.join(instancePath, "mods");
+    fs.mkdirSync(modsDir, { recursive: true });
+
+    const skinJarPattern = /^daisy-skin-[w.+-]*.jar(.disabled)?$/i;
+    // If skin is disabled or should not be installed, remove it or rename to .disabled
+    if (!enableSkin) {
+      for (const file of fs.readdirSync(modsDir)) {
+        if (skinJarPattern.test(file)) {
+          try { fs.rmSync(path.join(modsDir, file), { force: true }); } catch {}
+        }
+      }
+      return;
+    }
+
+    const source = resolveDaisySkinJar(mcVersion);
+    if (!source || !fs.existsSync(source)) return;
+
+    const targetName = path.basename(source);
+    const targetPath = path.join(modsDir, targetName);
+
+    // Clean up older skin jars
+    for (const file of fs.readdirSync(modsDir)) {
+      if (skinJarPattern.test(file) && file !== targetName) {
+        try { fs.rmSync(path.join(modsDir, file), { force: true }); } catch {}
+      }
+    }
+
+    if (!fs.existsSync(targetPath)) {
+      fs.copyFileSync(source, targetPath);
+    }
+  } catch (err) {
+    emit("launcher:log", `[daisy-skin] Error ensuring skin mod: ${err.message}`);
+  }
+}
+
 function ensureBundledClientCoreMod(instancePath, mcVersion = instanceMcVersion(instancePath)) {
   const root = String(instancePath || "");
   if (!root) return "";
@@ -4688,6 +4744,7 @@ function createInstance(request, options = {}) {
   const requestedLoader = String(request && request.loader || "fabric").toLowerCase();
   const loader = LAUNCHABLE_LOADERS.includes(requestedLoader) ? requestedLoader : "fabric";
   const river = loader === "fabric" && request?.river !== false;
+  const daisySkin = loader === "fabric" && Boolean(request && request.daisySkin);
   const loaderVersion = river || loader === "vanilla" ? "" : String(request && request.loaderVersion || "").trim();
   const defaultName = `${river ? "Daisy" : loader === "vanilla" ? "Minecraft" : loaderLabel(loader)} ${version}`;
   const rawName = String(request && request.name || defaultName).trim() || defaultName;
@@ -4703,6 +4760,8 @@ function createInstance(request, options = {}) {
     loader,
     loaderVersion,
     river,
+    daisySkin,
+    daisySkinVersion: daisySkin ? "0.1.0" : undefined,
     path: instancePath,
     createdAt: now,
     updatedAt: now
@@ -4718,6 +4777,7 @@ function createInstance(request, options = {}) {
   // deliberately NOT copied - a new instance starts with a clean mods/worlds set.
   // A modpack brings its own settings, so it starts from those instead.
   const inherited = options.inherit === false ? [] : inheritInstanceSettings(readSettings().instancePath, instancePath);
+  if (daisySkin) { ensureDaisySkinMod(instancePath, version, true); }
   if (inherited.length) {
     emit("launcher:log", "[instance] Carried over " + inherited.join(", ") + " from the previous instance.");
   }
@@ -6111,6 +6171,7 @@ async function launchStandaloneMinecraft(status, joinAddress = "", plainInstance
     const launchInstPath = plainInstance ? plainInstance.path : status.instancePath;
     const launchPlayer = freshAuth?.profile?.name || status.settings?.offlineName || "DaisyPlayer";
     syncOfflineSkinToInstance(launchInstPath, launchPlayer);
+    if (instance && instance.daisySkin) { ensureDaisySkinMod(launchInstPath, instance.version || DEFAULT_MC_VERSION, true); }
   } catch { }
 
   try {
