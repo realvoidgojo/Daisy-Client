@@ -3,7 +3,7 @@ package dev.wyz.clientcore.config
 data class ClientCoreConfig(
     val modules: MutableMap<String, ModuleConfig> = mutableMapOf(),
     /** Accent theme key (see RiverTheme presets), or "custom". */
-    var theme: String? = "river",
+    var theme: String? = "daisy",
     /** The season whose theme was last switched on for this player, so it is only ever done once. */
     var seasonOffered: String? = null,
     /** Gradient start hex (0xRRGGBB) used when [theme] is "custom". */

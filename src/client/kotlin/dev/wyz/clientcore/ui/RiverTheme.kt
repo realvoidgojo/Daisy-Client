@@ -23,7 +23,8 @@ object RiverTheme {
       rather than as a colour sweep.
     */
     val presets: List<Palette> = listOf(
-        Palette("river", "River", 0xFF3E80EA.toInt(), 0xFF5A9BF5.toInt(), 0xFF7FB4FF.toInt()),
+        Palette("daisy", "Daisy", 0xFFFFC72C.toInt(), 0xFFFFE066.toInt(), 0xFFFFF199.toInt()),
+        Palette("yellow", "Yellow", 0xFFF5B000.toInt(), 0xFFFFD033.toInt(), 0xFFFFE680.toInt()),
         Palette("ocean", "Ocean", 0xFF2F6FE0.toInt(), 0xFF19B8D8.toInt(), 0xFF62C6FF.toInt()),
         Palette("emerald", "Emerald", 0xFF0FA36B.toInt(), 0xFF2ED49A.toInt(), 0xFF57E6AE.toInt()),
         Palette("ember", "Ember", 0xFFD9542E.toInt(), 0xFFE8853B.toInt(), 0xFFFF9E6B.toInt()),
@@ -50,10 +51,10 @@ object RiverTheme {
     val current: Palette
         get() {
             val cfg = RiverRuntime.configOrNull()
-            var key = cfg?.theme ?: "river"
+            var key = cfg?.theme ?: "daisy"
             // A seasonal theme only exists while its season is on, or for whoever earned it
-            // (SeasonEvent); otherwise it is River's.
-            if (isSeasonal(key) && !seasonalUnlocked(key)) key = "river"
+            // (SeasonEvent); otherwise it is Daisy's.
+            if (isSeasonal(key) && !seasonalUnlocked(key)) key = "daisy"
             if (key == CUSTOM_KEY) {
                 val a = (cfg?.themeCustom ?: 0x7A8CFF) and 0xFFFFFF
                 val b = (cfg?.themeCustomB ?: 0xAD85FF) and 0xFFFFFF

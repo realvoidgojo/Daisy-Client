@@ -23,8 +23,8 @@
   --card-foreground: #ffffff;
   --popover: #1b1e26;               /* ClientUi.PANEL_SOFT */
   --popover-foreground: #ffffff;
-  --primary: #2f6fe6;
-  --primary-foreground: #ffffff;
+  --primary: #ffc72c;               /* Daisy Gold / Yellow */
+  --primary-foreground: #14161b;
   --secondary: #1b1e26;
   --secondary-foreground: #ffffff;
   --muted: #1b1e26;
@@ -37,12 +37,12 @@
   --warning: #ffd46b;               /* ClientUi.WARNING */
   --border: #2f333d;                /* ClientUi.BORDER */
   --input: #2f333d;
-  --ring: #2f6fe6;
+  --ring: #ffc72c;
 }
 
 /*
  * Light theme. Same one-accent discipline as dark: surfaces step in brightness
- * (background -> card -> popover) rather than in tint, and the blue accent is
+ * (background -> card -> popover) rather than in tint, and the gold accent is
  * reused unchanged so the two themes read as one product. Applied when the shell
  * stamps data-theme="light" on the root from the launcherTheme setting.
  */
@@ -53,7 +53,7 @@
   --card-foreground: #14161b;
   --popover: #ffffff;
   --popover-foreground: #14161b;
-  --primary: #2f6fe6;
+  --primary: #e6a800;
   --primary-foreground: #ffffff;
   --secondary: #e9ebef;
   --secondary-foreground: #14161b;
@@ -67,7 +67,7 @@
   --warning: #b9781a;
   --border: #d8dbe1;
   --input: #d8dbe1;
-  --ring: #2f6fe6;
+  --ring: #e6a800;
 }
 
 @theme inline {

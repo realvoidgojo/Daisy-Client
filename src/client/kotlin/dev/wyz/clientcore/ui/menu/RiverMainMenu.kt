@@ -93,7 +93,7 @@ object RiverMainMenu {
 
     private val iconButtons: List<IconButton>
         get() = buildList {
-            add(IconButton("River Settings", null) { _ -> Minecraft.getInstance().let { ClientKeybinds.openMenu(it) } })
+            add(IconButton("Daisy Settings", null) { _ -> Minecraft.getInstance().let { ClientKeybinds.openMenu(it) } })
             add(IconButton("Cosmetics", "shirt") { p -> Minecraft.getInstance().setScreen(RiverCosmeticsScreen(p)) })
             add(IconButton("Servers", "server") { p -> Minecraft.getInstance().setScreen(dev.wyz.clientcore.ui.screen.RiverServerBrowserScreen(p)) })
             add(IconButton("Download content", "box") { p -> Minecraft.getInstance().setScreen(RiverContentBrowserScreen(p)) })
@@ -140,40 +140,35 @@ object RiverMainMenu {
         return 1f - c * c * c
     }
 
-    // Splash lines: short, no em dashes, a mix of River tips and light humor.
+    // Splash lines: short, no em dashes, a mix of Daisy tips and light humor.
     private val splashes = listOf(
         "Right Shift opens the menu!",
         "Try cinematic mode!",
         "Drag your HUD in the editor!",
-        "Go with the flow!",
+        "Bloom with Daisy!",
         "Press F3 less!",
         "Customize your theme!",
         "Waypoints included!",
         "Zoom with C!",
         "No cheats, just vibes!",
-        "River runs deep!",
-        "Now with real water!",
-        "Blue looks good on you!",
+        "Fresh like a daisy!",
+        "Yellow looks good on you!",
         "Fully sending it!"
     )
     private var splash = splashes.first()
 
-    /** Weighted so the friends shortcut actually gets discovered - see [pickSplash]. */
-    private const val FRIENDS_TIP = "Left Shift + Tab opens friends!"
-    private const val FRIENDS_TIP_CHANCE = 0.4
+    /** Weighted tips - see [pickSplash]. */
+    private const val MENU_TIP = "Right Shift opens the menu!"
+    private const val MENU_TIP_CHANCE = 0.4
 
     /**
      * Called when the title screen (re)opens: re-rolls the splash and restarts the entrance.
-     *
-     * The friends shortcut is deliberately weighted rather than being one line among many:
-     * as a plain list entry it would surface about 7% of the time, which is not enough for
-     * anyone to learn a keybind that has no other signpost in game.
      */
     fun pickSplash() {
         val seasonal = SeasonalFx.splashes()
         splash = when {
             seasonal.isNotEmpty() && Math.random() < 0.85 -> seasonal.random()
-            Math.random() < FRIENDS_TIP_CHANCE -> FRIENDS_TIP
+            Math.random() < MENU_TIP_CHANCE -> MENU_TIP
             else -> splashes.random()
         }
         openedAt = System.currentTimeMillis()
