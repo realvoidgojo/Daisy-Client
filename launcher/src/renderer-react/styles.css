@@ -17,43 +17,43 @@
 :root {
   --radius: 1.5rem;                 /* 24px Warm Bento chunky tiles */
 
-  /* Warm Bento Daisy Design Tokens */
+  /* Blue-tinted dark gaming tokens (matching New Instance & Settings modals) */
   --daisy-yellow: #ffd60a;
   --daisy-yellow-bright: #ffe14d;
   --daisy-yellow-soft: #fff6d6;
   --daisy-cream: #fff6d6;
   --daisy-petal: #fffdf2;
-  --daisy-ink: #0f0e0c;
-  --daisy-black: #0f0e0c;
-  --daisy-charcoal: #17150f;
-  --daisy-surface: #17150f;
-  --daisy-surface-raised: #1e1c15;
+  --daisy-ink: #0f1015;
+  --daisy-black: #0d0e12;
+  --daisy-charcoal: #161822;
+  --daisy-surface: #161822;
+  --daisy-surface-raised: #1e202e;
   --daisy-border: rgba(255, 255, 255, 0.08);
   --daisy-border-strong: rgba(255, 255, 255, 0.16);
-  --daisy-muted: #b8b2a3;
+  --daisy-muted: #9aa1b2;
   --daisy-success: #69d38a;
   --daisy-danger: #ff6b6b;
 
-  --background: #0f0e0c;            /* Warm near-black */
-  --foreground: #fffdf2;            /* Daisy petal cream */
-  --card: #17150f;                  /* Warm chunky tile surface */
-  --card-foreground: #fffdf2;
-  --popover: #1c1a14;
-  --popover-foreground: #fffdf2;
+  --background: #0d0e13;            /* Deep navy/blue-tinted dark background */
+  --foreground: #f4f5f8;            /* Crisp text */
+  --card: #151720;                  /* Blue-tinted card surface */
+  --card-foreground: #f4f5f8;
+  --popover: #181a24;
+  --popover-foreground: #f4f5f8;
   --primary: #ffd60a;               /* Brand Daisy Yellow */
-  --primary-foreground: #0f0e0c;     /* Near-black text on yellow */
-  --secondary: #222019;
-  --secondary-foreground: #fff6d6;
-  --muted: #1e1c15;
-  --muted-foreground: #b8b2a3;
-  --accent: #28251c;
-  --accent-foreground: #fffdf2;
+  --primary-foreground: #0d0e13;    /* Near-black text on yellow */
+  --secondary: #1e212d;
+  --secondary-foreground: #f4f5f8;
+  --muted: #1a1c27;
+  --muted-foreground: #9aa1b2;
+  --accent: #242736;
+  --accent-foreground: #f4f5f8;
   --destructive: #ff6b6b;
-  --destructive-foreground: #0f0e0c;
+  --destructive-foreground: #0d0e13;
   --success: #69d38a;
   --warning: #ffd60a;
   --border: rgba(255, 255, 255, 0.08);
-  --input: #1a1812;
+  --input: #1b1d28;
   --ring: #ffd60a;
 }
 
@@ -115,10 +115,9 @@
   --radius-lg: calc(var(--radius) + 2px);
 
   --font-sans: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-display: "Bricolage Grotesque", "Space Grotesk", Inter, sans-serif;
-  /* Daisy's animated pixel button typeface */
-  --font-pixel: "Press Start 2P", ui-monospace, "Cascadia Mono", monospace;
-  --font-brutal: "Bricolage Grotesque", Inter, sans-serif;
+  --font-display: Inter, "Space Grotesk", sans-serif;
+  --font-pixel: "Press Start 2P", ui-monospace, monospace;
+  --font-brutal: Inter, sans-serif;
 }
 
 @layer base {
@@ -509,11 +508,6 @@
     color: var(--muted-foreground);
   }
 
-  /*
-   * The block button: the Play action, built like a Minecraft block rather than a flat chip. A
-   * lit top edge, a shaded bottom edge it sinks into when pressed, and a 4px pixel texture over
-   * the accent, so it follows the theme and turns orange for Halloween with everything else.
-   */
   /*
    * The pixel-texture block button: the classic, tactile Play action with running pixel noise
    * animation, crisp border, running sheen light and glowing aura.

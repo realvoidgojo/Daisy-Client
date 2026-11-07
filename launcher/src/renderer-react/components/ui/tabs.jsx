@@ -11,8 +11,8 @@ export const TabsList = React.forwardRef(({ className, ...props }, ref) => {
     <TabsPrimitive.List
       ref={ref}
       className={cn(
-        "inline-flex items-center justify-center gap-1.5 p-1.5 border-2 border-border/80 bg-card/90 shadow-[2px_2px_0px_#080808]",
-        modern ? "h-11 rounded-xl" : "h-10 rounded-lg",
+        "inline-flex items-center justify-center gap-1.5 p-1 border-2 border-[#222019] bg-[#12110c] shadow-none",
+        modern ? "h-11 rounded-lg" : "h-10 rounded-md",
         className
       )}
       {...props}
@@ -27,9 +27,9 @@ export const TabsTrigger = React.forwardRef(({ className, ...props }, ref) => {
     <TabsPrimitive.Trigger
       ref={ref}
       className={cn(
-        "inline-flex items-center justify-center whitespace-nowrap text-muted-foreground transition-all hover:text-foreground focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50",
+        "inline-flex items-center justify-center whitespace-nowrap text-[#b8b2a3] transition-all hover:text-[#fffdf2] focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50",
         modern
-          ? "h-full rounded-lg px-4 text-xs font-bold tracking-tight focus-visible:ring-2 focus-visible:ring-ring data-[state=active]:border data-[state=active]:border-primary/60 data-[state=active]:bg-primary/20 data-[state=active]:text-primary data-[state=active]:shadow-[1px_1px_0px_#080808]"
+          ? "h-full rounded-md px-3.5 text-xs font-bold tracking-normal data-[state=active]:border-2 data-[state=active]:border-[#ffd60a] data-[state=active]:bg-[#ffd60a] data-[state=active]:text-[#0f0e0c] data-[state=active]:shadow-[2px_2px_0px_#000000]"
           : "rounded-md px-3 py-1 text-xs font-semibold data-[state=active]:bg-accent data-[state=active]:text-foreground",
         className
       )}

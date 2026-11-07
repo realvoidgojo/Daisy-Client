@@ -185,7 +185,7 @@ function SKAccountManager({ status, refresh, notify }) {
 
   useEffect(() => {
     load();
-  }, [load, status?.auth?.signedIn, status?.auth?.profileId]);
+  }, [load, status?.auth?.signedIn, status?.auth?.profileId, status?.auth?.profile?.skinUrl, status?.skinHistory]);
 
   const handlePickSkin = async () => {
     try {
@@ -325,7 +325,7 @@ function SKAccountManager({ status, refresh, notify }) {
         ) : (
           profiles.map((profile) => {
             const active = profile.id === activeId || profile.name === currentAuthName;
-            const profileSkin = profile.auth?.profile?.skinUrl;
+            const profileSkin = active ? (status?.auth?.profile?.skinUrl || profile.auth?.profile?.skinUrl) : profile.auth?.profile?.skinUrl;
             return (
               <div
                 key={profile.id}

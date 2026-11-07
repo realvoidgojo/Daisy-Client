@@ -202,10 +202,10 @@ function ResultSkeletons() {
 
 const INSTALLED_KEY = { mod: "installedMods", resourcepack: "installedResourcePacks", shader: "installedShaders" };
 
-export function ContentBrowser({ status, refresh, notify }) {
+export function ContentBrowser({ status, refresh, notify, defaultMode = "browse" }) {
   const t = useT();
   const modern = useModern();
-  const [mode, setMode] = useState("browse");
+  const [mode, setMode] = useState(defaultMode);
   // Content goes into the selected instance, so search for its version and loader.
   // Vanilla takes no mods or shaders, only resource packs.
   const targetLoader = String(status?.selectedInstance?.loader || "fabric").toLowerCase() || "fabric";
@@ -599,7 +599,7 @@ export function ContentBrowser({ status, refresh, notify }) {
  * The Add content dialog, shared by Home, Instances and the instance page. Modern gets a wider,
  * taller dialog so the result grid has two columns; Classic keeps its original size.
  */
-export function ContentDialog({ open, onOpenChange, title, description, status, refresh, notify }) {
+export function ContentDialog({ open, onOpenChange, title, description, status, refresh, notify, defaultMode = "browse" }) {
   const modern = useModern();
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -609,7 +609,7 @@ export function ContentDialog({ open, onOpenChange, title, description, status, 
           {description ? <DialogDescription>{description}</DialogDescription> : null}
         </DialogHeader>
         <div className="min-h-0 flex-1">
-          {open ? <ContentBrowser status={status} refresh={refresh} notify={notify} /> : null}
+          {open ? <ContentBrowser status={status} refresh={refresh} notify={notify} defaultMode={defaultMode} /> : null}
         </div>
       </DialogContent>
     </Dialog>

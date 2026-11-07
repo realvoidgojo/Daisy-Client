@@ -748,7 +748,7 @@ function ensureDaisySkinMod(instancePath, mcVersion, enableSkin = true) {
     if (!enableSkin) {
       for (const file of fs.readdirSync(modsDir)) {
         if (skinJarPattern.test(file)) {
-          try { fs.rmSync(path.join(modsDir, file), { force: true }); } catch {}
+          try { fs.rmSync(path.join(modsDir, file), { force: true }); } catch { }
         }
       }
       return;
@@ -763,7 +763,7 @@ function ensureDaisySkinMod(instancePath, mcVersion, enableSkin = true) {
     // Clean up older skin jars
     for (const file of fs.readdirSync(modsDir)) {
       if (skinJarPattern.test(file) && file !== targetName) {
-        try { fs.rmSync(path.join(modsDir, file), { force: true }); } catch {}
+        try { fs.rmSync(path.join(modsDir, file), { force: true }); } catch { }
       }
     }
 
@@ -1383,9 +1383,11 @@ const IS_LINUX = process.platform === "linux";
 // ownership it insists on, and without it the launcher does not start at all on many
 // distros. The window only ever loads River's own bundled pages, so run without it.
 if (IS_LINUX) app.commandLine.appendSwitch("no-sandbox");
-const appIcon = path.join(__dirname, "assets", "riv3r-client.png");
-const halloweenAppIcon = path.join(__dirname, "assets", "riv3r-client-halloween.png");
-/** The window icon: the orange logo while the Halloween theme is on, River's blue one otherwise. */
+const appIcon = process.platform === "win32"
+  ? path.join(__dirname, "assets", "icon.ico")
+  : path.join(__dirname, "assets", "daisy-client.png");
+const halloweenAppIcon = appIcon;
+/** The window icon: Daisy client logo. */
 function currentAppIcon(settings) {
   try {
     return (settings || readSettings()).launcherTheme === "halloween" ? halloweenAppIcon : appIcon;
@@ -4780,7 +4782,7 @@ function createInstance(request, options = {}) {
   if (daisySkin) {
     ensureDaisySkinMod(instancePath, version, true);
     // Automatically install Fabric API and Fabric Language Kotlin dependencies for the skin mod
-    ensureRequiredSupportMods(instancePath, version, "fabric", "daisy-skin-support").catch(() => {});
+    ensureRequiredSupportMods(instancePath, version, "fabric", "daisy-skin-support").catch(() => { });
   }
   if (inherited.length) {
     emit("launcher:log", "[instance] Carried over " + inherited.join(", ") + " from the previous instance.");
