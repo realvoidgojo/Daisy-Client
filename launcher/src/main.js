@@ -4777,7 +4777,11 @@ function createInstance(request, options = {}) {
   // deliberately NOT copied - a new instance starts with a clean mods/worlds set.
   // A modpack brings its own settings, so it starts from those instead.
   const inherited = options.inherit === false ? [] : inheritInstanceSettings(readSettings().instancePath, instancePath);
-  if (daisySkin) { ensureDaisySkinMod(instancePath, version, true); }
+  if (daisySkin) {
+    ensureDaisySkinMod(instancePath, version, true);
+    // Automatically install Fabric API and Fabric Language Kotlin dependencies for the skin mod
+    ensureRequiredSupportMods(instancePath, version, "fabric", "daisy-skin-support").catch(() => {});
+  }
   if (inherited.length) {
     emit("launcher:log", "[instance] Carried over " + inherited.join(", ") + " from the previous instance.");
   }

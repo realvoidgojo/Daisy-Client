@@ -4,7 +4,6 @@ import { api, useLatestLog } from "../lib/useStatus";
 import { cn, formatLastPlayed } from "../lib/utils";
 import { PlayerHead, resolveSkinTexture } from "../components/player-head";
 import { SkinViewer } from "../components/skin-viewer";
-import { FriendsPanel } from "../components/friends-panel";
 import { CrashReport } from "../components/crash-report";
 import { ModCompatibility } from "../components/mod-compatibility";
 import { ImportInstancesDialog } from "../components/import-instances";
@@ -532,9 +531,7 @@ export function ModernHomeView({ status, refresh, notify, go, openInstance }) {
         </div>
       </div>
 
-      <div className="flex w-[256px] shrink-0 flex-col pb-6 pr-8 pt-3 xl:w-[288px]">
-        <FriendsPanel status={status} refresh={refresh} notify={notify} variant="card" />
-      </div>
+
 
       <ImportInstancesDialog
         open={switching}

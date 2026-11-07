@@ -4,7 +4,6 @@ import { api, useLatestLog } from "../lib/useStatus";
 import { cn, formatLastPlayed } from "../lib/utils";
 import { Page, EmptyState } from "../components/shell";
 import { PlayerHead, resolveSkinTexture } from "../components/player-head";
-import { FriendsPanel } from "../components/friends-panel";
 import { CrashReport } from "../components/crash-report";
 import { ModCompatibility } from "../components/mod-compatibility";
 import { ImportInstancesDialog } from "../components/import-instances";
@@ -490,7 +489,7 @@ export function HomeView({ status, refresh, notify }) {
       </div>
     </Page>
       </div>
-      <FriendsPanel status={status} refresh={refresh} notify={notify} />
+      
     </div>
   );
 }
