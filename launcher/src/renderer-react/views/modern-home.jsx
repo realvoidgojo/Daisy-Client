@@ -72,18 +72,20 @@ export function ModernHomeView({ status, refresh, notify, launch: launchProp, st
   const skin = profile ? resolveSkinTexture(status) : "";
   const lastPlayed = formatLastPlayed(selected?.lastPlayedAt);
 
-  // Mod icons for grid
-  const modIcons = useMemo(() => {
+  // Featured mods for rich cards
+  const modItems = useMemo(() => {
     const list = [];
     const seen = new Set();
     for (const entry of Array.isArray(status?.installedMods) ? status.installedMods : []) {
-      const url = entry?.metadata?.iconUrl;
-      const title = entry?.metadata?.name || entry?.name || "Mod";
-      if (url && !seen.has(url)) {
-        seen.add(url);
-        list.push({ url, title });
+      const url = entry?.metadata?.iconUrl || entry?.metadata?.remoteIconUrl;
+      const title = entry?.metadata?.name || entry?.metadata?.title || entry?.name || entry?.file?.replace(/\.jar(\.disabled)?$/i, "") || "Mod";
+      const desc = entry?.metadata?.description || entry?.metadata?.summary || "";
+      const version = entry?.metadata?.version || "";
+      if (title && !seen.has(title)) {
+        seen.add(title);
+        list.push({ url, title, desc, version, disabled: entry?.disabled });
       }
-      if (list.length >= 6) break;
+      if (list.length >= 4) break;
     }
     return list;
   }, [status?.installedMods]);
@@ -287,36 +289,64 @@ export function ModernHomeView({ status, refresh, notify, launch: launchProp, st
           </section>
 
           {/* 3. Mods Bento Tile (4 cols) */}
-          <section className="col-span-12 md:col-span-6 xl:col-span-4 flex flex-col justify-between rounded-[24px] border border-white/[0.08] bg-[#17150f] p-6 shadow-[0_8px_32px_rgba(0,0,0,0.5)] transition-all hover:border-white/[0.14]">
+          <section className="col-span-12 md:col-span-6 xl:col-span-4 flex flex-col justify-between rounded-[24px] border border-white/[0.08] bg-[#17150f] p-6 shadow-[0_8px_32px_rgba(0,0,0,0.5)] transition-all hover:border-white/[0.16] hover:shadow-[0_12px_40px_rgba(0,0,0,0.6)]">
             <div className="flex items-center justify-between">
-              <div>
-                <h2 className="font-display text-lg font-bold text-[#fffdf2]">{t("Mods")}</h2>
-                <p className="text-xs text-[#b8b2a3]">{t("{count} installed", { count: modCount })}</p>
+              <div className="flex items-center gap-3">
+                <div className="flex size-10 items-center justify-center rounded-xl border border-white/[0.1] bg-[#ffd60a]/10 text-[#ffd60a]">
+                  <Package className="size-5" />
+                </div>
+                <div>
+                  <h2 className="font-display text-lg font-bold leading-tight text-[#fffdf2]">{t("Mods")}</h2>
+                  <p className="text-xs font-medium text-[#b8b2a3]">{t("{count} installed", { count: modCount })}</p>
+                </div>
               </div>
               <button
                 type="button"
                 onClick={() => setContentOpen(true)}
-                className="text-xs font-semibold text-[#ffd60a] hover:underline"
+                className="group flex items-center gap-1 rounded-lg border border-white/[0.08] bg-white/[0.03] px-2.5 py-1 text-xs font-semibold text-[#ffd60a] transition-all hover:border-[#ffd60a]/40 hover:bg-[#ffd60a]/10"
               >
-                {t("Manage mods →")}
+                <span>{t("Manage")}</span>
+                <ArrowRight className="size-3 transition-transform group-hover:translate-x-0.5" />
               </button>
             </div>
 
-            {/* Mod Icons Grid */}
-            <div className="my-5 grid grid-cols-3 gap-3">
-              {modIcons.length > 0 ? (
-                modIcons.map((mod, i) => (
+            {/* Rich Mod Cards List */}
+            <div className="my-4 space-y-2">
+              {modItems.length > 0 ? (
+                modItems.map((mod, i) => (
                   <div
                     key={i}
-                    title={mod.title}
-                    className="group relative flex size-16 items-center justify-center rounded-2xl border border-white/[0.06] bg-white/[0.02] p-2 transition-transform hover:scale-105"
+                    onClick={() => setContentOpen(true)}
+                    className="group flex cursor-pointer items-center gap-3 rounded-2xl border border-white/[0.06] bg-white/[0.02] p-2.5 transition-all hover:border-[#ffd60a]/30 hover:bg-white/[0.06]"
                   >
-                    <img src={mod.url} alt="" className="size-full rounded-xl object-contain" />
+                    <div className="flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-white/[0.08] bg-[#12110c] shadow-inner">
+                      {mod.url ? (
+                        <img src={mod.url} alt="" className="size-full object-contain p-1.5 transition-transform group-hover:scale-110" />
+                      ) : (
+                        <Package className="size-5 text-[#b8b2a3]" />
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center justify-between gap-1">
+                        <span className="truncate text-xs font-bold text-[#fffdf2] group-hover:text-[#ffd60a] transition-colors">
+                          {mod.title}
+                        </span>
+                        {mod.version ? (
+                          <span className="shrink-0 rounded bg-white/[0.06] px-1.5 py-0.5 text-[10px] font-mono text-[#b8b2a3]">
+                            {mod.version}
+                          </span>
+                        ) : null}
+                      </div>
+                      <p className="truncate text-[11px] text-[#b8b2a3]/80">
+                        {mod.desc || t("Fabric mod")}
+                      </p>
+                    </div>
                   </div>
                 ))
               ) : (
-                <div className="col-span-3 py-6 text-center text-xs text-[#b8b2a3]">
-                  {t("No mods installed yet.")}
+                <div className="flex h-36 flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-white/[0.08] p-4 text-center text-xs text-[#b8b2a3]">
+                  <Package className="size-6 opacity-40" />
+                  <span>{t("No mods installed yet.")}</span>
                 </div>
               )}
             </div>
@@ -324,7 +354,7 @@ export function ModernHomeView({ status, refresh, notify, launch: launchProp, st
             <button
               type="button"
               onClick={() => setContentOpen(true)}
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-white/[0.04] py-2.5 text-xs font-semibold text-[#fffdf2] transition-colors hover:bg-white/[0.08]"
+              className="flex w-full items-center justify-center gap-2 rounded-xl border border-white/[0.08] bg-white/[0.03] py-2.5 text-xs font-semibold text-[#fffdf2] shadow-sm transition-all hover:border-[#ffd60a]/40 hover:bg-[#ffd60a]/10 hover:text-[#ffd60a] active:scale-[0.98]"
             >
               <Plus className="size-3.5" />
               <span>{t("Browse more mods")}</span>
