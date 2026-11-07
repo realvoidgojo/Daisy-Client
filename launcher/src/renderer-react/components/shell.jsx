@@ -80,7 +80,6 @@ const PRESENCE_COLOR = {
 export function ModernRail({ view, setView, status }) {
   const t = useT();
   const profile = status?.auth?.profile;
-  const presence = status?.settings?.socialStatus || "online";
 
   const item = (entry) => {
     const Icon = entry.icon;
@@ -93,17 +92,14 @@ export function ModernRail({ view, setView, status }) {
         data-tour={`rail-${entry.id}`}
         onClick={() => setView(entry.id)}
         className={cn(
-          "no-drag relative flex h-[58px] w-[62px] shrink-0 flex-col items-center justify-center gap-1.5 rounded-xl border transition-all",
+          "no-drag relative flex h-[62px] w-[68px] shrink-0 flex-col items-center justify-center gap-1.5 rounded-2xl transition-all duration-200",
           active
-            ? "border-primary/80 bg-primary/20 text-primary shadow-[2px_2px_0px_#080808]"
-            : "border-transparent text-muted-foreground hover:border-border hover:bg-accent/80 hover:text-foreground"
+            ? "bg-[#ffd60a] text-[#0f0e0c] font-bold shadow-[0_4px_16px_rgba(255,214,10,0.28)]"
+            : "text-[#b8b2a3] hover:bg-white/[0.06] hover:text-[#fffdf2]"
         )}
       >
-        {active && (
-          <span className="absolute -left-1.5 size-1.5 rounded-full bg-primary shadow-[0_0_8px_var(--primary)]" />
-        )}
         <Icon className="size-5" strokeWidth={active ? 2.5 : 2} />
-        <span className={cn("max-w-full truncate px-1 text-[10px] font-bold tracking-tight leading-none", active ? "text-primary" : "text-muted-foreground")}>
+        <span className={cn("max-w-full truncate px-1 text-[12px] font-semibold leading-none", active ? "text-[#0f0e0c]" : "text-[#b8b2a3]")}>
           {t(entry.label)}
         </span>
       </button>
@@ -111,12 +107,12 @@ export function ModernRail({ view, setView, status }) {
   };
 
   return (
-    <nav className="flex w-[80px] shrink-0 flex-col items-center gap-2 border-r border-border/80 bg-card/95 pb-3.5 backdrop-blur-md">
+    <nav className="flex w-[88px] shrink-0 flex-col items-center gap-2 border-r border-white/[0.08] bg-[#17150f] pb-4">
       {/* Stands in for the title bar on this side of the window, so it drags the window too. */}
       <div className="drag-region flex h-16 w-full shrink-0 flex-col items-center justify-center gap-0.5">
-        <div className="flex items-center gap-1">
-          <span className="text-sm font-black tracking-widest text-primary drop-shadow-[1px_1px_0px_#080808]">DAISY</span>
-          <span className="text-xs text-primary">🌼</span>
+        <div className="flex items-center gap-1.5">
+          <span className="font-display text-sm font-black tracking-wider text-[#ffd60a]">DAISY</span>
+          <span className="text-xs">🌼</span>
         </div>
       </div>
       {NAV.map(item)}
@@ -128,20 +124,16 @@ export function ModernRail({ view, setView, status }) {
           onClick={() => setView("wardrobe")}
           title={`${profile.name} · ${t("Wardrobe")}`}
           aria-label={t("Wardrobe")}
-          className="no-drag relative mt-2 rounded-xl border border-border/80 p-0.5 transition-transform hover:scale-105 hover:border-primary/60"
+          className="no-drag relative mt-2 rounded-2xl border border-white/[0.12] p-1 transition-transform hover:scale-105 hover:border-[#ffd60a]/60 bg-[#1e1c15]"
         >
-          <PlayerHead skinUrl={resolveSkinTexture(status)} name={profile.name} size={36} className="rounded-lg shadow-[2px_2px_0px_#080808]" />
-          <span
-            className="absolute -bottom-0.5 -right-0.5 size-3 rounded-full border-2 border-card shadow-sm"
-            style={{ background: PRESENCE_COLOR[presence] || PRESENCE_COLOR.online }}
-          />
+          <PlayerHead skinUrl={resolveSkinTexture(status)} name={profile.name} size={36} className="rounded-xl" />
         </button>
       ) : (
         <button
           onClick={() => api()?.microsoftLogin()}
           title={t("Sign in")}
           aria-label={t("Sign in")}
-          className="no-drag mt-2 flex size-10 items-center justify-center rounded-xl border-2 border-dashed border-border text-muted-foreground transition-all hover:border-primary/80 hover:bg-primary/10 hover:text-primary shadow-[2px_2px_0px_#080808]"
+          className="no-drag mt-2 flex size-10 items-center justify-center rounded-2xl border border-dashed border-white/[0.15] text-[#b8b2a3] transition-all hover:border-[#ffd60a] hover:bg-[#ffd60a]/10 hover:text-[#ffd60a]"
         >
           <LogIn className="size-4" />
         </button>

@@ -15,49 +15,46 @@
 @source "./**/*.{js,jsx}";
 
 :root {
-  --radius: 0.5rem;                 /* 8px geometric Neo-Brutalist radius */
+  --radius: 1.5rem;                 /* 24px Warm Bento chunky tiles */
 
-  /* Daisy Neo-Brutalist Design Tokens */
-  --daisy-yellow: #f6c928;
-  --daisy-yellow-bright: #ffd83d;
-  --daisy-yellow-soft: #f4df77;
-  --daisy-cream: #fff6cf;
+  /* Warm Bento Daisy Design Tokens */
+  --daisy-yellow: #ffd60a;
+  --daisy-yellow-bright: #ffe14d;
+  --daisy-yellow-soft: #fff6d6;
+  --daisy-cream: #fff6d6;
   --daisy-petal: #fffdf2;
-  --daisy-ink: #080808;
-  --daisy-black: #0b0b0b;
-  --daisy-charcoal: #151515;
-  --daisy-surface: #18191e;
-  --daisy-surface-raised: #22242c;
-  --daisy-border: #363a45;
-  --daisy-border-strong: #4a4f5d;
-  --daisy-muted: #9ba0ab;
+  --daisy-ink: #0f0e0c;
+  --daisy-black: #0f0e0c;
+  --daisy-charcoal: #17150f;
+  --daisy-surface: #17150f;
+  --daisy-surface-raised: #1e1c15;
+  --daisy-border: rgba(255, 255, 255, 0.08);
+  --daisy-border-strong: rgba(255, 255, 255, 0.16);
+  --daisy-muted: #b8b2a3;
   --daisy-success: #69d38a;
   --daisy-danger: #ff6b6b;
-  --daisy-shadow: 4px 4px 0 var(--daisy-ink);
-  --daisy-shadow-sm: 2px 2px 0 var(--daisy-ink);
-  --daisy-shadow-primary: 4px 4px 0 rgba(0, 0, 0, 0.95);
 
-  --background: #0b0b0d;            /* Deep black / charcoal */
-  --foreground: #fffdf2;            /* Daisy petal white */
-  --card: #15161b;                  /* Dark card surface */
+  --background: #0f0e0c;            /* Warm near-black */
+  --foreground: #fffdf2;            /* Daisy petal cream */
+  --card: #17150f;                  /* Warm chunky tile surface */
   --card-foreground: #fffdf2;
-  --popover: #1c1d24;               /* Popover / modal surface */
+  --popover: #1c1a14;
   --popover-foreground: #fffdf2;
-  --primary: #f6c928;               /* Daisy Gold / Yellow */
-  --primary-foreground: #080808;     /* Daisy Ink */
-  --secondary: #22242c;
-  --secondary-foreground: #fffdf2;
-  --muted: #1e2028;
-  --muted-foreground: #9ba0ab;
-  --accent: #272a34;
+  --primary: #ffd60a;               /* Brand Daisy Yellow */
+  --primary-foreground: #0f0e0c;     /* Near-black text on yellow */
+  --secondary: #222019;
+  --secondary-foreground: #fff6d6;
+  --muted: #1e1c15;
+  --muted-foreground: #b8b2a3;
+  --accent: #28251c;
   --accent-foreground: #fffdf2;
   --destructive: #ff6b6b;
-  --destructive-foreground: #080808;
+  --destructive-foreground: #0f0e0c;
   --success: #69d38a;
-  --warning: #f6c928;
-  --border: #363a45;
-  --input: #282b35;
-  --ring: #f6c928;
+  --warning: #ffd60a;
+  --border: rgba(255, 255, 255, 0.08);
+  --input: #1a1812;
+  --ring: #ffd60a;
 }
 
 /*
@@ -117,9 +114,11 @@
   --radius-md: var(--radius);
   --radius-lg: calc(var(--radius) + 2px);
 
-  --font-sans: Inter, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
-  /* Daisy's pixel face, the one riverclient.xyz uses. Bundled in assets/fonts, so it works offline. */
+  --font-sans: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Bricolage Grotesque", "Space Grotesk", Inter, sans-serif;
+  /* Daisy's animated pixel button typeface */
   --font-pixel: "Press Start 2P", ui-monospace, "Cascadia Mono", monospace;
+  --font-brutal: "Bricolage Grotesque", Inter, sans-serif;
 }
 
 @layer base {
@@ -515,34 +514,54 @@
    * lit top edge, a shaded bottom edge it sinks into when pressed, and a 4px pixel texture over
    * the accent, so it follows the theme and turns orange for Halloween with everything else.
    */
+  /*
+   * The pixel-texture block button: the classic, tactile Play action with running pixel noise
+   * animation, crisp border, running sheen light and glowing aura.
+   */
   .m-block {
     --rx: 0deg;
     --ry: 0deg;
     --lift: 0px;
     --glare: 0;
-    --edge: #080808;
+    --edge: color-mix(in srgb, var(--primary) 42%, #000);
     position: relative;
     isolation: isolate;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 0.6rem;
+    gap: 0.65rem;
     overflow: hidden;
-    border-radius: 8px;
-    border: 2px solid #080808;
+    border-radius: 12px;
     background-color: var(--primary);
     background-image: radial-gradient(130px circle at var(--mx, 50%) var(--my, 0%), rgb(255 255 255 / var(--glare)), transparent 70%);
-    color: #080808;
-    font-weight: 800;
+    color: #0f0e0c;
     font-family: var(--font-pixel);
+    font-weight: 700;
     letter-spacing: 0.04em;
-    /* Neo-Brutalist offset shadow: crisp, thick, tactile */
+    border: 2px solid #0f0e0c;
     box-shadow:
       inset 0 2px 0 rgb(255 255 255 / 0.35),
-      inset 0 -2px 0 rgb(0 0 0 / 0.25),
-      4px 4px 0 #080808;
-    transform: perspective(520px) translate3d(0, var(--lift), 0) rotateX(var(--rx)) rotateY(var(--ry));
-    transition: transform 100ms cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 100ms, background-color 150ms;
+      inset 0 -3px 0 rgb(0 0 0 / 0.25),
+      0 4px 0 #0f0e0c,
+      0 0 24px rgba(255, 214, 10, 0.35);
+    transform: perspective(520px) translate3d(0, var(--lift), 0);
+    transition: transform 120ms ease, box-shadow 120ms, background-color 150ms;
+  }
+  .m-block:hover:not(:disabled) {
+    --lift: -2px;
+    background-color: color-mix(in srgb, var(--primary) 92%, #ffffff);
+    box-shadow:
+      inset 0 2px 0 rgb(255 255 255 / 0.45),
+      inset 0 -3px 0 rgb(0 0 0 / 0.25),
+      0 6px 0 #0f0e0c,
+      0 0 32px rgba(255, 214, 10, 0.5);
+  }
+  button.m-block:not(:disabled):active {
+    --lift: 3px;
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.2),
+      inset 0 -1px 0 rgb(0 0 0 / 0.25),
+      0 1px 0 #0f0e0c;
   }
   /*
    * Both layers animate transform only, which the browser runs on the GPU at the display's full
@@ -593,22 +612,16 @@
     }
   }
   .m-block:hover:not(:disabled) {
-    --lift: -2px;
-    background-color: color-mix(in srgb, var(--primary) 88%, #ffffff);
+    background: linear-gradient(180deg, #ffe666 0%, #ffd60a 100%);
   }
   .m-block:focus-visible {
     outline: 2px solid var(--ring);
-    outline-offset: 4px;
+    outline-offset: 3px;
   }
-  /* Pressed: tactile Neo-Brutalist press */
+  /* Pressed: tactile bento press */
   button.m-block:not(:disabled):active {
-    --lift: 2px;
-    transform: translate(2px, 2px);
+    transform: translateY(1px);
     transition-duration: 60ms;
-    box-shadow:
-      inset 0 1px 0 rgb(255 255 255 / 0.14),
-      inset 0 -1px 0 rgb(0 0 0 / 0.26),
-      1px 1px 0 #080808;
   }
   .m-block:disabled {
     opacity: 0.55;

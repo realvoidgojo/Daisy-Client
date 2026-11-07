@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { ArrowRight, ChevronDown, ExternalLink, FolderInput, Package, Server, Shirt, Square, Users } from "lucide-react";
+import { ArrowRight, ChevronDown, ExternalLink, FolderInput, Package, Server, Shirt, Square, Users, Play, Plus, Compass, Sparkles, X, Settings2 } from "lucide-react";
 import { api, useLatestLog } from "../lib/useStatus";
 import { cn, formatLastPlayed } from "../lib/utils";
 import { PlayerHead, resolveSkinTexture } from "../components/player-head";
@@ -12,374 +12,38 @@ import { InstanceArt, PlayBlock, useInstanceCards } from "../components/instance
 import { ModernInstanceCard, instanceVersionLabel } from "../components/instance-card";
 import { Button } from "../components/ui/button";
 import { Badge } from "../components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
 import { PlaytimeStat, ServerAddress, SignInCard, useLauncherActions, useServerList } from "./home";
 import { Bats, CornerWeb, Mist, NightSky, Pumpkin } from "../components/modern-season";
 import { useSeasonId } from "../lib/seasons";
 import { useT } from "../i18n/context.jsx";
 
-function SectionHead({ title, action }) {
-  return (
-    <div className="flex items-end justify-between gap-3">
-      <h2 className="text-[17px] font-extrabold tracking-[-0.01em]">{title}</h2>
-      {action}
-    </div>
-  );
-}
-
 /**
- * Which instance Play starts, switchable right here instead of on the Instances page. Only
- * drawn when there is more than one to pick from.
+ * Modern Warm Bento Home:
+ * 12-column grid with chunky rounded tiles (24px radius), soft borders, warm near-black background,
+ * daisy yellow (#FFD60A) & cream (#FFF6D6) highlights.
  */
-function InstancePicker({ instances, selectedId, onPick, disabled }) {
+export function ModernHomeView({ status, refresh, notify, launch: launchProp, stop: stopProp, busy: busyProp, go, openInstance }) {
   const t = useT();
-  if (instances.length < 2) return null;
-  const selected = instances.find((instance) => instance.id === selectedId);
-  return (
-    <Select value={selectedId} onValueChange={onPick} disabled={disabled}>
-      <SelectTrigger
-        aria-label={t("Instance to play")}
-        className="h-14 w-auto min-w-48 max-w-72 gap-4 border-border/70 bg-background/75 px-4 text-left hover:bg-background [&>span]:min-w-0"
-      >
-        <span className="flex min-w-0 flex-col leading-tight">
-          <span className="text-[11px] font-medium text-muted-foreground">{t("Instance")}</span>
-          <span className="truncate text-sm font-semibold">{selected?.name || t("Choose")}</span>
-        </span>
-      </SelectTrigger>
-      <SelectContent>
-        {instances.map((instance) => (
-          <SelectItem key={instance.id} value={instance.id}>
-            {instance.name}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
-  );
-}
-
-/** The selected instance, front and centre: its picture, your skin, and Play. */
-function Hero({ status, card, busy, launch, stop, onPick, notify }) {
-  const t = useT();
-  const log = useLatestLog();
-  const selected = status?.selectedInstance;
-  const instances = Array.isArray(status?.instances) ? status.instances : [];
-  const running = Boolean(status?.running);
-  const launching = status?.launchState === "launching";
-  const disabled = busy || launching || running;
-  const lastPlayed = formatLastPlayed(selected?.lastPlayedAt);
-
+  const { busy: actionBusy, launch: actionLaunch, stop: actionStop } = useLauncherActions(notify);
+  const launch = launchProp || actionLaunch;
+  const stop = stopProp || actionStop;
+  const busy = busyProp || actionBusy;
   const profile = status?.auth?.profile;
-  const skins = Array.isArray(status?.skinHistory) ? status.skinHistory : [];
-  const activeSkin = skins.find((skin) => skin.active) || skins[0];
-  const capes = Array.isArray(profile?.capes) ? profile.capes : [];
-  const cape = capes.find((entry) => entry.active || entry.state === "ACTIVE");
-  const skin = profile ? resolveSkinTexture(status) : "";
-
-  // Only says something when something is happening; idle needs no label.
-  const state = running ? t("In game") : launching ? t("Starting") : "";
-  // Halloween: the banner becomes the game's own Halloween title screen, so the launcher and
-  // the menu you land in look like one place.
-  const halloween = useSeasonId() === "halloween";
-
-  return (
-    <section className="relative isolate overflow-hidden rounded-2xl border-2 border-border/80 bg-card shadow-[4px_4px_0px_#080808] transition-all hover:border-primary/60">
-      <div className="absolute inset-0 -z-10">
-        {halloween ? <NightSky drift /> : <InstanceArt instanceId={selected?.id} card={card} drift />}
-        <div
-          className={cn(
-            "absolute inset-0 bg-gradient-to-r",
-            halloween ? "from-background/95 via-background/55 to-transparent" : "from-background via-background/80 to-background/20"
-          )}
-        />
-        <div
-          className={cn(
-            "absolute inset-0 bg-gradient-to-t",
-            halloween ? "from-background/80 via-transparent to-transparent" : "from-background/90 via-background/10 to-transparent"
-          )}
-        />
-        {halloween ? (
-          <>
-            <Mist className="opacity-40" />
-            <Bats />
-          </>
-        ) : null}
-      </div>
-
-      <div className="flex min-h-[264px]">
-        <div className="flex min-w-0 flex-1 flex-col justify-end px-6 py-7">
-          {state ? <p className={cn("m-kicker mb-3", running ? "text-success" : "text-primary")}>{state}</p> : null}
-          <h2 className="truncate text-[32px] font-extrabold leading-[1.05] tracking-[-0.025em]">
-            {selected?.name || "Daisy Default"}
-          </h2>
-          <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
-            {launching ? (
-              <span className="max-w-md truncate">{log || t("Starting Minecraft...")}</span>
-            ) : (
-              <>
-                <span>{instanceVersionLabel(selected) || status?.mode}</span>
-                <span aria-hidden>·</span>
-                <PlaytimeStat settings={status?.settings} notify={notify} />
-                {lastPlayed ? (
-                  <>
-                    <span aria-hidden>·</span>
-                    <span>{lastPlayed}</span>
-                  </>
-                ) : null}
-                {card ? (
-                  <>
-                    <span aria-hidden>·</span>
-                    <span>{t("{count} mods", { count: card.modCount || 0 })}</span>
-                  </>
-                ) : null}
-              </>
-            )}
-          </div>
-
-          <div className="mt-6 flex flex-wrap items-center gap-3">
-            {running ? (
-              <PlayBlock size="lg" danger icon={Square} busy={busy} disabled={busy} onClick={stop}>
-                {t("Stop")}
-              </PlayBlock>
-            ) : (
-              <PlayBlock
-                size="lg"
-                data-tour="launch"
-                busy={launching || busy}
-                disabled={disabled}
-                onClick={() => launch("")}
-              >
-                {launching || busy ? t("Launching") : t("Play")}
-              </PlayBlock>
-            )}
-            <InstancePicker
-              instances={instances}
-              selectedId={selected?.id || ""}
-              onPick={onPick}
-              disabled={disabled}
-            />
-          </div>
-        </div>
-
-        {/* Your skin, wearing your cape, playing its idle animation. Drag to turn it; it does not
-            spin, since the picture behind it already moves. */}
-        {skin ? (
-          <div className="relative hidden w-[230px] shrink-0 lg:block">
-            <SkinViewer
-              texture={skin}
-              slim={activeSkin?.variant === "slim"}
-              cape={cape?.url || ""}
-              spin={false}
-              idle
-              scale={7}
-              className="absolute inset-0"
-            />
-          </div>
-        ) : null}
-      </div>
-
-      {/* In front of the scene and the skin: a web in the corner, pumpkins on the ground
-          beside the player, and a wisp of mist around their feet. */}
-      {halloween ? (
-        <>
-          <CornerWeb corner="left" size={128} />
-          <Pumpkin size={64} className="bottom-3 right-[214px] hidden lg:block" />
-          <Pumpkin size={32} className="bottom-4 right-6" />
-          <Mist className="left-1/2 opacity-55" />
-        </>
-      ) : null}
-    </section>
-  );
-}
-
-/** Mods tile: the selected instance's own mod icons as its picture, opening the browser. */
-function ModsTile({ status, count, onOpen }) {
-  const name = status?.selectedInstance?.name || "Daisy Default";
-  const t = useT();
-  const icons = useMemo(() => {
-    const seen = new Set();
-    const list = [];
-    for (const entry of Array.isArray(status?.installedMods) ? status.installedMods : []) {
-      const url = entry?.metadata?.iconUrl;
-      if (url && !seen.has(url)) { seen.add(url); list.push(url); }
-      if (list.length >= 15) break;
-    }
-    return list;
-  }, [status?.installedMods]);
-
-  return (
-    <button
-      type="button"
-      onClick={onOpen}
-      className="group relative flex h-[136px] overflow-hidden rounded-2xl border-2 border-border/80 bg-card p-6 text-left shadow-[3px_3px_0px_#080808] transition-all hover:border-primary/60 hover:shadow-[4px_4px_0px_#080808]"
-    >
-      {/* Two rows of four: wide enough to read as a wall of mods, narrow enough to stay
-          clear of the text on the left. */}
-      {icons.length ? (
-        <div className="pointer-events-none absolute right-6 top-1/2 grid -translate-y-1/2 grid-cols-4 gap-2 opacity-85 [mask-image:linear-gradient(to_right,transparent,black_35%)]">
-          {icons.slice(0, 8).map((url) => (
-            <img key={url} src={url} alt="" draggable={false} className="size-10 rounded-lg object-cover" />
-          ))}
-        </div>
-      ) : (
-        <Package className="pointer-events-none absolute right-6 top-1/2 size-16 -translate-y-1/2 text-muted-foreground/30" />
-      )}
-      {/* The text keeps to the half the icons fade out of. */}
-      <div className="relative flex min-w-0 max-w-[46%] flex-col justify-between">
-        <p className="m-kicker truncate" title={name}>{name}</p>
-        <div>
-          <div className="text-xl font-extrabold tracking-[-0.01em]">{t("Mods")}</div>
-          <div className="mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground transition-colors group-hover:text-foreground">
-            {t("{count} installed", { count })}
-            <ArrowRight className="size-3.5" />
-          </div>
-        </div>
-      </div>
-    </button>
-  );
-}
-
-/** Wardrobe tile: the heads of your saved skins, opening the wardrobe. */
-function WardrobeTile({ status, onOpen }) {
-  const t = useT();
-  const signedIn = Boolean(status?.auth?.signedIn);
-  const saved = Array.isArray(status?.skinHistory) ? status.skinHistory : [];
-  const skins = saved.slice(0, 4);
-
-  return (
-    <button
-      type="button"
-      onClick={onOpen}
-      className="group relative flex h-[136px] overflow-hidden rounded-2xl border-2 border-border/80 bg-card p-6 text-left shadow-[3px_3px_0px_#080808] transition-all hover:border-primary/60 hover:shadow-[4px_4px_0px_#080808]"
-    >
-      {skins.length ? (
-        <div className="pointer-events-none absolute right-6 top-1/2 flex -translate-y-1/2 -space-x-3">
-          {skins.map((skin) => (
-            <PlayerHead
-              key={skin.id}
-              skinUrl={skin.previewDataUrl || skin.previewFileUrl}
-              name={skin.name}
-              size={52}
-              className="rounded-xl border-2 border-card"
-            />
-          ))}
-        </div>
-      ) : (
-        <Shirt className="pointer-events-none absolute right-6 top-1/2 size-16 -translate-y-1/2 text-muted-foreground/30" />
-      )}
-      <div className="relative flex min-w-0 flex-col justify-between">
-        <p className="m-kicker">{t("Skins and capes")}</p>
-        <div>
-          <div className="text-xl font-extrabold tracking-[-0.01em]">{t("Wardrobe")}</div>
-          <div className="mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground transition-colors group-hover:text-foreground">
-            {signedIn ? t("{count} saved", { count: saved.length }) : t("Sign in to change your skin")}
-            <ArrowRight className="size-3.5" />
-          </div>
-        </div>
-      </div>
-    </button>
-  );
-}
-
-function ServerTile({ server, onJoin, disabled }) {
-  const t = useT();
-  const players = server.players;
-  // Same three states as the Classic list: a failed lookup is unknown, not offline.
-  const known = server.statusKnown !== false;
-  const offline = known && !server.online;
-  const joinable = Boolean(server.ip) && !offline;
-
-  return (
-    <div
-      className={cn(
-        "flex items-center gap-3 rounded-2xl border-2 border-border/80 bg-card px-4 py-3 shadow-[2px_2px_0px_#080808] transition-all hover:border-primary/60",
-        offline && "opacity-60"
-      )}
-    >
-      <div className="flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-accent">
-        {server.icon ? (
-          <img src={server.icon} alt="" className="size-full object-cover [image-rendering:pixelated]" />
-        ) : (
-          <Server className="size-4 text-muted-foreground" />
-        )}
-      </div>
-
-      <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2">
-          <span className="truncate text-sm font-bold">{server.name}</span>
-          {server.partner ? <Badge variant="default">{t("Partner")}</Badge> : null}
-        </div>
-        <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
-          <span
-            className={cn(
-              "size-1.5 shrink-0 rounded-full",
-              server.online ? "bg-success" : offline ? "bg-muted-foreground/40" : "bg-muted-foreground/25"
-            )}
-          />
-          {players ? (
-            <span className="inline-flex items-center gap-1">
-              <Users className="size-3" />
-              {players.online}/{players.max}
-            </span>
-          ) : (
-            <span>{server.online ? t("Online") : offline ? t("Offline") : t("Checking...")}</span>
-          )}
-          {server.ip ? (
-            <>
-              <span aria-hidden>·</span>
-              <ServerAddress ip={server.ip} partner={server.partner} />
-            </>
-          ) : null}
-        </div>
-      </div>
-
-      {server.discord ? (
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => api()?.openExternal(server.discord)}
-          title={t("Open Discord")}
-        >
-          <ExternalLink className="size-3.5" />
-        </Button>
-      ) : null}
-      <PlayBlock
-        size="sm"
-        tone="quiet"
-        disabled={disabled || !joinable}
-        onClick={() => onJoin(server)}
-        title={
-          !server.ip ? t("No address configured yet")
-            : offline ? t("{name} is offline", { name: server.name })
-            : t("Join {name}", { name: server.name })
-        }
-      >
-        {t("Join")}
-      </PlayBlock>
-    </div>
-  );
-}
-
-/**
- * Home in the Modern layout. Same data and actions as the Classic one (useServerList and
- * useLauncherActions are shared), arranged around pictures: the selected instance as a large
- * hero with your skin and Play, tiles for mods and the wardrobe, your other instances as
- * cards, then servers. Friends sit in a card down the right.
- */
-export function ModernHomeView({ status, refresh, notify, go, openInstance }) {
-  const t = useT();
-  const { servers, reachableServers, offlineServers } = useServerList();
-  const { busy, launch, stop } = useLauncherActions(notify);
-  const [showOffline, setShowOffline] = useState(false);
-  const [switching, setSwitching] = useState(false);
-  const [contentOpen, setContentOpen] = useState(false);
-
+  const selected = status?.selectedInstance;
   const instances = Array.isArray(status?.instances) ? status.instances : [];
   const cards = useInstanceCards(instances);
-  const selected = status?.selectedInstance;
-  const profile = status?.auth?.profile;
+  const card = cards[selected?.id];
   const running = Boolean(status?.running);
   const launching = status?.launchState === "launching";
   const disabled = busy || launching || running;
+  const log = useLatestLog();
+
+  const [switching, setSwitching] = useState(false);
+  const [contentOpen, setContentOpen] = useState(false);
+  const [showOffline, setShowOffline] = useState(false);
+  const [dismissMigration, setDismissMigration] = useState(false);
+
+  const { servers, reachableServers, offlineServers } = useServerList();
 
   const pick = async (id) => {
     if (!id || id === selected?.id) return;
@@ -387,151 +51,430 @@ export function ModernHomeView({ status, refresh, notify, go, openInstance }) {
     catch (e) { notify(String(e?.message || e), "error"); }
   };
 
-  const playInstance = async (instance) => {
-    if (instance.id !== selected?.id) await pick(instance.id);
+  const playInstance = async (inst) => {
+    if (inst.id !== selected?.id) await pick(inst.id);
     await launch("");
   };
 
-  // Most recently played first. Hidden with a single instance: the hero already shows it.
-  const recent = [...instances]
-    .sort((a, b) => (Number(b.lastPlayedAt) || 0) - (Number(a.lastPlayedAt) || 0))
-    .slice(0, 3);
+  // Recent instances for quick launch column (excluding currently selected)
+  const quickInstances = useMemo(() => {
+    return instances
+      .filter((i) => i.id !== selected?.id)
+      .sort((a, b) => (Number(b.lastPlayedAt) || 0) - (Number(a.lastPlayedAt) || 0))
+      .slice(0, 3);
+  }, [instances, selected?.id]);
 
   const modCount = cards[selected?.id]?.modCount ?? (Array.isArray(status?.installedMods) ? status.installedMods.length : 0);
+  const skins = Array.isArray(status?.skinHistory) ? status.skinHistory : [];
+  const activeSkin = skins.find((skin) => skin.active) || skins[0];
+  const capes = Array.isArray(profile?.capes) ? profile.capes : [];
+  const cape = capes.find((entry) => entry.active || entry.state === "ACTIVE");
+  const skin = profile ? resolveSkinTexture(status) : "";
+  const lastPlayed = formatLastPlayed(selected?.lastPlayedAt);
+
+  // Mod icons for grid
+  const modIcons = useMemo(() => {
+    const list = [];
+    const seen = new Set();
+    for (const entry of Array.isArray(status?.installedMods) ? status.installedMods : []) {
+      const url = entry?.metadata?.iconUrl;
+      const title = entry?.metadata?.name || entry?.name || "Mod";
+      if (url && !seen.has(url)) {
+        seen.add(url);
+        list.push({ url, title });
+      }
+      if (list.length >= 6) break;
+    }
+    return list;
+  }, [status?.installedMods]);
+
+  const halloween = useSeasonId() === "halloween";
 
   return (
-    <div className="flex h-full min-h-0">
-      <div className="min-w-0 flex-1 overflow-y-auto px-8 pb-8">
-        <header className="pb-6 pt-3">
-          <h1 className="truncate text-[26px] font-extrabold leading-tight tracking-[-0.02em]">
-            {profile ? (
-              <>
-                {t("Welcome back,")} <span className="text-primary">{profile.name}</span>
-              </>
-            ) : t("Welcome to Daisy")}
-          </h1>
+    <div className="flex h-full min-h-0 bg-[#0f0e0c] text-[#fffdf2]">
+      <div className="min-w-0 flex-1 overflow-y-auto px-8 pb-10">
+        
+        {/* Top bar: friendly 20px greeting */}
+        <header className="flex items-center justify-between py-6">
+          <div className="flex items-center gap-2.5">
+            <span className="text-xl">👋</span>
+            <span className="text-[20px] font-medium text-[#b8b2a3]">
+              {profile ? (
+                <>
+                  {t("Welcome back,")}{" "}
+                  <span className="font-bold text-[#fffdf2]">{profile.name}</span>
+                </>
+              ) : (
+                t("Welcome to Daisy")
+              )}
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-white/[0.08] bg-[#17150f] px-3 py-1 text-xs font-semibold text-[#ffd60a]">
+              <span className="size-2 rounded-full bg-[#ffd60a] animate-pulse" />
+              Daisy Client
+            </span>
+          </div>
         </header>
 
-        <div className="space-y-8">
+        {/* System notices if any */}
+        <div className="space-y-4 mb-6">
           <ModCompatibility status={status} refresh={refresh} notify={notify} />
           <CrashReport status={status} refresh={refresh} notify={notify} />
-          {!profile ? <SignInCard notify={notify} /> : null}
+          {!profile && <SignInCard notify={notify} />}
+        </div>
 
-          <div className="space-y-4">
-            <Hero
-              status={status}
-              card={cards[selected?.id]}
-              busy={busy}
-              launch={launch}
-              stop={stop}
-              onPick={pick}
-              notify={notify}
-            />
-            <div className="grid gap-4 lg:grid-cols-2">
-              <ModsTile status={status} count={modCount} onOpen={() => setContentOpen(true)} />
-              <WardrobeTile status={status} onOpen={() => go("wardrobe")} />
-            </div>
-          </div>
+        {/* 12-Column Bento Grid */}
+        <div className="grid grid-cols-12 gap-6">
 
-          {instances.length > 1 ? (
-            <section className="space-y-4">
-              <SectionHead
-                title={t("Your instances")}
-                action={(
-                  <button
-                    type="button"
-                    onClick={() => go("instances")}
-                    className="flex items-center gap-1 text-xs font-semibold text-muted-foreground transition-colors hover:text-foreground"
-                  >
-                    {t("See all")}<ArrowRight className="size-3.5" />
-                  </button>
-                )}
-              />
-              <div className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-4">
-                {recent.map((instance) => (
-                  <ModernInstanceCard
-                    key={instance.id}
-                    instance={instance}
-                    card={cards[instance.id]}
-                    selected={instance.id === selected?.id}
-                    disabled={disabled}
-                    onOpen={() => openInstance?.(instance.id)}
-                    onPlay={() => playInstance(instance)}
-                  />
-                ))}
+          {/* 1. Hero Tile (8 cols, ~380px tall) */}
+          <section className="relative col-span-12 xl:col-span-8 flex flex-col justify-between overflow-hidden rounded-[24px] border border-white/[0.12] p-8 shadow-[0_8px_32px_rgba(0,0,0,0.5)] transition-all hover:border-white/[0.2] min-h-[380px]">
+            {/* Rich Minecraft Landscape Backdrop in Hero Bento Tile with positive z-index 0 underneath z-10 content */}
+            <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+              <div className="absolute inset-0 scale-105">
+                <img
+                  src="../assets/home-hero-custom.jpg"
+                  alt=""
+                  className="size-full object-cover hero-drift"
+                />
               </div>
-            </section>
-          ) : null}
+              {/* Refined gradient overlay: keeps the gorgeous river, mountain, and cherry trees visible while making text sharp */}
+              <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/45 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-black/30" />
+              {/* Soft yellow spotlight behind 3D skin */}
+              <div className="absolute right-12 top-1/2 size-72 -translate-y-1/2 rounded-full bg-[#ffd60a]/15 blur-3xl pointer-events-none" />
+            </div>
 
-          <section className="space-y-4">
-            <SectionHead title={t("Servers")} />
-            {servers.length ? (
-              <div className="space-y-3">
-                <div className="grid gap-3 xl:grid-cols-2">
-                  {reachableServers.map((server) => (
-                    <ServerTile
-                      key={`${server.ip || "?"}:${server.name}`}
-                      server={server}
-                      disabled={disabled}
-                      onJoin={(s) => launch(s.ip)}
-                    />
-                  ))}
+            {/* Top info kicker */}
+            <div className="relative z-10 flex items-center gap-2">
+              <span className="text-xs font-bold uppercase tracking-wider text-[#ffd60a]">
+                {running ? t("In game") : launching ? t("Starting...") : t("Ready to play")}
+              </span>
+            </div>
+
+            {/* Left Content */}
+            <div className="relative z-10 max-w-lg my-auto pt-4">
+              <h1 className="font-display text-[46px] font-bold leading-tight tracking-[-0.03em] text-[#fffdf2]">
+                {selected?.name || "Daisy 1.21.11"}
+              </h1>
+
+              {/* Version & Metadata Chips */}
+              <div className="mt-3.5 flex flex-wrap items-center gap-2 text-[13px]">
+                <span className="rounded-lg border border-white/[0.08] bg-white/[0.04] px-2.5 py-1 font-medium text-[#fffdf2]">
+                  {instanceVersionLabel(selected) || "Fabric 1.21.11"}
+                </span>
+                <span className="rounded-lg border border-white/[0.08] bg-white/[0.04] px-2.5 py-1 font-medium text-[#b8b2a3]">
+                  {t("{count} mods", { count: modCount || 0 })}
+                </span>
+                <span className="rounded-lg border border-white/[0.08] bg-white/[0.04] px-2.5 py-1 font-medium text-[#b8b2a3]">
+                  <PlaytimeStat settings={status?.settings} notify={notify} />
+                </span>
+                {lastPlayed && (
+                  <span className="rounded-lg border border-white/[0.08] bg-white/[0.04] px-2.5 py-1 font-medium text-[#b8b2a3]">
+                    {lastPlayed}
+                  </span>
+                )}
+              </div>
+
+              {/* Play & Settings Actions */}
+              <div className="mt-8 flex flex-wrap items-center gap-4">
+                {running ? (
+                  <PlayBlock
+                    size="lg"
+                    danger
+                    busy={busy}
+                    onClick={stop}
+                  >
+                    {t("Stop")}
+                  </PlayBlock>
+                ) : (
+                  <PlayBlock
+                    size="lg"
+                    busy={launching || busy}
+                    disabled={disabled}
+                    onClick={() => launch("")}
+                  >
+                    {launching || busy ? t("Launching") : t("Play")}
+                  </PlayBlock>
+                )}
+
+                <button
+                  type="button"
+                  onClick={() => openInstance?.(selected?.id)}
+                  className="flex h-14 items-center gap-2 rounded-xl border border-white/[0.12] bg-white/[0.05] px-5 text-sm font-semibold text-[#fffdf2] shadow-sm backdrop-blur-sm transition-all hover:border-[#ffd60a]/40 hover:bg-white/[0.1] active:scale-[0.98]"
+                >
+                  <Settings2 className="size-4 text-[#ffd60a]" />
+                  <span>{t("Instance settings")}</span>
+                </button>
+              </div>
+
+              {launching && log && (
+                <p className="mt-3 truncate text-xs text-[#b8b2a3]">{log}</p>
+              )}
+            </div>
+
+            {/* Right: 3D Player Skin Showcase */}
+            {skin ? (
+              <div className="absolute right-6 bottom-0 top-6 hidden w-[270px] xl:block pointer-events-auto">
+                <div className="relative size-full">
+                  <SkinViewer
+                    texture={skin}
+                    slim={activeSkin?.variant === "slim"}
+                    cape={cape?.url || ""}
+                    spin={false}
+                    idle
+                    scale={8}
+                    className="absolute inset-0"
+                  />
                 </div>
-                {offlineServers.length ? (
-                  <div>
+              </div>
+            ) : null}
+          </section>
+
+          {/* 2. Quick Launch / Instances Column (4 cols) */}
+          <section className="col-span-12 xl:col-span-4 flex flex-col justify-between rounded-[24px] border border-white/[0.08] bg-[#17150f] p-6 shadow-[0_8px_32px_rgba(0,0,0,0.5)]">
+            <div className="flex items-center justify-between pb-3">
+              <h2 className="font-display text-lg font-bold text-[#fffdf2]">{t("Quick launch")}</h2>
+              <button
+                type="button"
+                onClick={() => go("instances")}
+                className="flex items-center gap-1 text-xs font-semibold text-[#ffd60a] hover:underline"
+              >
+                {t("See all")}
+                <ArrowRight className="size-3" />
+              </button>
+            </div>
+
+            <div className="flex-1 space-y-2.5 my-2">
+              {quickInstances.length > 0 ? (
+                quickInstances.map((inst) => (
+                  <div
+                    key={inst.id}
+                    className="group flex items-center justify-between rounded-xl border border-white/[0.05] bg-white/[0.02] p-3 transition-all hover:border-[#ffd60a]/40 hover:bg-white/[0.05]"
+                  >
+                    <div className="min-w-0 pr-3">
+                      <div className="truncate text-sm font-bold text-[#fffdf2]">{inst.name}</div>
+                      <div className="truncate text-xs text-[#b8b2a3]">
+                        {instanceVersionLabel(inst) || "Fabric"}
+                      </div>
+                    </div>
                     <button
                       type="button"
-                      onClick={() => setShowOffline((v) => !v)}
-                      className="flex w-full items-center justify-between rounded-md px-1 py-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
+                      onClick={() => playInstance(inst)}
+                      disabled={disabled}
+                      className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-white/[0.06] text-[#fffdf2] transition-colors hover:bg-[#ffd60a] hover:text-[#0f0e0c]"
+                      title={t("Play")}
                     >
-                      <span>{t("Offline")}</span>
-                      <span className="flex items-center gap-1.5">
-                        {offlineServers.length}
-                        <ChevronDown className={cn("size-3.5 transition-transform", showOffline && "rotate-180")} />
-                      </span>
+                      <Play className="size-4 fill-current ml-0.5" />
                     </button>
-                    {showOffline ? (
-                      <div className="mt-2 grid gap-3 xl:grid-cols-2">
-                        {offlineServers.map((server) => (
-                          <ServerTile
-                            key={`${server.ip || "?"}:${server.name}`}
-                            server={server}
-                            disabled={disabled}
-                            onJoin={(s) => launch(s.ip)}
-                          />
-                        ))}
-                      </div>
-                    ) : null}
                   </div>
-                ) : null}
-              </div>
-            ) : (
-              <div className="flex flex-col items-center gap-2 rounded-xl border border-dashed border-border/70 py-12 text-center">
-                <Server className="size-6 text-muted-foreground" />
-                <div className="text-sm font-medium">{t("No servers yet")}</div>
-                <p className="text-xs text-muted-foreground">{t("Servers you join show up here.")}</p>
-              </div>
-            )}
+                ))
+              ) : (
+                <div className="flex h-36 flex-col items-center justify-center text-center text-xs text-[#b8b2a3]">
+                  <span>{t("No other instances yet.")}</span>
+                </div>
+              )}
+            </div>
+
+            <button
+              type="button"
+              onClick={() => go("instances")}
+              className="flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-white/[0.12] py-2.5 text-xs font-semibold text-[#b8b2a3] transition-colors hover:border-[#ffd60a] hover:text-[#ffd60a]"
+            >
+              <Plus className="size-4" />
+              <span>{t("Create new instance")}</span>
+            </button>
           </section>
 
-          <section className="flex flex-wrap items-center justify-between gap-3 border-t border-border/60 pt-6">
-            <div className="flex min-w-0 items-center gap-3">
-              <FolderInput className="size-4 shrink-0 text-muted-foreground" />
-              <div className="min-w-0">
-                <h2 className="text-sm font-semibold">{t("Coming from another launcher?")}</h2>
-                <p className="mt-0.5 text-xs text-muted-foreground">
-                  {t("Bring your worlds, packs and servers into Daisy. Your old profile stays untouched.")}
+          {/* 3. Mods Bento Tile (4 cols) */}
+          <section className="col-span-12 md:col-span-6 xl:col-span-4 flex flex-col justify-between rounded-[24px] border border-white/[0.08] bg-[#17150f] p-6 shadow-[0_8px_32px_rgba(0,0,0,0.5)] transition-all hover:border-white/[0.14]">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="font-display text-lg font-bold text-[#fffdf2]">{t("Mods")}</h2>
+                <p className="text-xs text-[#b8b2a3]">{t("{count} installed", { count: modCount })}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setContentOpen(true)}
+                className="text-xs font-semibold text-[#ffd60a] hover:underline"
+              >
+                {t("Manage mods →")}
+              </button>
+            </div>
+
+            {/* Mod Icons Grid */}
+            <div className="my-5 grid grid-cols-3 gap-3">
+              {modIcons.length > 0 ? (
+                modIcons.map((mod, i) => (
+                  <div
+                    key={i}
+                    title={mod.title}
+                    className="group relative flex size-16 items-center justify-center rounded-2xl border border-white/[0.06] bg-white/[0.02] p-2 transition-transform hover:scale-105"
+                  >
+                    <img src={mod.url} alt="" className="size-full rounded-xl object-contain" />
+                  </div>
+                ))
+              ) : (
+                <div className="col-span-3 py-6 text-center text-xs text-[#b8b2a3]">
+                  {t("No mods installed yet.")}
+                </div>
+              )}
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setContentOpen(true)}
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-white/[0.04] py-2.5 text-xs font-semibold text-[#fffdf2] transition-colors hover:bg-white/[0.08]"
+            >
+              <Plus className="size-3.5" />
+              <span>{t("Browse more mods")}</span>
+            </button>
+          </section>
+
+          {/* 4. Wardrobe Bento Tile (4 cols) */}
+          <section className="col-span-12 md:col-span-6 xl:col-span-4 flex flex-col justify-between rounded-[24px] border border-white/[0.08] bg-[#17150f] p-6 shadow-[0_8px_32px_rgba(0,0,0,0.5)] transition-all hover:border-white/[0.14]">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="font-display text-lg font-bold text-[#fffdf2]">{t("Wardrobe")}</h2>
+                <p className="text-xs text-[#b8b2a3]">
+                  {profile ? t("{count} saved", { count: skins.length }) : t("Custom skin")}
                 </p>
               </div>
+              <button
+                type="button"
+                onClick={() => go("wardrobe")}
+                className="text-xs font-semibold text-[#ffd60a] hover:underline"
+              >
+                {t("Open wardrobe →")}
+              </button>
             </div>
-            <Button variant="outline" size="sm" onClick={() => setSwitching(true)}>
-              {t("Switch to Daisy")}
-            </Button>
+
+            <div className="my-4 flex items-center justify-center py-2">
+              {profile ? (
+                <div className="relative rounded-2xl border border-white/[0.1] bg-white/[0.03] p-3 shadow-inner">
+                  <PlayerHead
+                    skinUrl={resolveSkinTexture(status)}
+                    name={profile.name}
+                    size={84}
+                    className="rounded-xl shadow-lg"
+                  />
+                  <span className="absolute -bottom-1 -right-1 rounded-md bg-[#ffd60a] px-1.5 py-0.5 text-[9px] font-bold text-[#0f0e0c]">
+                    Active
+                  </span>
+                </div>
+              ) : (
+                <Shirt className="size-16 text-[#b8b2a3]/40" />
+              )}
+            </div>
+
+            <button
+              type="button"
+              onClick={() => go("wardrobe")}
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-white/[0.04] py-2.5 text-xs font-semibold text-[#fffdf2] transition-colors hover:bg-white/[0.08]"
+            >
+              <Plus className="size-3.5" />
+              <span>{t("Add skin")}</span>
+            </button>
           </section>
+
+          {/* 5. Servers Bento Tile (4 cols) */}
+          <section className="col-span-12 md:col-span-12 xl:col-span-4 flex flex-col justify-between rounded-[24px] border border-white/[0.08] bg-[#17150f] p-6 shadow-[0_8px_32px_rgba(0,0,0,0.5)] transition-all hover:border-white/[0.14]">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="font-display text-lg font-bold text-[#fffdf2]">{t("Servers")}</h2>
+                <p className="text-xs text-[#b8b2a3]">{t("Multiplayer servers")}</p>
+              </div>
+            </div>
+
+            <div className="my-4 flex-1">
+              {servers.length > 0 ? (
+                <div className="space-y-2">
+                  {reachableServers.slice(0, 2).map((srv) => (
+                    <div
+                      key={srv.name}
+                      className="flex items-center justify-between rounded-xl border border-white/[0.05] bg-white/[0.02] p-2.5"
+                    >
+                      <div className="min-w-0 pr-2">
+                        <div className="truncate text-xs font-bold text-[#fffdf2]">{srv.name}</div>
+                        <div className="truncate text-[11px] text-[#b8b2a3]">
+                          {srv.players ? `${srv.players.online}/${srv.players.max} online` : "Online"}
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => launch(srv.ip)}
+                        disabled={disabled}
+                        className="rounded-lg bg-white/[0.06] px-2.5 py-1 text-xs font-semibold text-[#ffd60a] hover:bg-[#ffd60a] hover:text-[#0f0e0c]"
+                      >
+                        {t("Join")}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-4 text-center">
+                  <Server className="size-8 text-[#b8b2a3]/40 mb-1" />
+                  <span className="text-sm font-semibold text-[#fffdf2]">{t("No servers yet")}</span>
+                  <p className="text-xs text-[#b8b2a3] mt-0.5">{t("Servers you join show up here.")}</p>
+                </div>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2 pt-1">
+              <button
+                type="button"
+                onClick={() => notify(t("Use In-Game Multiplayer to add servers."), "info")}
+                className="flex-1 rounded-xl bg-white/[0.04] py-2 text-xs font-semibold text-[#fffdf2] hover:bg-white/[0.08]"
+              >
+                {t("Add server")}
+              </button>
+              <button
+                type="button"
+                onClick={() => notify(t("Browse popular servers in community hub."), "info")}
+                className="flex-1 rounded-xl bg-white/[0.04] py-2 text-xs font-semibold text-[#ffd60a] hover:bg-white/[0.08]"
+              >
+                {t("Browse popular")}
+              </button>
+            </div>
+          </section>
+
+          {/* 6. Slim Dismissible Migration Banner */}
+          {!dismissMigration && (
+            <section className="col-span-12 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-white/[0.08] bg-gradient-to-r from-[#17150f] to-[#1e1c15] px-6 py-4 shadow-sm">
+              <div className="flex items-center gap-3.5">
+                <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-[#ffd60a]/15 text-[#ffd60a]">
+                  <FolderInput className="size-5" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-[#fffdf2]">{t("Coming from another launcher?")}</h3>
+                  <p className="text-xs text-[#b8b2a3]">
+                    {t("Bring your worlds, packs and servers into Daisy. Your old profile stays untouched.")}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setSwitching(true)}
+                  className="rounded-xl border-[#ffd60a]/50 text-[#ffd60a] hover:bg-[#ffd60a]/10"
+                >
+                  {t("Switch to Daisy")}
+                </Button>
+                <button
+                  type="button"
+                  onClick={() => setDismissMigration(true)}
+                  className="text-[#b8b2a3] hover:text-[#fffdf2] p-1"
+                  title="Dismiss"
+                >
+                  <X className="size-4" />
+                </button>
+              </div>
+            </section>
+          )}
+
         </div>
       </div>
-
-
 
       <ImportInstancesDialog
         open={switching}

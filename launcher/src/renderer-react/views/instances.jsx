@@ -936,10 +936,12 @@ export function InstancesView({ status, refresh, notify, openInstance }) {
           <button
             type="button"
             onClick={() => setCreating(true)}
-            className="flex min-h-52 flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-border/70 text-muted-foreground transition-colors hover:border-primary/60 hover:text-foreground"
+            className="flex min-h-52 flex-col items-center justify-center gap-2.5 rounded-2xl border-2 border-dashed border-border/80 text-muted-foreground transition-all hover:border-primary hover:bg-primary/5 hover:text-primary hover:shadow-[3px_3px_0px_#080808]"
           >
-            <Plus className="size-6" />
-            <span className="text-sm font-semibold">{t("New instance")}</span>
+            <div className="flex size-12 items-center justify-center rounded-xl border-2 border-primary/60 bg-primary/20 text-primary shadow-[2px_2px_0px_#080808]">
+              <Plus className="size-6 stroke-[3]" />
+            </div>
+            <span className="text-sm font-black uppercase tracking-wider">{t("New instance")}</span>
           </button>
         </div>
       ) : instances.length ? (
