@@ -356,7 +356,7 @@ const clientModVersion = readLauncherPackageVersion();
 try {
   app.setVersion(clientModVersion);
 } catch { }
-const clientModJarName = `clientcore-${clientModVersion}.jar`;
+const clientModJarName = `daisy-client-${clientModVersion}.jar`;
 const launcherUserAgent = `DaisyClientLauncher/${clientModVersion} (realvoidgojo)`;
 
 /*
@@ -457,12 +457,12 @@ function requiredJavaMajor(mcVersion) {
 }
 
 /**
- * The Minecraft version a clientcore jar is built for, read from a Fabric-style `+<mc>`
- * suffix in the file name (e.g. `clientcore-0.1.5.2+1.21.4.jar`). Legacy unsuffixed jars
- * (`clientcore-0.1.5.2.jar`) predate multi-version support and are the default 1.21.11 build.
+ * The Minecraft version a core client jar is built for, read from a Fabric-style `+<mc>`
+ * suffix in the file name (e.g. `daisy-client-0.2.8.1+1.21.4.jar` or legacy `clientcore-0.1.5.2+1.21.4.jar`).
+ * Legacy unsuffixed jars predate multi-version support and are the default 1.21.11 build.
  */
 function clientcoreJarMcVersion(fileName) {
-  const m = String(fileName || "").match(/clientcore-[\w.]*?\+(\d+\.\d+(?:\.\d+)?)\.jar(?:\.disabled)?$/i);
+  const m = String(fileName || "").match(/(?:daisy-client|clientcore)-[\w.]*?\+(\d+\.\d+(?:\.\d+)?)\.jar(?:\.disabled)?$/i);
   return m ? m[1] : DEFAULT_MC_VERSION;
 }
 
@@ -470,10 +470,10 @@ function clientcoreJarMatchesMc(fileName, mcVersion) {
   return clientcoreJarMcVersion(fileName) === String(mcVersion || DEFAULT_MC_VERSION);
 }
 
-/** The clientcore jar file name this launcher build ships for a given Minecraft version. */
+/** The daisy-client jar file name this launcher build ships for a given Minecraft version. */
 function clientcoreJarNameFor(mcVersion) {
   const v = String(mcVersion || DEFAULT_MC_VERSION);
-  return v === DEFAULT_MC_VERSION ? clientModJarName : `clientcore-${clientModVersion}+${v}.jar`;
+  return v === DEFAULT_MC_VERSION ? clientModJarName : `daisy-client-${clientModVersion}+${v}.jar`;
 }
 
 /** The Minecraft version of the instance at `instancePath` (falls back to selected/default). */
@@ -492,7 +492,7 @@ function instanceMcVersion(instancePath) {
   return DEFAULT_MC_VERSION;
 }
 
-/** Prefer exact versioned jar; else any clientcore-*.jar built for `mcVersion` (name may differ from launcher semver until next restart). */
+/** Prefer exact versioned jar; else any daisy-client-*.jar or legacy clientcore-*.jar built for `mcVersion`. */
 function findCoreClientJarInMods(instancePath, mcVersion = instanceMcVersion(instancePath)) {
   const modsDir = path.join(instancePath, "mods");
   const preferred = path.join(modsDir, clientcoreJarNameFor(mcVersion));
@@ -501,13 +501,13 @@ function findCoreClientJarInMods(instancePath, mcVersion = instanceMcVersion(ins
     if (!fs.existsSync(modsDir)) return preferred;
     for (const file of fs.readdirSync(modsDir)) {
       const n = String(file || "");
-      if (/^clientcore-[\w.+-]+\.jar$/i.test(n) && clientcoreJarMatchesMc(n, mcVersion)) return path.join(modsDir, file);
+      if (/^(?:daisy-client|clientcore)-[\w.+-]+\.jar$/i.test(n) && clientcoreJarMatchesMc(n, mcVersion)) return path.join(modsDir, file);
     }
   } catch { }
   return preferred;
 }
 
-const CLIENTCORE_MOD_PATTERN = /^clientcore-[\w.+-]*\.jar(\.disabled)?$/i;
+const CLIENTCORE_MOD_PATTERN = /^(?:daisy-client|clientcore)-[\w.+-]*\.jar(\.disabled)?$/i;
 
 /** Patterns for the removed River in-game Fabric mod artifacts. */
 const RIVER_INGAME_JAR_PATTERNS = [
@@ -590,7 +590,7 @@ function resolveRiverRuntimeJars(mcVersion = DEFAULT_MC_VERSION) {
   };
   const findClientIn = (dirs) => {
     for (const dir of dirs) {
-      const jar = newestJarMatching(dir, /^clientcore-[\w.+-]*\.jar$/i, (f) => clientcoreJarMatchesMc(f, mcVersion));
+      const jar = newestJarMatching(dir, /^(?:daisy-client|clientcore)-[\w.+-]*\.jar$/i, (f) => clientcoreJarMatchesMc(f, mcVersion));
       if (jar) return jar;
     }
     return "";
@@ -712,7 +712,7 @@ async function prefetchRiverModJar(mcVersion) {
 function pruneRiverModCache(cacheDir, mcVersion, keepName) {
   try {
     for (const file of fs.readdirSync(cacheDir)) {
-      if (file === keepName || !/^clientcore-[\w.+-]*\.jar$/i.test(file) || !clientcoreJarMatchesMc(file, mcVersion)) continue;
+      if (file === keepName || !/^(?:daisy-client|clientcore)-[\w.+-]*\.jar$/i.test(file) || !clientcoreJarMatchesMc(file, mcVersion)) continue;
       fs.rmSync(path.join(cacheDir, file), { force: true });
       emit("launcher:log", `[river] Removed an older download of River: ${file}`);
     }
@@ -3353,7 +3353,7 @@ function listRiverRuntimeEntries(instancePath) {
   const runtimeDir = path.join(instancePath, "river-runtime");
   if (!fs.existsSync(runtimeDir)) return [];
   const runtimeMeta = [
-    { pattern: /^clientcore-[\w.+-]*\.jar$/i, title: "Daisy", author: "realvoidgojo" },
+    { pattern: /^(?:daisy-client|clientcore)-[\w.+-]*\.jar$/i, title: "Daisy", author: "realvoidgojo" },
     { pattern: /^river-bootstrap-[\w.+-]*\.jar$/i, title: "River Bootstrap", author: "realvoidgojo" },
     { pattern: /^river-ingame-ui-[\w.+-]*\.jar$/i, title: "River In-Game UI", author: "realvoidgojo" }
   ];

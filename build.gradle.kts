@@ -39,7 +39,7 @@ version = "0.2.8.1+$minecraftVersion"
 group = "dev.wyz"
 
 base {
-    archivesName.set("clientcore")
+    archivesName.set("daisy-client")
 }
 
 repositories {

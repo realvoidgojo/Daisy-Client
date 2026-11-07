@@ -22,12 +22,14 @@ for v in VERSIONS:
         print(f"Warning: {libs_dir} does not exist!")
         continue
     
-    # Find matching clientcore jar (exclude -sources, -dev if any)
-    jars = [j for j in os.listdir(libs_dir) if j.endswith(".jar") and not j.endswith("-sources.jar") and not j.endswith("-dev.jar")]
+    # Find matching daisy-client or clientcore jar (exclude -sources, -dev if any)
+    jars = [j for j in os.listdir(libs_dir) if j.endswith(".jar") and not j.endswith("-sources.jar") and not j.endswith("-dev.jar") and (j.startswith("daisy-client-") or j.startswith("clientcore-"))]
     if not jars:
         print(f"No jar found for {v} in {libs_dir}")
         continue
     
+    # Prefer daisy-client-
+    jars.sort(key=lambda x: (not x.startswith("daisy-client-"), x))
     jar_name = jars[0]
     src_jar = os.path.join(libs_dir, jar_name)
     
