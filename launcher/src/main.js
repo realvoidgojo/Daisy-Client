@@ -831,13 +831,16 @@ function ensureBundledClientCoreMod(instancePath, mcVersion = instanceMcVersion(
   } catch { }
 
   const manifest = readModManifest(root);
+  const daisyIconDataUrl = getJarIconDataUrl(targetPath) || "";
   manifest.mods[targetName] = {
     ...(manifest.mods[targetName] || {}),
     file: targetName,
     title: "Daisy",
+    name: "Daisy",
     author: "realvoidgojo",
     source: "river",
-    disabled: false
+    disabled: false,
+    iconUrl: daisyIconDataUrl || (manifest.mods[targetName] || {}).iconUrl || ""
   };
   writeModManifest(root, manifest);
 
@@ -3394,13 +3397,17 @@ function getInstalledMods(instancePath) {
       const meta = manifest.mods[file] || null;
       // Prefer any icon the manifest already resolved (Modrinth), otherwise pull the
       // icon embedded in the jar so hand-dropped mods still get one.
+      const isDaisyCore = isCoreClientMod(file);
       const iconUrl = (meta && meta.iconUrl) || getJarIconDataUrl(full) || "";
+      const effectiveMeta = isDaisyCore
+        ? { ...(meta || {}), title: "Daisy", name: "Daisy", author: "realvoidgojo", iconUrl }
+        : (iconUrl ? { ...(meta || {}), iconUrl } : meta);
       return {
         file,
         path: full,
         disabled: file.toLowerCase().endsWith(".disabled"),
-        required: isCoreClientMod(file),
-        metadata: iconUrl ? { ...(meta || {}), iconUrl } : meta,
+        required: isDaisyCore,
+        metadata: effectiveMeta,
         update: manifest.updates[updateKey("mod", file)] || manifest.updates[file] || null,
         conflicts: getConflictsForInstalledFile(file, manifest)
       };
@@ -4779,6 +4786,10 @@ function createInstance(request, options = {}) {
   // deliberately NOT copied - a new instance starts with a clean mods/worlds set.
   // A modpack brings its own settings, so it starts from those instead.
   const inherited = options.inherit === false ? [] : inheritInstanceSettings(readSettings().instancePath, instancePath);
+  if (river) {
+    ensureBundledClientCoreMod(instancePath, version);
+    ensureRequiredSupportMods(instancePath, version, "fabric", "daisy-support-create").catch(() => { });
+  }
   if (daisySkin) {
     ensureDaisySkinMod(instancePath, version, true);
     // Automatically install Fabric API and Fabric Language Kotlin dependencies for the skin mod

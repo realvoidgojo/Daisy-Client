@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "clientcore",
   "version": "${version}",
-  "name": "Fabric + Daisy",
+  "name": "Daisy",
   "icon": "assets/clientcore/icon.png",
   "description": "A Fabric ${minecraft_version} PvP-friendly client by realvoidgojo.",
   "authors": [
