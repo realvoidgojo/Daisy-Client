@@ -114,7 +114,7 @@ function LoaderPicker({ loader, onChange }) {
   const t = useT();
   const modern = useModern();
   return (
-    <div className={cn("grid grid-cols-3 gap-1.5", modern && "gap-2")} role="radiogroup" aria-label={t("Loader")}>
+    <div className={cn("grid grid-cols-3 gap-2", modern && "gap-2.5")} role="radiogroup" aria-label={t("Loader")}>
       {LOADERS.map((item) => {
         const on = loader === item.id;
         return (
@@ -125,11 +125,11 @@ function LoaderPicker({ loader, onChange }) {
             aria-checked={on}
             onClick={() => onChange(item.id)}
             className={cn(
-              "flex min-w-0 flex-col items-center justify-center gap-1.5 border text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-              modern ? "h-16 rounded-lg px-2" : "h-[58px] rounded-md px-1.5 font-medium",
+              "flex min-w-0 flex-col items-center justify-center gap-1.5 border-2 text-xs font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+              modern ? "h-16 rounded-xl px-2" : "h-[58px] rounded-lg px-1.5",
               on
-                ? modern ? "border-primary/60 bg-primary/15 text-foreground" : "border-primary/50 bg-accent text-foreground"
-                : modern ? "border-border/60 bg-card text-muted-foreground hover:border-border hover:text-foreground" : "border-border bg-card text-muted-foreground hover:bg-accent/40"
+                ? "border-primary bg-primary/20 text-primary shadow-[2px_2px_0px_#080808]"
+                : "border-border/70 bg-card text-muted-foreground hover:border-border hover:bg-accent/60 hover:text-foreground"
             )}
           >
             <LoaderIcon id={item.id} className={cn("size-6", on ? "text-primary" : "")} />
@@ -409,14 +409,14 @@ function CreateInstanceDialog({ open, onOpenChange, onCreated, notify, versions 
             {/* Daisy Skin feature toggle for Fabric-based loaders */}
             <div
               className={cn(
-                "flex items-center justify-between rounded-lg border border-border/60 bg-card/60 px-3 py-2 transition-opacity",
+                "flex items-center justify-between rounded-xl border-2 border-border/70 bg-card/70 px-3.5 py-2.5 shadow-[2px_2px_0px_#080808] transition-opacity",
                 (loader === "river" || loader === "fabric") ? "opacity-100" : "opacity-35 pointer-events-none"
               )}
             >
               <div className="space-y-0.5">
                 <div className="flex items-center gap-1.5">
-                  <Label htmlFor="daisy-skin-toggle" className="text-xs font-semibold">{t("Daisy Skin")}</Label>
-                  <Badge variant="outline" className="text-[10px] text-primary border-primary/40">{t("Client-side")}</Badge>
+                  <Label htmlFor="daisy-skin-toggle" className="text-xs font-bold">{t("Daisy Skin")}</Label>
+                  <Badge variant="outline" className="text-[10px] text-primary border-primary/60 font-bold">{t("Client-side")}</Badge>
                 </div>
                 <p className="text-[11px] text-muted-foreground">{t("Use wardrobe skin in this instance. Works offline & on SMPs.")}</p>
               </div>
@@ -428,9 +428,9 @@ function CreateInstanceDialog({ open, onOpenChange, onCreated, notify, versions 
               />
             </div>
 
-            <div className="flex items-center justify-between rounded-lg border border-border/60 bg-card/60 px-3 py-2">
+            <div className="flex items-center justify-between rounded-xl border-2 border-border/70 bg-card/70 px-3.5 py-2.5 shadow-[2px_2px_0px_#080808]">
               <div className="space-y-0.5">
-                <Label htmlFor="install-now-toggle" className="text-xs font-semibold">{t("Download and install now")}</Label>
+                <Label htmlFor="install-now-toggle" className="text-xs font-bold">{t("Download and install now")}</Label>
                 <p className="text-[11px] text-muted-foreground">{t("Download client jar, libraries, and assets immediately")}</p>
               </div>
               <Switch id="install-now-toggle" checked={installNow} onCheckedChange={setInstallNow} />

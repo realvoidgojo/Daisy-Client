@@ -82,7 +82,7 @@ function Hero({ status, card, busy, launch, stop, onPick, notify }) {
   const halloween = useSeasonId() === "halloween";
 
   return (
-    <section className="relative isolate overflow-hidden rounded-xl border border-border/60 bg-card">
+    <section className="relative isolate overflow-hidden rounded-2xl border-2 border-border/80 bg-card shadow-[4px_4px_0px_#080808] transition-all hover:border-primary/60">
       <div className="absolute inset-0 -z-10">
         {halloween ? <NightSky drift /> : <InstanceArt instanceId={selected?.id} card={card} drift />}
         <div
@@ -210,7 +210,7 @@ function ModsTile({ status, count, onOpen }) {
     <button
       type="button"
       onClick={onOpen}
-      className="group relative flex h-[136px] overflow-hidden rounded-xl border border-border/60 bg-card p-6 text-left transition-colors hover:border-primary/50"
+      className="group relative flex h-[136px] overflow-hidden rounded-2xl border-2 border-border/80 bg-card p-6 text-left shadow-[3px_3px_0px_#080808] transition-all hover:border-primary/60 hover:shadow-[4px_4px_0px_#080808]"
     >
       {/* Two rows of four: wide enough to read as a wall of mods, narrow enough to stay
           clear of the text on the left. */}
@@ -249,7 +249,7 @@ function WardrobeTile({ status, onOpen }) {
     <button
       type="button"
       onClick={onOpen}
-      className="group relative flex h-[136px] overflow-hidden rounded-xl border border-border/60 bg-card p-6 text-left transition-colors hover:border-primary/50"
+      className="group relative flex h-[136px] overflow-hidden rounded-2xl border-2 border-border/80 bg-card p-6 text-left shadow-[3px_3px_0px_#080808] transition-all hover:border-primary/60 hover:shadow-[4px_4px_0px_#080808]"
     >
       {skins.length ? (
         <div className="pointer-events-none absolute right-6 top-1/2 flex -translate-y-1/2 -space-x-3">
@@ -291,7 +291,7 @@ function ServerTile({ server, onJoin, disabled }) {
   return (
     <div
       className={cn(
-        "flex items-center gap-3 rounded-xl border border-border/60 bg-card px-4 py-3 transition-colors hover:border-border",
+        "flex items-center gap-3 rounded-2xl border-2 border-border/80 bg-card px-4 py-3 shadow-[2px_2px_0px_#080808] transition-all hover:border-primary/60",
         offline && "opacity-60"
       )}
     >

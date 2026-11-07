@@ -22,7 +22,7 @@ export const DialogOverlay = React.forwardRef(({ className, ...props }, ref) => 
 DialogOverlay.displayName = "DialogOverlay";
 
 export const DialogContent = React.forwardRef(({ className, children, ...props }, ref) => {
-  // Modern: rounder, roomier, and a close button with a real hit area.
+  // Modern: Neo-Brutalist border & offset shadow for modal
   const modern = useModern();
   return (
     <DialogPortal>
@@ -30,8 +30,8 @@ export const DialogContent = React.forwardRef(({ className, children, ...props }
       <DialogPrimitive.Content
         ref={ref}
         className={cn(
-          "fixed left-1/2 top-1/2 z-50 grid w-full max-w-lg -translate-x-1/2 -translate-y-1/2 gap-4 border bg-popover shadow-lg duration-150 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
-          modern ? "rounded-xl border-border/70 p-6" : "rounded-lg border-border p-5",
+          "fixed left-1/2 top-1/2 z-50 grid w-full max-w-lg -translate-x-1/2 -translate-y-1/2 gap-4 border-2 border-border/90 bg-popover text-popover-foreground shadow-[6px_6px_0px_#080808] duration-150 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
+          modern ? "rounded-2xl p-6" : "rounded-xl p-5",
           className
         )}
         {...props}
@@ -41,7 +41,7 @@ export const DialogContent = React.forwardRef(({ className, children, ...props }
           className={cn(
             "absolute right-4 top-4 text-muted-foreground focus:outline-none",
             modern
-              ? "flex size-8 items-center justify-center rounded-lg transition-colors hover:bg-accent hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
+              ? "flex size-8 items-center justify-center rounded-lg border border-transparent transition-colors hover:border-border hover:bg-accent hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
               : "rounded-sm opacity-70 transition-opacity hover:opacity-100"
           )}
         >

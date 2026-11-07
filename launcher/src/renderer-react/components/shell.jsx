@@ -53,8 +53,8 @@ export function Rail({ view, setView }) {
 
   return (
     <TooltipProvider>
-      <nav className="flex w-14 shrink-0 flex-col items-center gap-1 overflow-y-auto overflow-x-hidden border-r border-border bg-card py-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        <div className="mb-2 text-xs font-bold text-primary tracking-wider">DAISY</div>
+      <nav className="flex w-14 shrink-0 flex-col items-center gap-1.5 overflow-y-auto overflow-x-hidden border-r-2 border-border/80 bg-card py-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="mb-2 text-xs font-black text-primary tracking-widest drop-shadow-[1px_1px_0px_#080808]">DAISY</div>
         {NAV.map(item)}
         <div className="min-h-0 flex-1" />
         {item({ id: "settings", label: "Settings", icon: Settings })}
@@ -93,12 +93,17 @@ export function ModernRail({ view, setView, status }) {
         data-tour={`rail-${entry.id}`}
         onClick={() => setView(entry.id)}
         className={cn(
-          "no-drag flex h-[58px] w-[60px] shrink-0 flex-col items-center justify-center gap-1.5 rounded-xl transition-colors",
-          active ? "bg-primary/15 text-primary" : "text-muted-foreground hover:bg-accent hover:text-foreground"
+          "no-drag relative flex h-[58px] w-[62px] shrink-0 flex-col items-center justify-center gap-1.5 rounded-xl border transition-all",
+          active
+            ? "border-primary/80 bg-primary/20 text-primary shadow-[2px_2px_0px_#080808]"
+            : "border-transparent text-muted-foreground hover:border-border hover:bg-accent/80 hover:text-foreground"
         )}
       >
-        <Icon className="size-5" strokeWidth={active ? 2.25 : 2} />
-        <span className={cn("max-w-full truncate px-1 text-[10px] font-semibold leading-none", active && "text-foreground")}>
+        {active && (
+          <span className="absolute -left-1.5 size-1.5 rounded-full bg-primary shadow-[0_0_8px_var(--primary)]" />
+        )}
+        <Icon className="size-5" strokeWidth={active ? 2.5 : 2} />
+        <span className={cn("max-w-full truncate px-1 text-[10px] font-bold tracking-tight leading-none", active ? "text-primary" : "text-muted-foreground")}>
           {t(entry.label)}
         </span>
       </button>
@@ -106,10 +111,13 @@ export function ModernRail({ view, setView, status }) {
   };
 
   return (
-    <nav className="flex w-[76px] shrink-0 flex-col items-center gap-1.5 border-r border-border/60 bg-card pb-3">
+    <nav className="flex w-[80px] shrink-0 flex-col items-center gap-2 border-r border-border/80 bg-card/95 pb-3.5 backdrop-blur-md">
       {/* Stands in for the title bar on this side of the window, so it drags the window too. */}
-      <div className="drag-region flex h-16 w-full shrink-0 items-center justify-center">
-        <span className="text-sm font-extrabold tracking-widest text-primary">DAISY</span>
+      <div className="drag-region flex h-16 w-full shrink-0 flex-col items-center justify-center gap-0.5">
+        <div className="flex items-center gap-1">
+          <span className="text-sm font-black tracking-widest text-primary drop-shadow-[1px_1px_0px_#080808]">DAISY</span>
+          <span className="text-xs text-primary">🌼</span>
+        </div>
       </div>
       {NAV.map(item)}
       <div className="min-h-0 flex-1" />
@@ -120,11 +128,11 @@ export function ModernRail({ view, setView, status }) {
           onClick={() => setView("wardrobe")}
           title={`${profile.name} · ${t("Wardrobe")}`}
           aria-label={t("Wardrobe")}
-          className="no-drag relative mt-1.5 rounded-lg outline-offset-2 transition-opacity hover:opacity-85"
+          className="no-drag relative mt-2 rounded-xl border border-border/80 p-0.5 transition-transform hover:scale-105 hover:border-primary/60"
         >
-          <PlayerHead skinUrl={resolveSkinTexture(status)} name={profile.name} size={36} className="rounded-lg" />
+          <PlayerHead skinUrl={resolveSkinTexture(status)} name={profile.name} size={36} className="rounded-lg shadow-[2px_2px_0px_#080808]" />
           <span
-            className="absolute -bottom-0.5 -right-0.5 size-3 rounded-full border-2 border-card"
+            className="absolute -bottom-0.5 -right-0.5 size-3 rounded-full border-2 border-card shadow-sm"
             style={{ background: PRESENCE_COLOR[presence] || PRESENCE_COLOR.online }}
           />
         </button>
@@ -133,7 +141,7 @@ export function ModernRail({ view, setView, status }) {
           onClick={() => api()?.microsoftLogin()}
           title={t("Sign in")}
           aria-label={t("Sign in")}
-          className="no-drag mt-1.5 flex size-9 items-center justify-center rounded-lg border border-dashed border-border text-muted-foreground transition-colors hover:border-primary/60 hover:text-foreground"
+          className="no-drag mt-2 flex size-10 items-center justify-center rounded-xl border-2 border-dashed border-border text-muted-foreground transition-all hover:border-primary/80 hover:bg-primary/10 hover:text-primary shadow-[2px_2px_0px_#080808]"
         >
           <LogIn className="size-4" />
         </button>

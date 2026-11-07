@@ -15,29 +15,49 @@
 @source "./**/*.{js,jsx}";
 
 :root {
-  --radius: 0.375rem;               /* 6px - ClientUi.RADIUS_PANEL */
+  --radius: 0.5rem;                 /* 8px geometric Neo-Brutalist radius */
 
-  --background: #0b0c10;            /* ClientUi.BG */
-  --foreground: #ffffff;            /* ClientUi.TEXT */
-  --card: #15171d;                  /* ClientUi.PANEL */
-  --card-foreground: #ffffff;
-  --popover: #1b1e26;               /* ClientUi.PANEL_SOFT */
-  --popover-foreground: #ffffff;
-  --primary: #ffc72c;               /* Daisy Gold / Yellow */
-  --primary-foreground: #14161b;
-  --secondary: #1b1e26;
-  --secondary-foreground: #ffffff;
-  --muted: #1b1e26;
-  --muted-foreground: #9ba0ab;      /* ClientUi.MUTED */
-  --accent: #23262f;                /* ClientUi.PANEL_ALT */
-  --accent-foreground: #ffffff;
-  --destructive: #ff8fa3;
-  --destructive-foreground: #0b0c10;
-  --success: #72f1b8;               /* ClientUi.POSITIVE */
-  --warning: #ffd46b;               /* ClientUi.WARNING */
-  --border: #2f333d;                /* ClientUi.BORDER */
-  --input: #2f333d;
-  --ring: #ffc72c;
+  /* Daisy Neo-Brutalist Design Tokens */
+  --daisy-yellow: #f6c928;
+  --daisy-yellow-bright: #ffd83d;
+  --daisy-yellow-soft: #f4df77;
+  --daisy-cream: #fff6cf;
+  --daisy-petal: #fffdf2;
+  --daisy-ink: #080808;
+  --daisy-black: #0b0b0b;
+  --daisy-charcoal: #151515;
+  --daisy-surface: #18191e;
+  --daisy-surface-raised: #22242c;
+  --daisy-border: #363a45;
+  --daisy-border-strong: #4a4f5d;
+  --daisy-muted: #9ba0ab;
+  --daisy-success: #69d38a;
+  --daisy-danger: #ff6b6b;
+  --daisy-shadow: 4px 4px 0 var(--daisy-ink);
+  --daisy-shadow-sm: 2px 2px 0 var(--daisy-ink);
+  --daisy-shadow-primary: 4px 4px 0 rgba(0, 0, 0, 0.95);
+
+  --background: #0b0b0d;            /* Deep black / charcoal */
+  --foreground: #fffdf2;            /* Daisy petal white */
+  --card: #15161b;                  /* Dark card surface */
+  --card-foreground: #fffdf2;
+  --popover: #1c1d24;               /* Popover / modal surface */
+  --popover-foreground: #fffdf2;
+  --primary: #f6c928;               /* Daisy Gold / Yellow */
+  --primary-foreground: #080808;     /* Daisy Ink */
+  --secondary: #22242c;
+  --secondary-foreground: #fffdf2;
+  --muted: #1e2028;
+  --muted-foreground: #9ba0ab;
+  --accent: #272a34;
+  --accent-foreground: #fffdf2;
+  --destructive: #ff6b6b;
+  --destructive-foreground: #080808;
+  --success: #69d38a;
+  --warning: #f6c928;
+  --border: #363a45;
+  --input: #282b35;
+  --ring: #f6c928;
 }
 
 /*
@@ -442,36 +462,35 @@
 }
 
 /*
- * Glass. Modern draws a landscape behind the whole window (components/backdrop.jsx), so the
- * surfaces become see-through and frosted instead of solid: card for the rail and panels,
- * popover a little more solid because menus and dialogs carry the most text. The input wells
- * keep --background, so fields stay dark and readable on any part of the picture.
+ * Glass & Neo-Brutalism surfaces for Modern mode.
+ * Dark mode remains the primary experience with deep charcoal/black surfaces,
+ * Daisy yellow accents, and tactile offset borders.
  */
 :root[data-ui="modern"]:not([data-theme="light"]) {
-  --card: rgb(13 15 20 / 0.56);
-  --popover: rgb(19 21 27 / 0.9);
-  --secondary: rgb(255 255 255 / 0.07);
-  --muted: rgb(255 255 255 / 0.06);
-  --accent: rgb(255 255 255 / 0.09);
-  --border: rgb(255 255 255 / 0.1);
-  --input: rgb(255 255 255 / 0.14);
+  --card: rgb(18 19 24 / 0.82);
+  --popover: rgb(22 23 30 / 0.96);
+  --secondary: rgb(32 34 42 / 0.9);
+  --muted: rgb(26 28 35 / 0.85);
+  --accent: rgb(38 41 52 / 0.9);
+  --border: rgb(60 64 77 / 0.7);
+  --input: rgb(28 30 38 / 0.95);
 }
 :root[data-ui="modern"][data-theme="light"] {
-  --card: rgb(255 255 255 / 0.62);
-  --popover: rgb(255 255 255 / 0.92);
-  --secondary: rgb(255 255 255 / 0.55);
-  --muted: rgb(255 255 255 / 0.5);
-  --accent: rgb(20 22 27 / 0.07);
-  --border: rgb(20 22 27 / 0.1);
-  --input: rgb(20 22 27 / 0.14);
+  --card: rgb(255 255 255 / 0.85);
+  --popover: rgb(255 255 255 / 0.96);
+  --secondary: rgb(240 242 246 / 0.9);
+  --muted: rgb(240 242 246 / 0.85);
+  --accent: rgb(230 233 240 / 0.9);
+  --border: rgb(200 205 215 / 0.8);
+  --input: rgb(245 247 250 / 0.95);
 }
 :root[data-ui="modern"] :is([class*="bg-card"], [class*="bg-popover"]) {
-  backdrop-filter: blur(22px) saturate(1.35);
+  backdrop-filter: blur(20px) saturate(1.2);
 }
 .app-backdrop-shade {
   background:
-    linear-gradient(90deg, rgb(6 7 10 / 0.8) 0%, rgb(6 7 10 / 0.5) 42%, rgb(6 7 10 / 0.6) 100%),
-    linear-gradient(0deg, rgb(6 7 10 / 0.55) 0%, transparent 45%);
+    linear-gradient(90deg, rgb(8 8 11 / 0.88) 0%, rgb(8 8 11 / 0.65) 42%, rgb(8 8 11 / 0.75) 100%),
+    linear-gradient(0deg, rgb(8 8 11 / 0.7) 0%, transparent 45%);
 }
 :root[data-theme="light"] .app-backdrop-shade {
   background:
@@ -501,7 +520,7 @@
     --ry: 0deg;
     --lift: 0px;
     --glare: 0;
-    --edge: color-mix(in srgb, var(--primary) 42%, #000);
+    --edge: #080808;
     position: relative;
     isolation: isolate;
     display: inline-flex;
@@ -509,21 +528,21 @@
     justify-content: center;
     gap: 0.6rem;
     overflow: hidden;
-    border-radius: var(--radius);
+    border-radius: 8px;
+    border: 2px solid #080808;
     background-color: var(--primary);
-    /* A glare that follows the cursor (set from JS), under the texture and the label. */
     background-image: radial-gradient(130px circle at var(--mx, 50%) var(--my, 0%), rgb(255 255 255 / var(--glare)), transparent 70%);
-    color: var(--primary-foreground);
+    color: #080808;
+    font-weight: 800;
     font-family: var(--font-pixel);
     letter-spacing: 0.04em;
-    /* Lit top edge, shaded underside, a solid 5px slab below it, and a soft shadow on the floor. */
+    /* Neo-Brutalist offset shadow: crisp, thick, tactile */
     box-shadow:
-      inset 0 2px 0 rgb(255 255 255 / 0.28),
-      inset 0 -4px 0 rgb(0 0 0 / 0.26),
-      0 5px 0 var(--edge),
-      0 12px 16px -6px rgb(0 0 0 / 0.5);
+      inset 0 2px 0 rgb(255 255 255 / 0.35),
+      inset 0 -2px 0 rgb(0 0 0 / 0.25),
+      4px 4px 0 #080808;
     transform: perspective(520px) translate3d(0, var(--lift), 0) rotateX(var(--rx)) rotateY(var(--ry));
-    transition: transform 150ms cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 150ms, background-color 150ms;
+    transition: transform 100ms cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 100ms, background-color 150ms;
   }
   /*
    * Both layers animate transform only, which the browser runs on the GPU at the display's full
@@ -581,15 +600,15 @@
     outline: 2px solid var(--ring);
     outline-offset: 4px;
   }
-  /* Pressed: the slab is pushed flat and the button sinks onto it. */
+  /* Pressed: tactile Neo-Brutalist press */
   button.m-block:not(:disabled):active {
-    --lift: 4px;
+    --lift: 2px;
+    transform: translate(2px, 2px);
     transition-duration: 60ms;
     box-shadow:
-      inset 0 2px 0 rgb(255 255 255 / 0.14),
-      inset 0 -2px 0 rgb(0 0 0 / 0.26),
-      0 1px 0 var(--edge),
-      0 3px 6px -2px rgb(0 0 0 / 0.45);
+      inset 0 1px 0 rgb(255 255 255 / 0.14),
+      inset 0 -1px 0 rgb(0 0 0 / 0.26),
+      1px 1px 0 #080808;
   }
   .m-block:disabled {
     opacity: 0.55;

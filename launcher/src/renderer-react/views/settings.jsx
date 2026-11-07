@@ -22,15 +22,17 @@ function Section({ title, children }) {
   if (modern) {
     return (
       <section className="space-y-3">
-        <h2 className="text-lg font-extrabold tracking-[-0.01em]">{title}</h2>
-        <div className="divide-y divide-border/60 rounded-xl border border-border/60 bg-card px-6">{children}</div>
+        <h2 className="text-lg font-extrabold tracking-[-0.01em] text-foreground flex items-center gap-2">
+          <span>{title}</span>
+        </h2>
+        <div className="divide-y divide-border/80 rounded-2xl border-2 border-border/80 bg-card px-6 shadow-[3px_3px_0px_#080808]">{children}</div>
       </section>
     );
   }
   return (
     <section className="space-y-1">
-      <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{title}</h2>
-      <div className="divide-y divide-border rounded-lg border border-border bg-card px-4">{children}</div>
+      <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{title}</h2>
+      <div className="divide-y divide-border rounded-xl border-2 border-border/70 bg-card px-4 shadow-[2px_2px_0px_#080808]">{children}</div>
     </section>
   );
 }
@@ -640,7 +642,7 @@ export function SettingsView({ status, refresh, notify, startTour }) {
     return (
       <Page title={t("Settings")} description={`Daisy Client ${status?.version || ""}`.trim()}>
         <div className="flex items-start gap-8">
-          <nav className="sticky top-0 flex w-52 shrink-0 flex-col gap-1" aria-label={t("Settings")}>
+          <nav className="sticky top-0 flex w-52 shrink-0 flex-col gap-1.5" aria-label={t("Settings")}>
             {sections.map((entry) => {
               const Icon = entry.icon;
               const on = entry.id === active.id;
@@ -651,16 +653,18 @@ export function SettingsView({ status, refresh, notify, startTour }) {
                   aria-current={on ? "page" : undefined}
                   onClick={() => setSection(entry.id)}
                   className={cn(
-                    "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-semibold transition-colors",
-                    on ? "bg-primary/15 text-foreground" : "text-muted-foreground hover:bg-accent hover:text-foreground"
+                    "flex w-full items-center gap-3 rounded-xl border-2 px-3.5 py-2.5 text-left text-sm font-bold transition-all",
+                    on
+                      ? "border-primary bg-primary/20 text-primary shadow-[2px_2px_0px_#080808]"
+                      : "border-transparent text-muted-foreground hover:border-border hover:bg-accent/60 hover:text-foreground"
                   )}
                 >
-                  <Icon className={cn("size-4 shrink-0", on && "text-primary")} />
+                  <Icon className={cn("size-4 shrink-0", on ? "text-primary" : "")} />
                   {entry.title}
                 </button>
               );
             })}
-            <p className="mt-4 px-3 text-[11px] text-muted-foreground">{t("Daisy Client by realvoidgojo")}</p>
+            <p className="mt-4 px-3 text-[11px] font-medium text-muted-foreground">{t("Daisy Client by realvoidgojo")}</p>
           </nav>
           <div className="min-w-0 max-w-3xl flex-1">{draw(active)}</div>
         </div>

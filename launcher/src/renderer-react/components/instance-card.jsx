@@ -39,8 +39,10 @@ export function ModernInstanceCard({ instance, card, selected, busy, disabled, o
   return (
     <div
       className={cn(
-        "group flex flex-col overflow-hidden rounded-xl border bg-card transition-colors",
-        selected ? "border-primary/60" : "border-border/60 hover:border-border"
+        "group flex flex-col overflow-hidden rounded-2xl border-2 bg-card transition-all",
+        selected
+          ? "border-primary shadow-[4px_4px_0px_#080808]"
+          : "border-border/80 shadow-[2px_2px_0px_#080808] hover:border-primary/60 hover:shadow-[3px_3px_0px_#080808]"
       )}
     >
       <button
