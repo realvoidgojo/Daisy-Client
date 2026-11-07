@@ -31,6 +31,7 @@ const TABS = [
 
 const FOLDERS = [
   { sub: "", label: "Instance folder", icon: FolderOpen },
+  { sub: "mods", label: "Mods folder", icon: Package },
   { sub: "saves", label: "Saves", icon: Globe },
   { sub: "config", label: "Config", icon: Wrench },
   { sub: "screenshots", label: "Screenshots", icon: Image },
@@ -646,9 +647,42 @@ export function InstanceView({ instanceId, status, refresh, notify, onBack }) {
                 );
               })}
             </div>
-            <Button variant="ghost" className="ml-auto" disabled={busy} onClick={load}>
-              <RefreshCw className="size-4" />{t("Refresh")}
-            </Button>
+            <div className="ml-auto flex items-center gap-2">
+              {instance?.loader !== "vanilla" ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-1.5 font-medium"
+                  onClick={() => api()?.openInstancePath({ instanceId, sub: "mods" })}
+                  title={t("Open mods folder in file explorer")}
+                >
+                  <FolderOpen className="size-3.5" />
+                  {t("Open mods folder")}
+                </Button>
+              ) : null}
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-1.5 font-medium"
+                disabled={busy}
+                onClick={async () => {
+                  setBusy(true);
+                  try {
+                    await load();
+                    await refresh();
+                    notify(t("Mods & instance reloaded"), "success");
+                  } catch (e) {
+                    notify(String(e?.message || e), "error");
+                  } finally {
+                    setBusy(false);
+                  }
+                }}
+                title={t("Reload and refresh installed mods")}
+              >
+                <RefreshCw className={cn("size-3.5", busy && "animate-spin")} />
+                {t("Reload mods")}
+              </Button>
+            </div>
           </div>
 
           <div className="relative">
