@@ -184,10 +184,10 @@ async function bundle() {
     + "display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;"
     + "background:#0e1218;color:#eef0f4;font-family:'Segoe UI',Inter,system-ui,sans-serif;"
     + "-webkit-app-region:drag\">"
-    + "<strong style=\"font-size:13px;font-weight:600;letter-spacing:.02em\">River Client</strong>"
+    + "<strong style=\"font-size:13px;font-weight:600;letter-spacing:.02em\">Daisy Client</strong>"
     + "<span style=\"font-size:11px;color:#9297a2\">" + label + "</span>"
     + "<div style=\"width:150px;height:3px;border-radius:999px;background:#23262e;overflow:hidden\">"
-    + "<div style=\"width:40%;height:100%;border-radius:inherit;background:#3b82f6;"
+    + "<div style=\"width:40%;height:100%;border-radius:inherit;background:#ffc72c;"
     + "animation:river-splash 1.15s ease-in-out infinite\"></div></div>"
     + "<style>@keyframes river-splash{0%{transform:translateX(-100%)}100%{transform:translateX(325%)}}</style>"
     + "</div>";
@@ -200,8 +200,8 @@ async function bundle() {
     + "<body>" + splash(splashLabel) + "<div id=\"root\"></div>"
     + "<script src=\"./" + name + ".js\"></script></body></html>";
 
-  fs.writeFileSync(path.join(out, "renderer", "updater.html"), shell("River Client Updater", "updater", "Preparing update"));
-  fs.writeFileSync(path.join(out, "renderer", "logs.html"), shell("River Client - Game log", "logs", "Loading log"));
+  fs.writeFileSync(path.join(out, "renderer", "updater.html"), shell("Daisy Client Updater", "updater", "Preparing update"));
+  fs.writeFileSync(path.join(out, "renderer", "logs.html"), shell("Daisy Client - Game log", "logs", "Loading log"));
 }
 
 bundle().catch((error) => {

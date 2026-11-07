@@ -68,7 +68,7 @@
         width: 40%;
         height: 100%;
         border-radius: inherit;
-        background: #2f6fe6;
+        background: #ffc72c;
         animation: boot-slide 1.15s ease-in-out infinite;
       }
       /* Modern: the same row of blocks as the launch screen, a wave running along it. */
@@ -86,7 +86,7 @@
       #boot small { font-size: 12px; color: #8a90a0; margin-top: -6px; }
       @keyframes boot-wave {
         0%, 55%, 100% { background: #262a33; transform: translateY(0); }
-        25% { background: var(--on, #2f6fe6); transform: translateY(-4px); }
+        25% { background: var(--on, #ffc72c); transform: translateY(-4px); }
       }
       html[data-season="halloween"] #boot .boot-blocks i { --on: #ff7a1e; }
       @keyframes boot-slide {
@@ -106,7 +106,7 @@
       @media (prefers-reduced-motion: reduce) {
         #boot img { animation: none; }
         #boot .boot-bar i { width: 100%; animation: none; }
-        #boot .boot-blocks i { animation: none; background: var(--on, #2f6fe6); }
+        #boot .boot-blocks i { animation: none; background: var(--on, #ffc72c); }
       }
     </style>
     <script>

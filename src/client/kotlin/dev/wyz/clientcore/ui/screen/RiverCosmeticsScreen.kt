@@ -205,7 +205,7 @@ class RiverCosmeticsScreen(private val parent: Screen?) : Screen(Component.liter
         if (nametag != null) {
             val badgeY = afterCards + BADGE_TOP
             val badgeOn = nametag.enabled && nametag.showRiverBadge()
-            drawToggleRow(g, rx, badgeY, rw, "River badge", badgeOn, mouseX, mouseY, "fx:badge") { on ->
+            drawToggleRow(g, rx, badgeY, rw, "Daisy badge", badgeOn, mouseX, mouseY, "fx:badge") { on ->
                 nametag.setShowRiverBadge(on)
                 if (on) nametag.enabled = true
                 RiverRuntime.saveConfig()

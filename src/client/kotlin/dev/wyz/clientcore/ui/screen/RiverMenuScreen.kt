@@ -214,10 +214,6 @@ class RiverMenuScreen(private val parent: Screen?, focusModule: Module? = null) 
         by += 6
         by = navLabel(g, "CLIENT", x, by, w)
         by += drawSidebarButton(g, Page.SETTINGS, x + 6, by, w - 12, mouseX, mouseY)
-        by += navLink(g, "users", "Friends", RiverSocial.unreadTotal + RiverSocial.requests.size, x + 6, by, w - 12, mouseX, mouseY) {
-            saveNow()
-            minecraft?.setScreen(RiverFriendsScreen(this))
-        }
         by += navLink(g, "shirt", "Cosmetics", 0, x + 6, by, w - 12, mouseX, mouseY) {
             saveNow()
             minecraft?.setScreen(RiverCosmeticsScreen(this))
@@ -759,14 +755,12 @@ class RiverMenuScreen(private val parent: Screen?, focusModule: Module? = null) 
             var left = drawThemeCard(g, x, top, colW, mouseX, mouseY)
             left = drawCinematicCard(g, x, left + Metrics.CARD_GAP, colW, mouseX, mouseY)
             val rightX = x + colW + Metrics.CARD_GAP
-            var right = drawFriendsCard(g, rightX, top, colW, mouseX, mouseY)
-            right = drawProfilesCard(g, rightX, right + Metrics.CARD_GAP, colW, mouseX, mouseY)
+            var right = drawProfilesCard(g, rightX, top, colW, mouseX, mouseY)
             contentHeight = max(left, right) - top + 12
         } else {
             val cardW = w - 10
             var cy = drawThemeCard(g, x, top, cardW, mouseX, mouseY)
             cy = drawCinematicCard(g, x, cy + Metrics.CARD_GAP, cardW, mouseX, mouseY)
-            cy = drawFriendsCard(g, x, cy + Metrics.CARD_GAP, cardW, mouseX, mouseY)
             cy = drawProfilesCard(g, x, cy + Metrics.CARD_GAP, cardW, mouseX, mouseY)
             contentHeight = cy - top + 12
         }

@@ -36,7 +36,7 @@ object RiverCape {
     val STYLES = listOf("river", "axie", "hardcore", "eclipse", "eightball", "halloween")
 
     /** Display names for the wardrobe UI, aligned by index with [STYLES]. */
-    val LABELS = listOf("River", "Axie", "Hardcore", "Eclipse", "8-Ball", "Halloween")
+    val LABELS = listOf("Daisy", "Axie", "Hardcore", "Eclipse", "8-Ball", "Halloween")
 
     /** Capes that only exist during their season (see Seasons): style id to season id. */
     private val SEASONAL = mapOf("halloween" to "halloween")
