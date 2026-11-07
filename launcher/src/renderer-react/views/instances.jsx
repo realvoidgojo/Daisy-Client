@@ -159,25 +159,48 @@ function usePlainVersions(open, loader) {
   return { list: lists[loader] || null, error };
 }
 
-function PlainVersionSelect({ loader, list, error, value, onChange }) {
+function PlainVersionSelect({ loader, list, error, value, onChange, available }) {
   const t = useT();
   if (error) return <p className="text-sm text-destructive">{t(error)}</p>;
   if (!list) {
     return (
-      <p className="flex items-center gap-2 text-sm text-muted-foreground">
-        <Loader2 className="size-4 animate-spin" />{t("Loading versions...")}
-      </p>
+      <div className="flex h-10 w-full items-center gap-2 rounded-md border border-border/60 bg-card px-3 text-sm text-muted-foreground">
+        <Loader2 className="size-4 animate-spin text-primary" />{t("Loading versions...")}
+      </div>
     );
   }
+
+  // Create a fast lookup for recommended / curated versions
+  const recSet = new Set(
+    (available || []).filter((a) => a.status === "Primary" || a.selected).map((a) => a.id)
+  );
+
   return (
     <Select value={value} onValueChange={onChange}>
-      <SelectTrigger aria-label={t("Minecraft version")}><SelectValue /></SelectTrigger>
+      <SelectTrigger aria-label={t("Minecraft version")} className="h-10 w-full bg-card border-border/60 hover:border-border transition-colors">
+        <SelectValue />
+      </SelectTrigger>
       <SelectContent className="max-h-72">
-        {list.map((v) => (
-          <SelectItem key={v.id} value={v.id}>
-            {loader === "vanilla" ? v.id : `${v.id}  ·  ${loader === "fabric" || loader === "quilt" ? "Loader" : loaderOption(loader).label} ${v.loaderVersion}`}
-          </SelectItem>
-        ))}
+        {list.map((v) => {
+          const isRec = recSet.has(v.id) || v.recommended;
+          const label = loader === "river"
+            ? `Daisy ${v.id}`
+            : loader === "vanilla"
+              ? v.id
+              : `${v.id}  ·  ${loader === "fabric" || loader === "quilt" ? "Loader" : loaderOption(loader).label} ${v.loaderVersion || ""}`.trim();
+          return (
+            <SelectItem key={v.id} value={v.id}>
+              <div className="flex w-full items-center justify-between gap-4">
+                <span>{label}</span>
+                {isRec && (
+                  <span className="rounded bg-primary/20 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-primary">
+                    {t("Recommended")}
+                  </span>
+                )}
+              </div>
+            </SelectItem>
+          );
+        })}
       </SelectContent>
     </Select>
   );
@@ -197,6 +220,58 @@ function versionGroups(list) {
     group.versions.push(entry);
   }
   return groups;
+}
+
+/**
+ * Unified Version Picker that provides an elegant, zero-jump layout across all loaders.
+ * Every loader uses the clean dropdown menu with instant version selection.
+ */
+function ElegantVersionPicker({ loader, value, onChange, available, plainList, plainError }) {
+  const t = useT();
+
+  if (loader === "river") {
+    // For Fabric + Daisy, provide all supported versions in the dropdown
+    return (
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <Label>{t("Minecraft version")}</Label>
+          <span className="text-[11px] text-muted-foreground">
+            {t("{count} versions available", { count: available.length })}
+          </span>
+        </div>
+        <PlainVersionSelect
+          loader={loader}
+          list={available}
+          error=""
+          value={value}
+          onChange={onChange}
+          available={available}
+        />
+      </div>
+    );
+  }
+
+  // Plain loaders (Fabric, Forge, NeoForge, Quilt, Vanilla)
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center justify-between">
+        <Label>{t("Minecraft version")}</Label>
+        {plainList && (
+          <span className="text-[11px] text-muted-foreground">
+            {t("{count} versions available", { count: plainList.length })}
+          </span>
+        )}
+      </div>
+      <PlainVersionSelect
+        loader={loader}
+        list={plainList}
+        error={plainError}
+        value={value}
+        onChange={onChange}
+        available={available}
+      />
+    </div>
+  );
 }
 
 function CreateInstanceDialog({ open, onOpenChange, onCreated, notify, versions }) {
@@ -321,66 +396,37 @@ function CreateInstanceDialog({ open, onOpenChange, onCreated, notify, versions 
               />
             </div>
 
-            {loader !== "river" ? (
-              <div className="space-y-2">
-                <Label>{t("Minecraft version")}</Label>
-                <PlainVersionSelect loader={loader} list={plain.list} error={plain.error} value={version} onChange={setVersion} />
-              </div>
-            ) : (
-            <div className="space-y-4">
-              <Label>{t("Minecraft version")}</Label>
-              {versionGroups(available).map((group) => (
-                <div key={group.key} className="space-y-2.5">
-                  <p className="m-kicker">{group.label}</p>
-                  <div className="flex flex-wrap gap-2" role="radiogroup" aria-label={group.label}>
-                    {group.versions.map((v) => {
-                      const on = version === v.id;
-                      return (
-                        <button
-                          key={v.id}
-                          type="button"
-                          role="radio"
-                          aria-checked={on}
-                          onClick={() => setVersion(v.id)}
-                          className={cn(
-                            "inline-flex h-10 items-center gap-2 rounded-lg border px-3.5 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                            on
-                              ? "border-primary/60 bg-primary/15 text-foreground"
-                              : "border-border/60 bg-card text-muted-foreground hover:border-border hover:text-foreground"
-                          )}
-                        >
-                          {on ? <Check className="size-3.5 text-primary" /> : null}
-                          {v.id}
-                          {v.status === "Primary" ? (
-                            <span className="rounded bg-primary/20 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-primary">
-                              {t("Recommended")}
-                            </span>
-                          ) : v.status && v.status !== "Supported" ? (
-                            <Badge variant="secondary" className="text-[10px]">{t(v.status)}</Badge>
-                          ) : null}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              ))}
-            </div>
-            )}
+            <ElegantVersionPicker
+              loader={loader}
+              value={version}
+              onChange={setVersion}
+              available={available}
+              plainList={plain.list}
+              plainError={plain.error}
+            />
 
             
             {/* Daisy Skin feature toggle for Fabric-based loaders */}
-            {(loader === "river" || loader === "fabric") && (
-              <div className="flex items-center justify-between rounded-lg border border-border/60 bg-card/60 px-3 py-2">
-                <div className="space-y-0.5">
-                  <div className="flex items-center gap-1.5">
-                    <Label htmlFor="daisy-skin-toggle" className="text-xs font-semibold">{t("Daisy Skin")}</Label>
-                    <Badge variant="outline" className="text-[10px] text-primary border-primary/40">{t("Client-side")}</Badge>
-                  </div>
-                  <p className="text-[11px] text-muted-foreground">{t("Use wardrobe skin in this instance. Works offline & on SMPs.")}</p>
+            <div
+              className={cn(
+                "flex items-center justify-between rounded-lg border border-border/60 bg-card/60 px-3 py-2 transition-opacity",
+                (loader === "river" || loader === "fabric") ? "opacity-100" : "opacity-35 pointer-events-none"
+              )}
+            >
+              <div className="space-y-0.5">
+                <div className="flex items-center gap-1.5">
+                  <Label htmlFor="daisy-skin-toggle" className="text-xs font-semibold">{t("Daisy Skin")}</Label>
+                  <Badge variant="outline" className="text-[10px] text-primary border-primary/40">{t("Client-side")}</Badge>
                 </div>
-                <Switch id="daisy-skin-toggle" checked={daisySkin} onCheckedChange={setDaisySkin} />
+                <p className="text-[11px] text-muted-foreground">{t("Use wardrobe skin in this instance. Works offline & on SMPs.")}</p>
               </div>
-            )}
+              <Switch
+                id="daisy-skin-toggle"
+                disabled={!(loader === "river" || loader === "fabric")}
+                checked={(loader === "river" || loader === "fabric") && daisySkin}
+                onCheckedChange={setDaisySkin}
+              />
+            </div>
 
             <div className="flex items-center justify-between rounded-lg border border-border/60 bg-card/60 px-3 py-2">
               <div className="space-y-0.5">
