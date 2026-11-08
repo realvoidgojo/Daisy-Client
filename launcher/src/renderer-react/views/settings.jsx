@@ -330,15 +330,17 @@ function SKAccountManager({ status, refresh, notify }) {
               <div
                 key={profile.id}
                 className={cn(
-                  "flex items-center justify-between rounded-lg border p-3 transition-colors",
-                  active ? "border-primary/50 bg-primary/10" : "border-border bg-background/50 hover:bg-card"
+                  "flex items-center justify-between rounded-xl border-2 p-3.5 transition-colors",
+                  active
+                    ? "border-primary bg-primary/15 shadow-[2px_2px_0px_#080808]"
+                    : "border-border/80 bg-card hover:border-primary/50"
                 )}
               >
                 <div className="flex items-center gap-3">
                   <PlayerHead skinUrl={profileSkin} name={profile.name} size={36} />
                   <div>
                     <div className="flex items-center gap-2">
-                      <p className="text-sm font-semibold">{profile.name}</p>
+                      <p className="text-sm font-bold text-foreground">{profile.name}</p>
                       {active ? <Badge variant="success" className="text-[10px]">{t("Active")}</Badge> : null}
                     </div>
                     <p className="text-[11px] text-muted-foreground">{t("Offline account")}</p>

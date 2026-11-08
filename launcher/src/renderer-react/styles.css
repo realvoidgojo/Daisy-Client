@@ -55,6 +55,7 @@
   --border: rgba(255, 255, 255, 0.08);
   --input: #1b1d28;
   --ring: #ffd60a;
+  --primary-text: #ffd60a;
 }
 
 /*
@@ -64,27 +65,28 @@
  * stamps data-theme="light" on the root from the launcherTheme setting.
  */
 :root[data-theme="light"] {
-  --background: #f4f5f7;
-  --foreground: #14161b;
+  --background: #f1f3f7;
+  --foreground: #0f172a;
   --card: #ffffff;
-  --card-foreground: #14161b;
+  --card-foreground: #0f172a;
   --popover: #ffffff;
-  --popover-foreground: #14161b;
-  --primary: #e6a800;
-  --primary-foreground: #ffffff;
-  --secondary: #e9ebef;
-  --secondary-foreground: #14161b;
-  --muted: #eceef2;
-  --muted-foreground: #5b616c;
-  --accent: #e9ebef;
-  --accent-foreground: #14161b;
-  --destructive: #d92f4a;
+  --popover-foreground: #0f172a;
+  --primary: #ffd60a;
+  --primary-foreground: #0f1015;
+  --primary-text: #b45309;          /* Rich amber-gold for text on light backgrounds */
+  --secondary: #e2e8f0;
+  --secondary-foreground: #0f172a;
+  --muted: #edf1f6;
+  --muted-foreground: #475569;
+  --accent: #e2e8f0;
+  --accent-foreground: #0f172a;
+  --destructive: #dc2626;
   --destructive-foreground: #ffffff;
-  --success: #1a9e63;
-  --warning: #b9781a;
-  --border: #d8dbe1;
-  --input: #d8dbe1;
-  --ring: #e6a800;
+  --success: #16a34a;
+  --warning: #b45309;
+  --border: #cbd5e1;
+  --input: #cbd5e1;
+  --ring: #d97706;
 }
 
 @theme inline {
@@ -96,6 +98,7 @@
   --color-popover-foreground: var(--popover-foreground);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
+  --color-primary-text: var(--primary-text);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);
@@ -474,13 +477,13 @@
   --input: rgb(28 30 38 / 0.95);
 }
 :root[data-ui="modern"][data-theme="light"] {
-  --card: rgb(255 255 255 / 0.85);
-  --popover: rgb(255 255 255 / 0.96);
-  --secondary: rgb(240 242 246 / 0.9);
-  --muted: rgb(240 242 246 / 0.85);
-  --accent: rgb(230 233 240 / 0.9);
-  --border: rgb(200 205 215 / 0.8);
-  --input: rgb(245 247 250 / 0.95);
+  --card: rgb(255 255 255 / 0.94);
+  --popover: rgb(255 255 255 / 0.98);
+  --secondary: rgb(241 245 249 / 0.95);
+  --muted: rgb(241 245 249 / 0.9);
+  --accent: rgb(226 232 240 / 0.95);
+  --border: rgb(180 190 205 / 0.9);
+  --input: rgb(248 250 252 / 0.98);
 }
 :root[data-ui="modern"] :is([class*="bg-card"], [class*="bg-popover"]) {
   backdrop-filter: blur(20px) saturate(1.2);
@@ -492,11 +495,22 @@
 }
 :root[data-theme="light"] .app-backdrop-shade {
   background:
-    linear-gradient(90deg, rgb(244 245 247 / 0.82) 0%, rgb(244 245 247 / 0.5) 42%, rgb(244 245 247 / 0.6) 100%),
-    linear-gradient(0deg, rgb(244 245 247 / 0.55) 0%, transparent 45%);
+    linear-gradient(90deg, rgb(241 243 247 / 0.75) 0%, rgb(241 243 247 / 0.35) 45%, rgb(241 243 247 / 0.45) 100%),
+    linear-gradient(0deg, rgb(241 243 247 / 0.5) 0%, transparent 55%),
+    linear-gradient(180deg, rgb(15 23 42 / 0.08) 0%, transparent 30%);
 }
 
-/* In the components layer so a utility class on the element can still override them. */
+html[data-theme="light"] :is(
+  .text-primary,
+  button.text-primary,
+  a.text-primary,
+  span.text-primary,
+  p.text-primary
+) {
+  color: #b45309; /* Warm dark amber-gold for high visibility against white/light backgrounds */
+}
+
+/* In components layer so a utility class on the element can still override them. */
 @layer components {
   /* Small pixel-face label above a heading. The face is drawn on an 8px grid, so it stays at 8px. */
   .m-kicker {
@@ -751,8 +765,14 @@ html[data-theme="light"] .m-btn[data-variant="secondary"] {
   --edge: rgb(15 23 42 / 0.16);
   box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.7), 0 3px 0 var(--edge), 0 6px 10px -6px rgb(15 23 42 / 0.25);
 }
+html[data-theme="light"] .m-btn[data-variant="default"] {
+  color: #0f1015;
+}
 html[data-theme="light"] .m-block.m-block-quiet {
   --edge: rgb(15 23 42 / 0.18);
+}
+html[data-theme="light"] .m-block {
+  color: #0f1015;
 }
 .m-btn:focus-visible {
   outline: 2px solid var(--ring);

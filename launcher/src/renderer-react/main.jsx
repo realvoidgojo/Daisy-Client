@@ -183,7 +183,7 @@ function App() {
     try {
       if (season) window.localStorage.setItem("daisy:bootSeason", season.id);
       else window.localStorage.removeItem("daisy:bootSeason");
-    } catch {}
+    } catch { }
   }, [season?.id]);
   // Everyone is on the Modern layout (0.2.8); Classic is no longer offered. Stamped on the
   // root for the CSS, and handed to the views through UiStyleContext.
@@ -192,7 +192,7 @@ function App() {
   useEffect(() => {
     document.documentElement.dataset.ui = uiStyle;
     // Remembered so the next start's boot screen is drawn in the same style before React loads.
-    try { window.localStorage.setItem("daisy:bootUi", uiStyle); } catch {}
+    try { window.localStorage.setItem("daisy:bootUi", uiStyle); } catch { }
   }, [uiStyle]);
   // Decoration only runs while this window is the one being used.
   useWindowFocusFlag();
@@ -240,7 +240,7 @@ function App() {
     try {
       await api()?.updateSettings({ tutorialCompleted: true });
       await refresh();
-    } catch {}
+    } catch { }
   }, [refresh]);
 
   // Which instance the detail page is showing. Set by Instances, cleared on the way back.
@@ -291,37 +291,37 @@ function App() {
 
   return (
     <I18nProvider language={status?.settings?.launcherLanguage || "en"}>
-    <UiStyleContext.Provider value={uiStyle}>
-    <SeasonContext.Provider value={season?.id || null}>
-      {modern ? (
-        /* Modern: the rail runs the full height and the title bar only spans the page, all of it
-           glass over a landscape. */
-        <div className="relative flex h-full overflow-hidden">
-          <Backdrop season={season?.id || null} />
-          <ModernRail view={railView} setView={go} status={status} />
-          <div className="flex min-w-0 flex-1 flex-col">
-            <TitleBar title="Daisy Client" modern />
-            <UpdateBanner status={status} notify={notify} />
-            <main className="min-h-0 min-w-0 flex-1">{content}</main>
-            <ActivityBar />
-          </div>
-          {overlays}
-        </div>
-      ) : (
-        <div className="flex h-full flex-col overflow-hidden bg-background">
-          <TitleBar title="Daisy Client" />
-          <UpdateBanner status={status} notify={notify} />
-          <div className="flex min-h-0 flex-1">
-            <Rail view={railView} setView={go} />
-            <main className="min-w-0 flex-1">{content}</main>
-          </div>
-          {/* Everything the main process is doing reports here, in one fixed place. */}
-          <ActivityBar />
-          {overlays}
-        </div>
-      )}
-    </SeasonContext.Provider>
-    </UiStyleContext.Provider>
+      <UiStyleContext.Provider value={uiStyle}>
+        <SeasonContext.Provider value={season?.id || null}>
+          {modern ? (
+            /* Modern: the rail runs the full height and the title bar only spans the page, all of it
+               glass over a landscape. */
+            <div className="relative flex h-full overflow-hidden">
+              <Backdrop season={season?.id || null} />
+              <ModernRail view={railView} setView={go} status={status} refresh={refresh} notify={notify} />
+              <div className="flex min-w-0 flex-1 flex-col">
+                <TitleBar title="Daisy Client" modern />
+                <UpdateBanner status={status} notify={notify} />
+                <main className="min-h-0 min-w-0 flex-1">{content}</main>
+                <ActivityBar />
+              </div>
+              {overlays}
+            </div>
+          ) : (
+            <div className="flex h-full flex-col overflow-hidden bg-background">
+              <TitleBar title="Daisy Client" />
+              <UpdateBanner status={status} notify={notify} />
+              <div className="flex min-h-0 flex-1">
+                <Rail view={railView} setView={go} status={status} refresh={refresh} notify={notify} />
+                <main className="min-w-0 flex-1">{content}</main>
+              </div>
+              {/* Everything the main process is doing reports here, in one fixed place. */}
+              <ActivityBar />
+              {overlays}
+            </div>
+          )}
+        </SeasonContext.Provider>
+      </UiStyleContext.Provider>
     </I18nProvider>
   );
 }

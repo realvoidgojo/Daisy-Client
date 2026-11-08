@@ -61,7 +61,7 @@ export function PlaytimeStat({ settings, notify, className }) {
   return (
     <button
       onClick={toggle}
-      className={cn("inline-flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground", className)}
+      className={cn("inline-flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground hover:opacity-100", className)}
       title={mode === "river" ? t("Daisy Client only - click to include every Minecraft client on this PC") : t("Every Minecraft client on this PC - click to show Daisy only")}
     >
       <Clock className="size-3" />

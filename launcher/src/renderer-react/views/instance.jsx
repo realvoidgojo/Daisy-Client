@@ -122,7 +122,6 @@ function ContentRow({ entry, kind, onToggle, onRemove, busy }) {
               onCheckedChange={() => onToggle(entry)}
               title={disabled ? t("Enable mod") : t("Disable mod")}
               aria-label={disabled ? t("Enable mod") : t("Disable mod")}
-              className="data-[state=checked]:bg-emerald-500"
             />
           </div>
         ) : null}

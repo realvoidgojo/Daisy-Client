@@ -95,18 +95,18 @@ export function ModernHomeView({ status, refresh, notify, launch: launchProp, st
   const halloween = useSeasonId() === "halloween";
 
   return (
-    <div className="flex h-full min-h-0 bg-[#0d0e13] text-[#f4f5f8]">
+    <div className="flex h-full min-h-0 bg-transparent text-foreground">
       <div className="min-w-0 flex-1 overflow-y-auto px-8 pb-10">
         
         {/* Top bar: friendly 20px greeting */}
         <header className="flex items-center justify-between py-6">
           <div className="flex items-center gap-2.5">
             <span className="text-xl">👋</span>
-            <span className="text-[20px] font-medium text-[#9aa1b2]">
+            <span className="text-[20px] font-medium text-muted-foreground">
               {profile ? (
                 <>
                   {t("Welcome back,")}{" "}
-                  <span className="font-bold text-[#f4f5f8]">{profile.name}</span>
+                  <span className="font-bold text-foreground">{profile.name}</span>
                 </>
               ) : (
                 t("Welcome to Daisy")
@@ -126,7 +126,7 @@ export function ModernHomeView({ status, refresh, notify, launch: launchProp, st
         <div className="grid grid-cols-12 gap-6">
 
           {/* 1. Hero Tile (8 cols, ~380px tall) */}
-          <section className="relative col-span-12 xl:col-span-8 flex flex-col justify-between overflow-hidden rounded-2xl border-2 border-black bg-[#151720] p-8 shadow-[6px_6px_0px_#000000] min-h-[380px]">
+          <section className="relative col-span-12 xl:col-span-8 flex flex-col justify-between overflow-hidden rounded-2xl border-2 border-daisy-ink bg-card p-8 shadow-[6px_6px_0px_#000000] min-h-[380px]">
             {/* Rich Minecraft Landscape Backdrop in Hero Bento Tile with positive z-index 0 underneath z-10 content */}
             <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
               <div className="absolute inset-0 scale-105">
@@ -152,23 +152,23 @@ export function ModernHomeView({ status, refresh, notify, launch: launchProp, st
 
             {/* Left Content */}
             <div className="relative z-10 max-w-lg my-auto pt-2">
-              <h1 className="font-pixel text-2xl md:text-3xl font-normal leading-tight tracking-wide text-[#f4f5f8] drop-shadow-[2px_2px_0px_#000000]">
+              <h1 className="font-pixel text-2xl md:text-3xl font-normal leading-tight tracking-wide text-white drop-shadow-[2px_2px_0px_#000000]">
                 {selected?.name || "Daisy 1.21.11"}
               </h1>
 
               {/* Version & Metadata Chips */}
               <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
-                <span className="rounded border-2 border-black bg-[#ffd60a] px-2.5 py-1 font-bold text-[#0f0e0c] shadow-[2px_2px_0px_#000000]">
+                <span className="rounded border-2 border-daisy-ink bg-primary px-2.5 py-1 font-bold text-primary-foreground shadow-[2px_2px_0px_#000000]">
                   {instanceVersionLabel(selected) || "Fabric 1.21.11"}
                 </span>
-                <span className="rounded border-2 border-black bg-[#151720] px-2.5 py-1 font-semibold text-[#f4f5f8] shadow-[2px_2px_0px_#000000]">
+                <span className="rounded border-2 border-daisy-ink bg-black/75 backdrop-blur-sm px-2.5 py-1 font-semibold text-white shadow-[2px_2px_0px_#000000]">
                   {t("{count} mods", { count: modCount || 0 })}
                 </span>
-                <span className="rounded border-2 border-black bg-[#151720] px-2.5 py-1 font-semibold text-[#9aa1b2] shadow-[2px_2px_0px_#000000]">
-                  <PlaytimeStat settings={status?.settings} notify={notify} />
+                <span className="rounded border-2 border-daisy-ink bg-black/75 backdrop-blur-sm px-2.5 py-1 font-semibold text-white/90 shadow-[2px_2px_0px_#000000] transition-colors hover:bg-black/90 hover:text-white">
+                  <PlaytimeStat settings={status?.settings} notify={notify} className="text-white/90 hover:text-white" />
                 </span>
                 {lastPlayed && (
-                  <span className="rounded border-2 border-black bg-[#151720] px-2.5 py-1 font-semibold text-[#9aa1b2] shadow-[2px_2px_0px_#000000]">
+                  <span className="rounded border-2 border-daisy-ink bg-black/75 backdrop-blur-sm px-2.5 py-1 font-semibold text-white/90 shadow-[2px_2px_0px_#000000]">
                     {lastPlayed}
                   </span>
                 )}
@@ -200,15 +200,15 @@ export function ModernHomeView({ status, refresh, notify, launch: launchProp, st
                   size="sm"
                   variant="outline"
                   onClick={() => openInstance?.(selected?.id)}
-                  className="h-11"
+                  className="h-11 bg-black/60 text-white hover:bg-black/80 hover:text-primary border-white/20"
                 >
-                  <Settings2 className="size-4 text-[#ffd60a]" />
+                  <Settings2 className="size-4 text-primary" />
                   <span>{t("Instance settings")}</span>
                 </Button>
               </div>
 
               {launching && log && (
-                <p className="mt-3 truncate text-xs text-[#9aa1b2]">{log}</p>
+                <p className="mt-3 truncate text-xs text-white/80">{log}</p>
               )}
             </div>
 
@@ -231,23 +231,23 @@ export function ModernHomeView({ status, refresh, notify, launch: launchProp, st
           </section>
 
           {/* 2. Quick Launch / Instances Column (4 cols) */}
-          <section className="relative col-span-12 xl:col-span-4 flex flex-col overflow-hidden rounded-2xl border-2 border-black bg-[#151720]/80 backdrop-blur-md p-5 shadow-[4px_4px_0px_#000000]">
+          <section className="relative col-span-12 xl:col-span-4 flex flex-col overflow-hidden rounded-2xl border-2 border-daisy-ink bg-card/95 backdrop-blur-md p-5 shadow-[4px_4px_0px_#000000]">
             {/* Minecraft Background with overlay */}
             <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
               <img
                 src="../assets/home-bg-1.jpg"
                 alt=""
-                className="size-full object-cover opacity-20 scale-105"
+                className="size-full object-cover opacity-10 scale-105"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#151720] via-[#151720]/85 to-[#151720]/60" />
+              <div className="absolute inset-0 bg-gradient-to-t from-card via-card/85 to-card/60" />
             </div>
 
-            <div className="relative z-10 flex items-center justify-between pb-2 border-b border-black/40">
-              <h2 className="text-sm font-bold text-[#f4f5f8] uppercase tracking-wide drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">{t("Quick launch")}</h2>
+            <div className="relative z-10 flex items-center justify-between pb-2 border-b border-border/70">
+              <h2 className="text-sm font-bold text-foreground uppercase tracking-wide">{t("Quick launch")}</h2>
               <button
                 type="button"
                 onClick={() => go("instances")}
-                className="flex items-center gap-1 text-xs font-semibold text-[#ffd60a] hover:underline"
+                className="flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
               >
                 {t("See all")}
                 <ArrowRight className="size-3" />
@@ -259,11 +259,11 @@ export function ModernHomeView({ status, refresh, notify, launch: launchProp, st
                 quickInstances.map((inst) => (
                   <div
                     key={inst.id}
-                    className="group flex items-center justify-between rounded-xl border-2 border-black bg-[#1a1c27]/90 backdrop-blur-sm p-2.5 shadow-[2px_2px_0px_#000000] transition-all hover:border-[#ffd60a]"
+                    className="group flex items-center justify-between rounded-xl border-2 border-border/80 bg-background/80 backdrop-blur-sm p-2.5 shadow-[2px_2px_0px_#000000] transition-all hover:border-primary/70"
                   >
                     <div className="min-w-0 pr-2">
-                      <div className="truncate text-xs font-bold text-[#f4f5f8]">{inst.name}</div>
-                      <div className="truncate text-[11px] text-[#9aa1b2]">
+                      <div className="truncate text-xs font-bold text-foreground">{inst.name}</div>
+                      <div className="truncate text-[11px] text-muted-foreground">
                         {instanceVersionLabel(inst) || "Fabric"}
                       </div>
                     </div>
@@ -271,7 +271,7 @@ export function ModernHomeView({ status, refresh, notify, launch: launchProp, st
                       type="button"
                       onClick={() => playInstance(inst)}
                       disabled={disabled}
-                      className="flex size-8 shrink-0 items-center justify-center rounded-lg border-2 border-black bg-[#ffd60a] text-[#0f0e0c] shadow-[1px_1px_0px_#000000] transition-all hover:translate-x-0.5 hover:translate-y-0.5"
+                      className="flex size-8 shrink-0 items-center justify-center rounded-lg border-2 border-daisy-ink bg-primary text-primary-foreground shadow-[1px_1px_0px_#000000] transition-all hover:translate-x-0.5 hover:translate-y-0.5"
                       title={t("Play")}
                     >
                       <Play className="size-3.5 fill-current ml-0.5" />
@@ -279,50 +279,50 @@ export function ModernHomeView({ status, refresh, notify, launch: launchProp, st
                   </div>
                 ))
               ) : (
-                <div className="flex h-36 flex-col items-center justify-center text-center text-xs text-[#9aa1b2]">
+                <div className="flex h-36 flex-col items-center justify-center text-center text-xs text-muted-foreground">
                   <span>{t("No other instances yet.")}</span>
                 </div>
               )}
             </div>
 
-            <div className="relative z-10 mt-auto pt-2 border-t border-black/40 flex justify-end">
+            <div className="relative z-10 mt-auto pt-2 border-t border-border/70 flex justify-end">
               <Button
                 size="sm"
                 variant="outline"
                 onClick={() => go("instances")}
               >
-                <Plus className="size-3.5 text-[#ffd60a]" />
+                <Plus className="size-3.5 text-primary" />
                 <span>{t("Create new instance")}</span>
               </Button>
             </div>
           </section>
 
           {/* 3. Mods Bento Tile (4 cols) */}
-          <section className="relative col-span-12 md:col-span-6 xl:col-span-4 flex flex-col overflow-hidden rounded-2xl border-2 border-black bg-[#151720]/80 backdrop-blur-md p-5 shadow-[4px_4px_0px_#000000]">
+          <section className="relative col-span-12 md:col-span-6 xl:col-span-4 flex flex-col overflow-hidden rounded-2xl border-2 border-daisy-ink bg-card/95 backdrop-blur-md p-5 shadow-[4px_4px_0px_#000000]">
             {/* Minecraft Background with overlay */}
             <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
               <img
                 src="../assets/backdrop.jpg"
                 alt=""
-                className="size-full object-cover opacity-20 scale-105"
+                className="size-full object-cover opacity-10 scale-105"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#151720] via-[#151720]/85 to-[#151720]/60" />
+              <div className="absolute inset-0 bg-gradient-to-t from-card via-card/85 to-card/60" />
             </div>
 
-            <div className="relative z-10 flex items-center justify-between pb-2 border-b border-black/40">
+            <div className="relative z-10 flex items-center justify-between pb-2 border-b border-border/70">
               <div className="flex items-center gap-2.5">
-                <div className="flex size-8 items-center justify-center rounded-lg border-2 border-black bg-[#ffd60a] text-[#0f0e0c] shadow-[1px_1px_0px_#000000]">
+                <div className="flex size-8 items-center justify-center rounded-lg border-2 border-daisy-ink bg-primary text-primary-foreground shadow-[1px_1px_0px_#000000]">
                   <Package className="size-4" />
                 </div>
                 <div>
-                  <h2 className="text-sm font-bold leading-tight text-[#f4f5f8] uppercase tracking-wide drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">{t("Mods")}</h2>
-                  <p className="text-[11px] text-[#9aa1b2]">{t("{count} installed", { count: modCount })}</p>
+                  <h2 className="text-sm font-bold leading-tight text-foreground uppercase tracking-wide">{t("Mods")}</h2>
+                  <p className="text-[11px] text-muted-foreground">{t("{count} installed", { count: modCount })}</p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => { setContentMode("installed"); setContentOpen(true); }}
-                className="group flex items-center gap-1 rounded-lg border-2 border-black bg-[#1a1c27]/90 px-2.5 py-1 text-xs font-semibold text-[#ffd60a] shadow-[1px_1px_0px_#000000] transition-all hover:bg-[#ffd60a] hover:text-[#0f0e0c]"
+                className="group flex items-center gap-1 rounded-lg border-2 border-border/80 bg-background/80 px-2.5 py-1 text-xs font-semibold text-primary shadow-[1px_1px_0px_#000000] transition-all hover:bg-primary hover:text-primary-foreground"
               >
                 <span>{t("Manage")}</span>
                 <ArrowRight className="size-3" />
@@ -336,41 +336,41 @@ export function ModernHomeView({ status, refresh, notify, launch: launchProp, st
                   <div
                     key={i}
                     onClick={() => { setContentMode("installed"); setContentOpen(true); }}
-                    className="group flex cursor-pointer items-center gap-2.5 rounded-xl border-2 border-black bg-[#1a1c27]/90 backdrop-blur-sm p-2 shadow-[2px_2px_0px_#000000] transition-all hover:border-[#ffd60a]"
+                    className="group flex cursor-pointer items-center gap-2.5 rounded-xl border-2 border-border/80 bg-background/80 backdrop-blur-sm p-2 shadow-[2px_2px_0px_#000000] transition-all hover:border-primary/70"
                   >
-                    <div className="flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-black bg-[#12110c]">
+                    <div className="flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-border/60 bg-muted">
                       {mod.url ? (
                         <img src={mod.url} alt="" className="size-full object-contain p-1" />
                       ) : (
-                        <Package className="size-4 text-[#9aa1b2]" />
+                        <Package className="size-4 text-muted-foreground" />
                       )}
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center justify-between gap-1">
-                        <span className="truncate text-xs font-bold text-[#f4f5f8] group-hover:text-[#ffd60a] transition-colors">
+                        <span className="truncate text-xs font-bold text-foreground group-hover:text-primary transition-colors">
                           {mod.title}
                         </span>
                         {mod.version ? (
-                          <span className="shrink-0 rounded border border-black bg-[#28251c] px-1.5 py-0.2 text-[10px] text-[#9aa1b2]">
+                          <span className="shrink-0 rounded border border-border/80 bg-muted px-1.5 py-0.2 text-[10px] text-muted-foreground">
                             {mod.version}
                           </span>
                         ) : null}
                       </div>
-                      <p className="truncate text-[11px] text-[#9aa1b2]/80">
+                      <p className="truncate text-[11px] text-muted-foreground">
                         {mod.desc || t("Fabric mod")}
                       </p>
                     </div>
                   </div>
                 ))
               ) : (
-                <div className="flex h-32 flex-col items-center justify-center gap-1.5 rounded-xl border-2 border-dashed border-[#28251c] p-3 text-center text-xs text-[#9aa1b2]">
+                <div className="flex h-32 flex-col items-center justify-center gap-1.5 rounded-xl border-2 border-dashed border-border/70 p-3 text-center text-xs text-muted-foreground">
                   <Package className="size-5 opacity-40" />
                   <span>{t("No mods installed yet.")}</span>
                 </div>
               )}
             </div>
 
-            <div className="relative z-10 mt-auto pt-2 border-t border-black/40 flex justify-end">
+            <div className="relative z-10 mt-auto pt-2 border-t border-border/70 flex justify-end">
               <Button
                 size="sm"
                 onClick={() => { setContentMode("browse"); setContentOpen(true); }}
@@ -382,28 +382,28 @@ export function ModernHomeView({ status, refresh, notify, launch: launchProp, st
           </section>
 
           {/* 4. Wardrobe Bento Tile (4 cols) */}
-          <section className="relative col-span-12 md:col-span-6 xl:col-span-4 flex flex-col overflow-hidden rounded-2xl border-2 border-black bg-[#151720]/80 backdrop-blur-md p-5 shadow-[4px_4px_0px_#000000]">
+          <section className="relative col-span-12 md:col-span-6 xl:col-span-4 flex flex-col overflow-hidden rounded-2xl border-2 border-daisy-ink bg-card/95 backdrop-blur-md p-5 shadow-[4px_4px_0px_#000000]">
             {/* Minecraft Background with overlay */}
             <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
               <img
                 src="../assets/home-bg-2.jpg"
                 alt=""
-                className="size-full object-cover opacity-20 scale-105"
+                className="size-full object-cover opacity-10 scale-105"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#151720] via-[#151720]/85 to-[#151720]/60" />
+              <div className="absolute inset-0 bg-gradient-to-t from-card via-card/85 to-card/60" />
             </div>
 
-            <div className="relative z-10 flex items-center justify-between pb-2 border-b border-black/40">
+            <div className="relative z-10 flex items-center justify-between pb-2 border-b border-border/70">
               <div>
-                <h2 className="text-sm font-bold text-[#f4f5f8] uppercase tracking-wide drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">{t("Wardrobe")}</h2>
-                <p className="text-[11px] text-[#9aa1b2]">
+                <h2 className="text-sm font-bold text-foreground uppercase tracking-wide">{t("Wardrobe")}</h2>
+                <p className="text-[11px] text-muted-foreground">
                   {profile ? t("{count} saved", { count: skins.length }) : t("Custom skin")}
                 </p>
               </div>
               <button
                 type="button"
                 onClick={() => go("wardrobe")}
-                className="text-xs font-semibold text-[#ffd60a] hover:underline"
+                className="text-xs font-semibold text-primary hover:underline"
               >
                 {t("Open wardrobe →")}
               </button>
@@ -412,7 +412,7 @@ export function ModernHomeView({ status, refresh, notify, launch: launchProp, st
             {/* Horizontal Scrollable Skins Gallery (Face Head Only) */}
             <div className="relative z-10 my-auto py-3">
               {skins.length > 0 ? (
-                <div className="flex items-center gap-3 overflow-x-auto pb-2 pt-1 px-1 [scrollbar-width:thin] [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-[#ffd60a]/30 hover:[&::-webkit-scrollbar-thumb]:bg-[#ffd60a]">
+                <div className="flex items-center gap-3 overflow-x-auto pb-2 pt-1 px-1 [scrollbar-width:thin] [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-primary/30 hover:[&::-webkit-scrollbar-thumb]:bg-primary">
                   {skins.map((s, idx) => {
                     const isWorn = s.active || (!skins.some((sk) => sk.active) && idx === 0);
                     const skinUrl = s.previewDataUrl || s.previewFileUrl || s.texture || (isWorn ? resolveSkinTexture(status) : "");
@@ -432,8 +432,8 @@ export function ModernHomeView({ status, refresh, notify, launch: launchProp, st
                         className={cn(
                           "group relative flex size-20 shrink-0 cursor-pointer items-center justify-center rounded-2xl border-2 p-1.5 transition-all hover:scale-105 active:scale-95",
                           isWorn
-                            ? "border-black bg-[#1a1c27]/95 shadow-[3px_3px_0px_#000000]"
-                            : "border-black bg-[#10121a]/90 hover:border-[#ffd60a]/60 shadow-[2px_2px_0px_#000000]"
+                            ? "border-daisy-ink bg-card shadow-[3px_3px_0px_#000000]"
+                            : "border-border/80 bg-background/80 hover:border-primary/60 shadow-[2px_2px_0px_#000000]"
                         )}
                         title={s.name || `Skin ${idx + 1}`}
                       >
@@ -445,7 +445,7 @@ export function ModernHomeView({ status, refresh, notify, launch: launchProp, st
                         />
 
                         {isWorn ? (
-                          <span className="absolute -bottom-1 -right-1 rounded border-2 border-black bg-[#ffd60a] px-1.5 py-0.5 font-pixel text-[8px] font-bold text-[#0f0e0c] shadow-[1px_1px_0px_#000000]">
+                          <span className="absolute -bottom-1 -right-1 rounded border-2 border-daisy-ink bg-primary px-1.5 py-0.5 font-pixel text-[8px] font-bold text-primary-foreground shadow-[1px_1px_0px_#000000]">
                             ACTIVE
                           </span>
                         ) : null}
@@ -454,14 +454,14 @@ export function ModernHomeView({ status, refresh, notify, launch: launchProp, st
                   })}
                 </div>
               ) : (
-                <div className="flex flex-col items-center justify-center py-6 text-center text-xs text-[#9aa1b2]">
-                  <Shirt className="size-8 text-[#9aa1b2]/40 mb-1" />
+                <div className="flex flex-col items-center justify-center py-6 text-center text-xs text-muted-foreground">
+                  <Shirt className="size-8 text-muted-foreground/40 mb-1" />
                   <span>{t("No skins saved yet.")}</span>
                 </div>
               )}
             </div>
 
-            <div className="relative z-10 mt-auto pt-2 border-t border-black/40 flex justify-end">
+            <div className="relative z-10 mt-auto pt-2 border-t border-border/70 flex justify-end">
               <Button
                 size="sm"
                 onClick={() => go("wardrobe")}
@@ -473,21 +473,21 @@ export function ModernHomeView({ status, refresh, notify, launch: launchProp, st
           </section>
 
           {/* 5. Servers Bento Tile (4 cols) */}
-          <section className="relative col-span-12 md:col-span-12 xl:col-span-4 flex flex-col overflow-hidden rounded-2xl border-2 border-black bg-[#151720]/80 backdrop-blur-md p-5 shadow-[4px_4px_0px_#000000]">
+          <section className="relative col-span-12 md:col-span-12 xl:col-span-4 flex flex-col overflow-hidden rounded-2xl border-2 border-daisy-ink bg-card/95 backdrop-blur-md p-5 shadow-[4px_4px_0px_#000000]">
             {/* Minecraft Background with overlay */}
             <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
               <img
                 src="../assets/home-bg-1.jpg"
                 alt=""
-                className="size-full object-cover opacity-20 scale-105"
+                className="size-full object-cover opacity-10 scale-105"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#151720] via-[#151720]/85 to-[#151720]/60" />
+              <div className="absolute inset-0 bg-gradient-to-t from-card via-card/85 to-card/60" />
             </div>
 
-            <div className="relative z-10 flex items-center justify-between pb-2 border-b border-black/40">
+            <div className="relative z-10 flex items-center justify-between pb-2 border-b border-border/70">
               <div>
-                <h2 className="text-sm font-bold text-[#f4f5f8] uppercase tracking-wide drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">{t("Servers")}</h2>
-                <p className="text-[11px] text-[#9aa1b2] mt-0.5">{t("Multiplayer servers")}</p>
+                <h2 className="text-sm font-bold text-foreground uppercase tracking-wide">{t("Servers")}</h2>
+                <p className="text-[11px] text-muted-foreground mt-0.5">{t("Multiplayer servers")}</p>
               </div>
             </div>
 
@@ -496,11 +496,11 @@ export function ModernHomeView({ status, refresh, notify, launch: launchProp, st
                 reachableServers.slice(0, 2).map((srv) => (
                   <div
                     key={srv.name}
-                    className="flex items-center justify-between rounded-xl border-2 border-black bg-[#1a1c27]/90 backdrop-blur-sm p-2.5 shadow-[2px_2px_0px_#000000]"
+                    className="flex items-center justify-between rounded-xl border-2 border-border/80 bg-background/80 backdrop-blur-sm p-2.5 shadow-[2px_2px_0px_#000000]"
                   >
                     <div className="min-w-0 pr-2">
-                      <div className="truncate text-xs font-bold text-[#f4f5f8]">{srv.name}</div>
-                      <div className="truncate text-[11px] text-[#9aa1b2]">
+                      <div className="truncate text-xs font-bold text-foreground">{srv.name}</div>
+                      <div className="truncate text-[11px] text-muted-foreground">
                         {srv.players ? `${srv.players.online}/${srv.players.max} online` : "Online"}
                       </div>
                     </div>
@@ -508,7 +508,7 @@ export function ModernHomeView({ status, refresh, notify, launch: launchProp, st
                       type="button"
                       onClick={() => launch(srv.ip)}
                       disabled={disabled}
-                      className="rounded-lg border-2 border-black bg-[#ffd60a] px-3 py-1 text-xs font-bold text-[#0f0e0c] shadow-[1px_1px_0px_#000000] hover:translate-x-0.5 hover:translate-y-0.5"
+                      className="rounded-lg border-2 border-daisy-ink bg-primary px-3 py-1 text-xs font-bold text-primary-foreground shadow-[1px_1px_0px_#000000] hover:translate-x-0.5 hover:translate-y-0.5"
                     >
                       {t("Join")}
                     </button>
@@ -516,14 +516,14 @@ export function ModernHomeView({ status, refresh, notify, launch: launchProp, st
                 ))
               ) : (
                 <div className="flex flex-col items-center justify-center py-3 text-center">
-                  <Server className="size-7 text-[#9aa1b2]/40 mb-1" />
-                  <span className="text-xs font-bold text-[#f4f5f8]">{t("No servers yet")}</span>
-                  <p className="text-[11px] text-[#9aa1b2] mt-0.5">{t("Servers you join show up here.")}</p>
+                  <Server className="size-7 text-muted-foreground/40 mb-1" />
+                  <span className="text-xs font-bold text-foreground">{t("No servers yet")}</span>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">{t("Servers you join show up here.")}</p>
                 </div>
               )}
             </div>
 
-            <div className="relative z-10 mt-auto pt-2 border-t border-black/40 flex items-center justify-end gap-2.5">
+            <div className="relative z-10 mt-auto pt-2 border-t border-border/70 flex items-center justify-end gap-2.5">
               <Button
                 size="sm"
                 variant="outline"

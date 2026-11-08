@@ -75,8 +75,8 @@ function Stage({ label, children }) {
   const halloween = useSeasonId() === "halloween";
   return (
     <div className="relative h-[420px] overflow-hidden rounded-2xl border-2 border-border/80 bg-card shadow-[4px_4px_0px_#080808]">
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-accent/70 to-transparent" />
-      <div className="pointer-events-none absolute bottom-[54px] left-1/2 h-6 w-44 -translate-x-1/2 rounded-[50%] bg-[radial-gradient(closest-side,rgb(0_0_0/0.45),transparent)]" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-muted/80 to-transparent" />
+      <div className="pointer-events-none absolute bottom-[54px] left-1/2 h-6 w-44 -translate-x-1/2 rounded-[50%] bg-[radial-gradient(closest-side,rgb(0_0_0/0.35),transparent)]" />
       {halloween ? <CornerWeb corner="right" size={128} className="opacity-30" /> : null}
       {children}
       {/* Halloween: a jack o'lantern on the floor beside you. */}
@@ -97,16 +97,16 @@ function WardrobeCard({ picture, title, sub, worn, selected, onClick }) {
       className={cn(
         "flex flex-col overflow-hidden rounded-2xl border-2 bg-card text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
         selected
-          ? "border-primary shadow-[4px_4px_0px_#080808] bg-primary/5"
+          ? "border-primary shadow-[4px_4px_0px_#080808] bg-primary/10"
           : "border-border/80 shadow-[2px_2px_0px_#080808] hover:border-primary/60 hover:shadow-[3px_3px_0px_#080808]"
       )}
     >
-      <div className="flex h-[150px] items-center justify-center bg-gradient-to-t from-accent/60 to-transparent">
+      <div className="flex h-[150px] items-center justify-center bg-gradient-to-t from-muted/60 to-transparent">
         {picture}
       </div>
       <div className="flex items-center justify-between gap-2 px-3 py-2.5">
         <div className="min-w-0">
-          <div className="truncate text-[13px] font-bold">{title}</div>
+          <div className="truncate text-[13px] font-bold text-foreground">{title}</div>
           {sub ? <div className="text-[11px] capitalize text-muted-foreground">{sub}</div> : null}
         </div>
         {worn ? <Badge variant="success"><Check className="size-3" />{t("Worn")}</Badge> : null}
