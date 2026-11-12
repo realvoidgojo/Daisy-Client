@@ -103,9 +103,9 @@ object PlayerHeads {
                 }
                 runCatching {
                     val image = ByteArrayInputStream(bytes).use { NativeImage.read(it) }
-                    val id = McId.fromNamespaceAndPath("clientcore", "river_head_" + k.replace(Regex("[^a-z0-9_]"), "_"))
+                    val id = McId.fromNamespaceAndPath("clientcore", "daisy_head_" + k.replace(Regex("[^a-z0-9_]"), "_"))
 //? if >=1.21.5 {
-                    client.textureManager.register(id, DynamicTexture({ "river-head-$k" }, image))
+                    client.textureManager.register(id, DynamicTexture({ "daisy-head-$k" }, image))
 //?} else {
 /*                    client.textureManager.register(id, DynamicTexture(image))
 *///?}

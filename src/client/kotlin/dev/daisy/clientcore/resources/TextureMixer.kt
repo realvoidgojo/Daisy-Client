@@ -315,7 +315,7 @@ object TextureMixer {
 
     /** Daisy's own pack.mcmeta has the right format numbers for this version; only the description changes. */
     private fun packMeta(repository: PackRepository): String {
-        val raw = repository.getPack("river_builtin")?.open()?.use { resources ->
+        val raw = repository.getPack("daisy_builtin")?.open()?.use { resources ->
             resources.getRootResource("pack.mcmeta")?.get()?.use { it.readBytes().toString(Charsets.UTF_8) }
         } ?: error("Daisy's own pack.mcmeta could not be read")
         val root = JsonParser.parseString(raw).asJsonObject

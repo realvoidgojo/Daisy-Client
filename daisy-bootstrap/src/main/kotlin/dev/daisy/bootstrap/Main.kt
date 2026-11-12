@@ -5,10 +5,10 @@ import java.lang.reflect.Method
 import java.net.URLClassLoader
 import java.time.Instant
 
-private const val MAIN_CLASS_PROPERTY = "river.bootstrap.mainClass"
-private const val CLASSPATH_PROPERTY = "river.bootstrap.classpath"
-private const val GAME_DIR_PROPERTY = "river.bootstrap.gameDir"
-private const val VERSION_PROPERTY = "river.bootstrap.version"
+private const val MAIN_CLASS_PROPERTY = "daisy.bootstrap.mainClass"
+private const val CLASSPATH_PROPERTY = "daisy.bootstrap.classpath"
+private const val GAME_DIR_PROPERTY = "daisy.bootstrap.gameDir"
+private const val VERSION_PROPERTY = "daisy.bootstrap.version"
 
 fun main(args: Array<String>) {
     val targetMainClass = System.getProperty(MAIN_CLASS_PROPERTY)?.trim().orEmpty()
@@ -43,7 +43,7 @@ private fun writeBootstrapMarker() {
     val gameDir = System.getProperty(GAME_DIR_PROPERTY)?.takeIf { it.isNotBlank() } ?: return
     val version = System.getProperty(VERSION_PROPERTY)?.takeIf { it.isNotBlank() } ?: "unknown"
     runCatching {
-        val root = File(gameDir, "river-runtime")
+        val root = File(gameDir, "daisy-runtime")
         root.mkdirs()
         File(root, "bootstrap-state.json").writeText(
             """

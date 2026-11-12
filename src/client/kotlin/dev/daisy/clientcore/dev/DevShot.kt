@@ -17,7 +17,7 @@ import org.lwjgl.glfw.GLFW
 
 /**
  * Dev screenshots of Daisy's own screens, so a UI change can be looked at instead of
- * guessed at. Off unless the game is started with -Driver.devshot=<shots>; a normal game
+ * guessed at. Off unless the game is started with -Ddaisy.devshot=<shots>; a normal game
  * never reaches anything in here.
  *
  * Each shot is `name[:halloween][@WIDTHxHEIGHT]`, comma separated, for example
@@ -32,21 +32,21 @@ import org.lwjgl.glfw.GLFW
  */
 object DevShot {
 
-    private val shots: List<String> = System.getProperty("river.devshot").orEmpty()
+    private val shots: List<String> = System.getProperty("daisy.devshot").orEmpty()
         .split(',').map { it.trim() }.filter { it.isNotEmpty() }
 
     /*
-      Benchmark (-Driver.bench=<seconds>): the same hidden window, a world instead of
-      screens. It opens -Driver.bench.world (default "New World"), lets it warm up, uncaps
+      Benchmark (-Ddaisy.bench=<seconds>): the same hidden window, a world instead of
+      screens. It opens -Ddaisy.bench.world (default "New World"), lets it warm up, uncaps
       the frame rate in memory only (these runs never save options), records a Java Flight
       Recording of the measured stretch next to plain frame-rate figures in bench/, and quits.
     */
-    private val benchSeconds: Int? = System.getProperty("river.bench")?.toIntOrNull()
-    private val benchWorld: String = System.getProperty("river.bench.world") ?: "New World"
+    private val benchSeconds: Int? = System.getProperty("daisy.bench")?.toIntOrNull()
+    private val benchWorld: String = System.getProperty("daisy.bench.world") ?: "New World"
 
     val active: Boolean get() = shots.isNotEmpty() || benchSeconds != null
 
-    private val size = System.getProperty("river.devshot.size").orEmpty()
+    private val size = System.getProperty("daisy.devshot.size").orEmpty()
         .split('x').mapNotNull { it.trim().toIntOrNull() }.takeIf { it.size == 2 } ?: listOf(1920, 1080)
 
     private var index = -1
@@ -121,14 +121,14 @@ object DevShot {
 
         val config = DaisyRuntime.config
         if (!themeSaved) { originalTheme = config.theme; themeSaved = true }
-        config.theme = if (halloween) "halloween" else "river"
+        config.theme = if (halloween) "halloween" else "daisy"
         if (windowSize.size == 2) prepareWindow(client, windowSize[0], windowSize[1])
         else prepareWindow(client, size[0], size[1])
 
         when (name) {
             // Opened from the title screen, which is where a missing item component crashed 26.1.2.
-            "river-menu" -> client.setScreen(DaisyMenuScreen(null))
-            "river-hud" -> client.setScreen(DaisyHudEditorScreen(null))
+            "daisy-menu" -> client.setScreen(DaisyMenuScreen(null))
+            "daisy-hud" -> client.setScreen(DaisyHudEditorScreen(null))
             "friends-signedout" -> {
                 DaisySocial.stopPreview()
                 DaisySocial.previewSignedOut = true
@@ -193,7 +193,7 @@ object DevShot {
                 client.setScreen(null)
                 if (recordSeconds != null) startRecording(client)
                 dev.daisy.clientcore.module.ModuleRegistry.get<dev.daisy.clientcore.module.impl.LyricsModule>("lyrics")
-                    ?.startDemo(lines = name == "world-lyrics-lines", screen = name == "world-lyrics-screen", song = System.getProperty("river.devshot.song"))
+                    ?.startDemo(lines = name == "world-lyrics-lines", screen = name == "world-lyrics-screen", song = System.getProperty("daisy.devshot.song"))
             }
             // The aurora and shooting stars forced on, with the view tilted up toward them.
             "world-sky", "world-sky-up" -> {
@@ -304,13 +304,13 @@ object DevShot {
     }
 
     /*
-      Recording (-Driver.devshot.record=<seconds>): a world-lyrics* shot becomes a run of
+      Recording (-Ddaisy.devshot.record=<seconds>): a world-lyrics* shot becomes a run of
       frames, screenshots/rec-<shot>/f00000.png..., at 30 per second of song. DevClock is
       stepped one frame at a time and each frame is only taken after the game has drawn it,
       so the result is smooth however slow the capture is. The world is frozen, only the
       lyrics HUD draws, and the view turns slowly.
     */
-    private val recordSeconds: Double? = System.getProperty("river.devshot.record")?.toDoubleOrNull()
+    private val recordSeconds: Double? = System.getProperty("daisy.devshot.record")?.toDoubleOrNull()
     private const val REC_FPS = 30
     private var recFrame = 0
     private var recDrawn = false
@@ -406,11 +406,11 @@ object DevShot {
 
     /*
       Each block draws a different HUD: "none", "all", or one module on its own. By default
-      it alternates all/none in 10 s blocks; with -Driver.bench.modules=true it also gives
+      it alternates all/none in 10 s blocks; with -Ddaisy.bench.modules=true it also gives
       every enabled module a block of its own, so each one's cost can be read against none.
       The whole sequence runs twice so drift (chunks, time of day) mostly cancels out.
     */
-    private val benchPerModule = System.getProperty("river.bench.modules") == "true"
+    private val benchPerModule = System.getProperty("daisy.bench.modules") == "true"
 
     /** Read by DaisyRuntime.renderHud: true during the benchmark's "none" blocks. */
     @JvmStatic var hudHidden = false

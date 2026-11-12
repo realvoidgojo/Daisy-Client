@@ -4,12 +4,12 @@ import dev.daisy.clientcore.config.WaypointData
 
 /**
  * Compact, human-pasteable waypoint string for sharing in chat or DMs.
- * Format: `river:wp:<name>:<x>:<y>:<z>:<color>` with the name URL-ish escaped
+ * Format: `daisy:wp:<name>:<x>:<y>:<z>:<color>` with the name URL-ish escaped
  * so colons and spaces survive. Anyone on Daisy can paste it into Import.
  */
 object WaypointShare {
 
-    private const val PREFIX = "river:wp:"
+    private const val PREFIX = "daisy:wp:"
 
     fun encode(wp: WaypointData): String {
         val name = wp.name.replace("%", "%25").replace(":", "%3A")

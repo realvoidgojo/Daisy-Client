@@ -24,10 +24,10 @@ import java.util.Optional
  */
 object DaisyBuiltinPack {
 
-    private const val PACK_ID = "river_builtin"
+    private const val PACK_ID = "daisy_builtin"
 
     /** A resource that only exists in OUR jar, so classpath lookup can't hit another mod. */
-    private const val ANCHOR = "/assets/clientcore/font/river_badge.json"
+    private const val ANCHOR = "/assets/clientcore/font/daisy_badge.json"
 
     @JvmStatic
     fun appendTo(existing: Set<RepositorySource>): Set<RepositorySource> {
@@ -68,7 +68,7 @@ object DaisyBuiltinPack {
                 Path.of(java.io.File(connection.jarFileURL.toURI()).absolutePath)
             }
             "file" -> {
-                // .../assets/clientcore/font/river_badge.json -> pack root is 4 levels up.
+                // .../assets/clientcore/font/daisy_badge.json -> pack root is 4 levels up.
                 var path = Path.of(url.toURI())
                 repeat(4) { path = path.parent ?: return null }
                 path

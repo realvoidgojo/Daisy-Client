@@ -28,7 +28,7 @@ object ModUpdateCheck {
 
     private const val URL = "http://127.0.0.1:25585/version-status.json"
 
-    private val standalone = System.getProperty("minecraft.launcher.brand") !in setOf("daisy-client", "river-client")
+    private val standalone = System.getProperty("minecraft.launcher.brand") !in setOf("daisy-client", "daisy-client")
 
     @Volatile private var latest = ""
     @Volatile private var behind = 0

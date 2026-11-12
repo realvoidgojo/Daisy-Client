@@ -273,7 +273,7 @@ export function FriendsPanel({ status, refresh, notify, variant = "aside" }) {
 
   const poll = useCallback(async () => {
     try {
-      const res = await (api()?.daisySocial || api()?.riverSocial)?.("roster");
+      const res = await (api()?.daisySocial || api()?.daisySocial)?.("roster");
       if (!res || res.ok === false) { setReachable(false); setReason(String(res?.message || "")); return; }
       setReachable(true);
       setReason("");
@@ -302,7 +302,7 @@ export function FriendsPanel({ status, refresh, notify, variant = "aside" }) {
   const act = async (action, payload, successMessage) => {
     setBusy(true);
     try {
-      const res = await (api()?.daisySocial || api()?.riverSocial)?.(action, payload);
+      const res = await (api()?.daisySocial || api()?.daisySocial)?.(action, payload);
       if (res?.ok === false) notify?.(res.message || t("That did not work."), "error");
       else if (successMessage) notify?.(res?.message || successMessage, "info");
       await poll();
@@ -312,7 +312,7 @@ export function FriendsPanel({ status, refresh, notify, variant = "aside" }) {
   };
 
   const loadBlocked = useCallback(async () => {
-    const res = await (api()?.daisySocial || api()?.riverSocial)?.("blocked");
+    const res = await (api()?.daisySocial || api()?.daisySocial)?.("blocked");
     if (Array.isArray(res?.blocked)) setBlocked(res.blocked);
   }, []);
 

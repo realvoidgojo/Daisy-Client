@@ -30,8 +30,8 @@ import java.nio.file.Files
 object LowEndPreset {
 
     private var freshInstance = false
-    /** Dev testing only: -Driver.lowend.force treats this launch as a fresh instance on weak hardware. */
-    private val forced = System.getProperty("river.lowend.force") != null
+    /** Dev testing only: -Ddaisy.lowend.force treats this launch as a fresh instance on weak hardware. */
+    private val forced = System.getProperty("daisy.lowend.force") != null
     private var decided = false
     private var pendingMessage: String? = null
 
@@ -45,7 +45,7 @@ object LowEndPreset {
             // Fabric's game dir, not Minecraft's: this runs while the game is still being
             // constructed, before Minecraft.getInstance() can be relied on.
             val game = net.fabricmc.loader.api.FabricLoader.getInstance().gameDir
-            val daisyConfig = game.resolve("config").resolve("river-client")
+            val daisyConfig = game.resolve("config").resolve("daisy-client")
             val legacyConfig = game.resolve("config").resolve("clientcore.json")
             val options = game.resolve("options.txt")
             // The game saves options.txt early in its own startup, so a file written during

@@ -41,7 +41,7 @@ object DaisySocial {
     const val REFRESH_INTERVAL_MS = 10_000L
 
     private const val SOCKET_URL = "ws://127.0.0.1:25585/social/ws"
-    private const val SOCKET_PROTOCOL = "river.social.v1"
+    private const val SOCKET_PROTOCOL = "daisy.social.v1"
     /** Long enough to stay out of the way, short enough to beat an idle proxy timeout. */
     private const val SOCKET_PING_MS = 4L * 60L * 1000L
     private const val SOCKET_MAX_BACKOFF_MS = 2L * 60L * 1000L

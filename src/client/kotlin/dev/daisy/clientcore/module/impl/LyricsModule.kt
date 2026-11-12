@@ -73,7 +73,7 @@ class LyricsModule : Module("lyrics", "Lyrics", "Synced lyrics for the song you 
 
     /** Set by the dev screenshots: a made-up song on a clock, so no player or network is needed. */
     private var demoStart = 0L
-    /** A real song for the demo instead (DevShot -Driver.devshot.song): title, artist, album, seconds, and where it starts. */
+    /** A real song for the demo instead (DevShot -Ddaisy.devshot.song): title, artist, album, seconds, and where it starts. */
     private var demoSong: Song? = null
 
     // ------------------------------------------------------------------ settings
@@ -405,7 +405,7 @@ class LyricsModule : Module("lyrics", "Lyrics", "Synced lyrics for the song you 
         spanCache.clear()
         currentIndex = -1
         val sample = listOf(
-            "Floating down the river light",
+            "Floating down the daisy light",
             "Every ripple takes the night",
             "Carry me where the water sings",
             "Underneath a thousand wings",

@@ -51,10 +51,10 @@ object DaisyIcons {
             ) ?: return@runCatching null
             val image = stream.use { NativeImage.read(it) }
 //? if >=1.21.5 {
-            val id = McId.fromNamespaceAndPath("clientcore", "river_ui_icon_$icon")
-            Minecraft.getInstance().textureManager.register(id, DynamicTexture({ "river-icon-$icon" }, image))
+            val id = McId.fromNamespaceAndPath("clientcore", "daisy_ui_icon_$icon")
+            Minecraft.getInstance().textureManager.register(id, DynamicTexture({ "daisy-icon-$icon" }, image))
 //?} else {
-/*            val id = ResourceLocation.fromNamespaceAndPath("clientcore", "river_ui_icon_$icon")
+/*            val id = ResourceLocation.fromNamespaceAndPath("clientcore", "daisy_ui_icon_$icon")
             Minecraft.getInstance().textureManager.register(id, DynamicTexture(image))
 *///?}
             id

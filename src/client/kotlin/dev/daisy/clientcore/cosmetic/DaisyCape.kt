@@ -33,7 +33,7 @@ object DaisyCape {
 
     /** Style ids, aligned by index with [LABELS]. Ids must be lowercase a-z only
      *  (the presence worker strips anything else). */
-    val STYLES = listOf("river", "axie", "hardcore", "eclipse", "eightball", "halloween")
+    val STYLES = listOf("daisy", "axie", "hardcore", "eclipse", "eightball", "halloween")
 
     /** Display names for the wardrobe UI, aligned by index with [STYLES]. */
     val LABELS = listOf("Daisy", "Axie", "Hardcore", "Eclipse", "8-Ball", "Halloween")
@@ -78,7 +78,7 @@ object DaisyCape {
             val image = stream.use { NativeImage.read(it) }
             sizes[style] = intArrayOf(image.width, image.height)
 //? if >=1.21.5 {
-            Minecraft.getInstance().textureManager.register(textureId(style), DynamicTexture({ "river-cape-$style" }, image))
+            Minecraft.getInstance().textureManager.register(textureId(style), DynamicTexture({ "daisy-cape-$style" }, image))
 //?} else {
 /*            Minecraft.getInstance().textureManager.register(textureId(style), DynamicTexture(image))
 *///?}

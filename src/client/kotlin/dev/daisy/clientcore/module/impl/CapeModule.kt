@@ -20,7 +20,7 @@ class CapeModule : Module("cape", "Daisy Cape", "Wear a Daisy cape", ModuleCateg
 
     fun styleIndex(): Int = scalar("style", 0).coerceIn(0, DaisyCape.STYLES.size - 1)
 
-    /** The selected style id (e.g. "river"). */
+    /** The selected style id (e.g. "daisy"). */
     fun selectedStyle(): String = DaisyCape.STYLES[styleIndex()]
 
     fun setStyleIndex(index: Int) = setScalar("style", index.coerceIn(0, DaisyCape.STYLES.size - 1))

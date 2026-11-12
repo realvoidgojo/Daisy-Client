@@ -30,7 +30,7 @@ test("current and compatibility social bridges reach the same working handler", 
     })
   });
   assert.equal((await bridge.daisySocial("roster")).ok, true);
-  assert.equal((await bridge.riverSocial("roster")).ok, true);
+  assert.equal((await bridge.daisySocial("roster")).ok, true);
   assert.equal(calls.length, 2);
   assert.equal(calls[0].route, "/presence");
   assert.equal(calls[1].payload.status, "online");

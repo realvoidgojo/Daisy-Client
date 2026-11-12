@@ -109,12 +109,12 @@ object DaisyRuntime {
     private var mixinAudited = false
 
     /**
-     * Dev check, off unless -Driver.mixinAudit=true: makes Mixin apply every Daisy mixin now
+     * Dev check, off unless -Ddaisy.mixinAudit=true: makes Mixin apply every Daisy mixin now
      * instead of when each class first loads, so a hook that no longer matches a version
      * fails on the title screen rather than in the middle of a game.
      */
     private fun mixinAuditOnce() {
-        if (mixinAudited || System.getProperty("river.mixinAudit") != "true") return
+        if (mixinAudited || System.getProperty("daisy.mixinAudit") != "true") return
         mixinAudited = true
         org.spongepowered.asm.mixin.MixinEnvironment.getCurrentEnvironment().audit()
         println("[daisy] mixin audit passed")
@@ -123,7 +123,7 @@ object DaisyRuntime {
     fun tick(client: Minecraft) {
         initialize()
         mixinAuditOnce()
-        // Dev screenshots of Daisy's screens; does nothing unless -Driver.devshot is set.
+        // Dev screenshots of Daisy's screens; does nothing unless -Ddaisy.devshot is set.
         dev.daisy.clientcore.dev.DevShot.tick(client)
         dev.daisy.clientcore.perf.LowEndPreset.tick(client)
         dev.daisy.clientcore.config.ServerProfiles.tick(client)

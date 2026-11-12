@@ -15,7 +15,7 @@ const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
 
-const bucket = "river-client-updates";
+const bucket = "daisy-client-updates";
 const key = "config/testers.json";
 const launcherRoot = path.resolve(__dirname, "..");
 const workerRoot = path.resolve(launcherRoot, "..", "cloudflare-updates");

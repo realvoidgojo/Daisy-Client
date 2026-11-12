@@ -139,12 +139,12 @@ let processingRvrImport = false;
 let updaterRunPromise = null;
 const pendingRvrImports = [];
 const updaterJobPath = findUpdaterJobArgument(process.argv);
-const updateFailureLogPath = findNamedArgument(process.argv, "--daisy-update-failed") || findNamedArgument(process.argv, "--river-update-failed");
-const isUpdaterDemo = process.argv.includes("--daisy-updater-demo") || process.argv.includes("--river-updater-demo");
-const isUpdaterMode = Boolean(updaterJobPath) || (process.argv.includes("--daisy-updater") || process.argv.includes("--river-updater")) || isUpdaterDemo;
+const updateFailureLogPath = findNamedArgument(process.argv, "--daisy-update-failed") || findNamedArgument(process.argv, "--daisy-update-failed");
+const isUpdaterDemo = process.argv.includes("--daisy-updater-demo") || process.argv.includes("--daisy-updater-demo");
+const isUpdaterMode = Boolean(updaterJobPath) || (process.argv.includes("--daisy-updater") || process.argv.includes("--daisy-updater")) || isUpdaterDemo;
 const startupRvrPath = findRvrArgument(process.argv);
 // Windows passes this when it starts Daisy at sign-in (see syncLoginItem): open minimized.
-const startedAtLogin = (process.argv.includes("--daisy-startup") || process.argv.includes("--river-startup"));
+const startedAtLogin = (process.argv.includes("--daisy-startup") || process.argv.includes("--daisy-startup"));
 const singleInstanceLock = isUpdaterMode ? true : app.requestSingleInstanceLock();
 
 if (!singleInstanceLock) {
@@ -178,9 +178,9 @@ function findRvrArgument(argv = []) {
 }
 
 function findUpdaterJobArgument(argv = []) {
-  const prefixed = argv.find((arg) => /^--(?:daisy|river)-updater-job=/.test(String(arg || "")));
+  const prefixed = argv.find((arg) => /^--(?:daisy|daisy)-updater-job=/.test(String(arg || "")));
   if (prefixed) return prefixed.split("=").slice(1).join("=").trim();
-  const flagIndex = argv.findIndex((arg) => ["--daisy-updater-job", "--river-updater-job"].includes(String(arg || "").trim()));
+  const flagIndex = argv.findIndex((arg) => ["--daisy-updater-job", "--daisy-updater-job"].includes(String(arg || "").trim()));
   if (flagIndex >= 0 && argv[flagIndex + 1]) return String(argv[flagIndex + 1]).trim();
   return "";
 }
@@ -407,7 +407,7 @@ function readInstallId() {
 function metricsHeaders(extra = {}) {
   const headers = { "User-Agent": launcherUserAgent, ...extra };
   const id = readInstallId();
-  if (id) headers["X-River-Install"] = id;
+  if (id) headers["X-Daisy-Install"] = id;
   return headers;
 }
 const AUTH_SESSION_MS = 30 * 24 * 60 * 60 * 1000;
@@ -512,8 +512,8 @@ const CLIENTCORE_MOD_PATTERN = /^(?:daisy-client|clientcore)-[\w.+-]*\.jar(\.dis
 
 /** Patterns for the removed Daisy in-game Fabric mod artifacts. */
 const DAISY_INGAME_JAR_PATTERNS = [
-  /^(?:daisy|river)-bootstrap-[\w.+-]*\.jar(\.disabled)?$/i,
-  /^river-ingame-ui-[\w.+-]*\.jar(\.disabled)?$/i
+  /^(?:daisy|daisy)-bootstrap-[\w.+-]*\.jar(\.disabled)?$/i,
+  /^daisy-ingame-ui-[\w.+-]*\.jar(\.disabled)?$/i
 ];
 
 /** Delete any leftover Daisy in-game mod jars so Minecraft never loads Daisy as a Fabric mod. */
@@ -647,7 +647,7 @@ function isDaisyLoader(loader) {
 
 /** Whether Daisy goes into this instance: Fabric, and not made as a plain Fabric instance. */
 function instanceRunsDaisy(instance) {
-  return Boolean(instance) && isDaisyLoader(instance.loader) && instance.river !== false;
+  return Boolean(instance) && isDaisyLoader(instance.loader) && instance.daisy !== false;
 }
 
 /** Whether Daisy goes into the instance at `instancePath`. A folder no instance claims does. */
@@ -834,7 +834,7 @@ function ensureBundledClientCoreMod(instancePath, mcVersion = instanceMcVersion(
     title: "Daisy Client",
     name: "Daisy",
     author: "realvoidgojo",
-    source: "river",
+    source: "daisy",
     disabled: false,
     iconUrl: daisyIconDataUrl || (manifest.mods[targetName] || {}).iconUrl || ""
   };
@@ -846,8 +846,8 @@ function ensureBundledClientCoreMod(instancePath, mcVersion = instanceMcVersion(
 function stageDaisyRuntimeForInstance(instancePath, mcVersion = instanceMcVersion(instancePath)) {
   const resolved = resolveDaisyRuntimeJars(mcVersion);
   const root = String(instancePath || "");
-  const runtimeDir = path.join(root, "river-runtime");
-  const legacyRuntimeDir = path.join(root, ".river-runtime");
+  const runtimeDir = path.join(root, "daisy-runtime");
+  const legacyRuntimeDir = path.join(root, ".daisy-runtime");
   if (!instancePath || !instanceRunsDaisyAt(root)) return resolved;
   if (fs.existsSync(legacyRuntimeDir) && !fs.existsSync(runtimeDir)) {
     try {
@@ -892,7 +892,7 @@ function findCanonicalDaisyInstance(version = "1.21.11", loader = "fabric", excl
     .map((instance) => ({
       instance,
       score: listManagedContentFiles(instance.path, "mods").length,
-      daisyNamed: /^(?:daisy|river)\b/i.test(String(instance.name || ""))
+      daisyNamed: /^(?:daisy|daisy)\b/i.test(String(instance.name || ""))
     }))
     .filter((entry) => entry.score > 0)
     .sort((left, right) => {
@@ -958,8 +958,8 @@ function ensureDaisyBaselineForInstance(instancePath, version = "1.21.11", loade
       : `Shared Daisy files already matched ${source.name}.`
   };
 }
-const partnerDataUrl = "https://riverclient.xyz/data/partners.json";
-const partnerSiteBaseUrl = "https://riverclient.xyz/";
+const partnerDataUrl = "https://daisyclient.xyz/data/partners.json";
+const partnerSiteBaseUrl = "https://daisyclient.xyz/";
 
 // Minimal NBT parser for servers.dat
 /**
@@ -1222,7 +1222,7 @@ function reportLaunchMetric(event, extra = {}) {
     reason: shortFailureReason(extra.reason)
   });
 
-  fetch("https://updates.riverclient.xyz/metrics/launch", {
+  fetch("https://updates.daisyclient.xyz/metrics/launch", {
     method: "POST",
     headers: metricsHeaders({ "Content-Type": "application/json" }),
     body
@@ -1320,7 +1320,7 @@ const defaults = {
   dismissedCrashReport: "",
   /** Full paths of dismissed crash reports, one per instance at most, newest last. */
   dismissedCrashReports: [],
-  /** "combined" adds every other Minecraft client's tracked play time to Daisy's; "river" shows Daisy only. */
+  /** "combined" adds every other Minecraft client's tracked play time to Daisy's; "daisy" shows Daisy only. */
   playtimeDisplayMode: "combined",
   /** First-run guided tour. Set once the user finishes or skips it; replayable from Settings. */
   tutorialCompleted: false,
@@ -1436,7 +1436,7 @@ function getSystemMemoryMb() {
 }
 
 function getMemoryLimitMb(systemMemoryMb = getSystemMemoryMb()) {
-  // Leave headroom for Windows, the GPU driver, and the launcher itself: reserve a quarter
+  // Leave headroom for Windows, the GPU ddaisy, and the launcher itself: reserve a quarter
   // of RAM, at least 4 GB. (Old code reserved a flat 2 GB, which on a 32 GB box offered up
   // to ~30 GB and left almost nothing for the OS.) Rounded down to a 256 MB step.
   const reservedMb = Math.max(4096, Math.round(systemMemoryMb * 0.25));
@@ -1946,11 +1946,11 @@ function versionsPath() {
 }
 
 function modManifestPath(instancePath) {
-  return path.join(instancePath, "riv3r-mods.json");
+  return path.join(instancePath, "daisy-mods.json");
 }
 
 function instanceMetaPath(instancePath) {
-  return path.join(instancePath, "riv3r-instance.json");
+  return path.join(instancePath, "daisy-instance.json");
 }
 
 function defaultInstancePath() {
@@ -2200,7 +2200,7 @@ function normalizeSettings(value) {
     ? merged.friends.filter((f) => f && typeof f.name === "string" && String(f.name).trim()).map((f, i) => ({
       id: String(f.id || `friend-${i}-${Date.now()}`),
       name: String(f.name || "").trim().slice(0, 40),
-      address: String(f.address || `${sanitizeSocialAddressName(f.name || "") || "friend"}.riverclient.xyz`).trim().slice(0, 80),
+      address: String(f.address || `${sanitizeSocialAddressName(f.name || "") || "friend"}.daisyclient.xyz`).trim().slice(0, 80),
       note: String(f.note || "").trim().slice(0, 80),
       status: ["online", "busy", "offline"].includes(String(f.status || "")) ? String(f.status) : "offline"
     })).slice(0, 64)
@@ -2219,10 +2219,10 @@ function socialAddressRegistryPath() {
 function bundledPublicCertCandidates() {
   const desktopDir = app.getPath("desktop");
   return [
-    path.join(__dirname, "assets", "river-client-selfsign.cer"),
-    process.resourcesPath ? path.join(process.resourcesPath, "assets", "river-client-selfsign.cer") : "",
-    process.resourcesPath ? path.join(process.resourcesPath, "app.asar.unpacked", "assets", "river-client-selfsign.cer") : "",
-    desktopDir ? path.join(desktopDir, "river-client-selfsign.cer") : ""
+    path.join(__dirname, "assets", "daisy-client-selfsign.cer"),
+    process.resourcesPath ? path.join(process.resourcesPath, "assets", "daisy-client-selfsign.cer") : "",
+    process.resourcesPath ? path.join(process.resourcesPath, "app.asar.unpacked", "assets", "daisy-client-selfsign.cer") : "",
+    desktopDir ? path.join(desktopDir, "daisy-client-selfsign.cer") : ""
   ].filter(Boolean);
 }
 
@@ -2231,7 +2231,7 @@ function findBundledPublicCert() {
 }
 
 function stagedPublicCertPath() {
-  return path.join(app.getPath("userData"), "certs", "river-client-selfsign.cer");
+  return path.join(app.getPath("userData"), "certs", "daisy-client-selfsign.cer");
 }
 
 function materializeBundledPublicCert() {
@@ -2380,7 +2380,7 @@ function saveSocialAddressName(name) {
   writeSocialAddressRegistry(registry);
   writeSettings({ ...settings, socialAddressName: check.normalized });
   emitStatus();
-  return { ok: true, message: `${check.normalized}.riverclient.xyz saved.`, normalized: check.normalized };
+  return { ok: true, message: `${check.normalized}.daisyclient.xyz saved.`, normalized: check.normalized };
 }
 
 function readCpuUsagePercent() {
@@ -2661,7 +2661,7 @@ async function refreshKeptSeasons() {
     const raw = String(readAuth()?.profile?.id || "").replace(/-/g, "").toLowerCase();
     if (!/^[0-9a-f]{32}$/.test(raw)) return;
     const uuid = `${raw.slice(0, 8)}-${raw.slice(8, 12)}-${raw.slice(12, 16)}-${raw.slice(16, 20)}-${raw.slice(20)}`;
-    const payload = await fetchJson(`https://updates.riverclient.xyz/cosmetics/owned?uuid=${uuid}`);
+    const payload = await fetchJson(`https://updates.daisyclient.xyz/cosmetics/owned?uuid=${uuid}`);
     const owned = Array.isArray(payload?.owned) ? payload.owned : [];
     const settings = readSettings();
     const earned = KEEPABLE_SEASONS.filter((id) => owned.includes(id) && !settings.keptSeasons.includes(id));
@@ -2761,7 +2761,7 @@ function normalizeInstance(instance) {
     // The Forge or Fabric Loader build. Blank means "the recommended one", resolved at launch.
     loaderVersion: String(instance.loaderVersion || ""),
     // false: a plain Fabric instance, which never gets Daisy in game.
-    river: instance.river !== false,
+    daisy: instance.daisy !== false,
     path: String(instance.path),
     createdAt: String(instance.createdAt || new Date().toISOString()),
     updatedAt: String(instance.updatedAt || new Date().toISOString())
@@ -3227,7 +3227,7 @@ function getStatus() {
     lastSessionStartedAt: startedAt[instance.id] || 0
   }));
   const selectedInstance = instances.find((instance) => instance.selected) || instances[0] || null;
-  const instanceManifest = path.join(settings.instancePath, "riv3r-instance.json");
+  const instanceManifest = path.join(settings.instancePath, "daisy-instance.json");
   if (settings.instancePath) {
     try {
       ensureBundledClientCoreMod(settings.instancePath);
@@ -3349,12 +3349,12 @@ function isCoreClientMod(file) {
 }
 
 function listDaisyRuntimeEntries(instancePath) {
-  const runtimeDir = path.join(instancePath, "river-runtime");
+  const runtimeDir = path.join(instancePath, "daisy-runtime");
   if (!fs.existsSync(runtimeDir)) return [];
   const runtimeMeta = [
     { pattern: /^(?:daisy-client|clientcore)-[\w.+-]*\.jar$/i, title: "Daisy", author: "realvoidgojo" },
     { pattern: /^daisy-bootstrap-[\w.+-]*\.jar$/i, title: "Daisy Bootstrap", author: "realvoidgojo" },
-    { pattern: /^river-ingame-ui-[\w.+-]*\.jar$/i, title: "Daisy In-Game UI", author: "realvoidgojo" }
+    { pattern: /^daisy-ingame-ui-[\w.+-]*\.jar$/i, title: "Daisy In-Game UI", author: "realvoidgojo" }
   ];
 
   return fs.readdirSync(runtimeDir)
@@ -3371,7 +3371,7 @@ function listDaisyRuntimeEntries(instancePath) {
         metadata: {
           title: info.title,
           author: info.author,
-          source: "river-runtime"
+          source: "daisy-runtime"
         },
         update: null,
         conflicts: []
@@ -3843,7 +3843,7 @@ let lastUpdateActivity = null;
 let lastStuckReportAt = 0;
 
 function updateTracePath() {
-  return path.join(os.tmpdir(), "river-client-updates", "update-trace.log");
+  return path.join(os.tmpdir(), "daisy-client-updates", "update-trace.log");
 }
 
 function traceUpdate(kind, text) {
@@ -4468,9 +4468,9 @@ function detectInstanceVersionAndLoader(gameDir) {
   }
 
   // Daisy's own exported/previously-imported instances carry their own descriptor.
-  const river = readJson("riv3r-instance.json");
-  if (river && isVersion(river.version)) {
-    return { version: String(river.version), loader: normalizeLoader(river.loader) || "fabric", source: "riv3r-instance.json" };
+  const daisy = readJson("daisy-instance.json");
+  if (daisy && isVersion(daisy.version)) {
+    return { version: String(daisy.version), loader: normalizeLoader(daisy.loader) || "fabric", source: "daisy-instance.json" };
   }
 
   // No launcher metadata (Modrinth App, for one, keeps profile metadata in a central
@@ -4533,7 +4533,7 @@ function daisySupportsInstance(version, loader) {
 async function importExternalMinecraftInstance(entry = {}) {
   const sourceDir = String(entry.gameDir || "").trim();
   if (!sourceDir || !fs.existsSync(sourceDir)) return { ok: false, message: "That instance folder was not found." };
-  const migration = entry.migrateToRiver === true;
+  const migration = entry.migrateToDaisy === true;
   const detected = detectInstanceVersionAndLoader(sourceDir);
   const selectedVersion = String(entry.targetVersion || readSettings().selectedVersion || DEFAULT_MC_VERSION);
   const targetVersion = migration && entry.preferSourceVersion === true
@@ -4586,7 +4586,7 @@ async function importExternalMinecraftInstance(entry = {}) {
     ensureBundledClientCoreMod(targetPath, version);
   }
   writeModManifest(targetPath, { mods: {}, resourcepacks: {}, shaders: {}, updates: {}, checkedAt: "" });
-  fs.writeFileSync(path.join(targetPath, "riv3r-instance.json"), JSON.stringify({
+  fs.writeFileSync(path.join(targetPath, "daisy-instance.json"), JSON.stringify({
     name,
     version,
     loader,
@@ -4630,7 +4630,7 @@ ipcMain.handle("launcher:detect-external-instances", () => {
 
 ipcMain.handle("launcher:import-external-instance", async (_event, entry) => {
   try {
-    if (entry?.migrateToRiver === true) {
+    if (entry?.migrateToDaisy === true) {
       const found = detectExternalMinecraftInstances().some((item) => path.resolve(item.gameDir).toLowerCase() === path.resolve(String(entry.gameDir || "")).toLowerCase());
       if (!found) return { ok: false, message: "That profile was not found in the launcher scan." };
     }
@@ -4652,7 +4652,7 @@ ipcMain.handle("launcher:migrate-folder", async (_event, targetVersion) => {
     return { ok: false, message: "Choose the Minecraft game folder that contains saves, mods or options.txt." };
   }
   try {
-    return await importExternalMinecraftInstance({ gameDir, name: path.basename(gameDir), launcher: "Other launcher", migrateToRiver: true, preferSourceVersion: true, targetVersion });
+    return await importExternalMinecraftInstance({ gameDir, name: path.basename(gameDir), launcher: "Other launcher", migrateToDaisy: true, preferSourceVersion: true, targetVersion });
   } catch (error) {
     return { ok: false, message: error.message || "Could not bring that folder to Daisy." };
   }
@@ -4748,10 +4748,10 @@ function createInstance(request, options = {}) {
   const version = String(request && request.version || readSettings().selectedVersion || "1.21.11").trim() || "1.21.11";
   const requestedLoader = String(request && request.loader || "fabric").toLowerCase();
   const loader = LAUNCHABLE_LOADERS.includes(requestedLoader) ? requestedLoader : "fabric";
-  const river = loader === "fabric" && request?.river !== false;
+  const daisy = loader === "fabric" && request?.daisy !== false;
   const daisySkin = loader === "fabric" && Boolean(request && request.daisySkin);
-  const loaderVersion = river || loader === "vanilla" ? "" : String(request && request.loaderVersion || "").trim();
-  const defaultName = `${river ? "Daisy" : loader === "vanilla" ? "Minecraft" : loaderLabel(loader)} ${version}`;
+  const loaderVersion = daisy || loader === "vanilla" ? "" : String(request && request.loaderVersion || "").trim();
+  const defaultName = `${daisy ? "Daisy" : loader === "vanilla" ? "Minecraft" : loaderLabel(loader)} ${version}`;
   const rawName = String(request && request.name || defaultName).trim() || defaultName;
   const now = new Date().toISOString();
   const safeName = sanitizeFilename(rawName).toLowerCase().replace(/\s+/g, "-");
@@ -4764,7 +4764,7 @@ function createInstance(request, options = {}) {
     version,
     loader,
     loaderVersion,
-    river,
+    daisy,
     daisySkin,
     daisySkinVersion: daisySkin ? "0.1.0" : undefined,
     path: instancePath,
@@ -4782,7 +4782,7 @@ function createInstance(request, options = {}) {
   // deliberately NOT copied - a new instance starts with a clean mods/worlds set.
   // A modpack brings its own settings, so it starts from those instead.
   const inherited = options.inherit === false ? [] : inheritInstanceSettings(readSettings().instancePath, instancePath);
-  if (river) {
+  if (daisy) {
     ensureBundledClientCoreMod(instancePath, version);
     ensureRequiredSupportMods(instancePath, version, "fabric", "daisy-support-create").catch(() => { });
   }
@@ -4814,7 +4814,7 @@ ipcMain.handle("launcher:create-instance", (_event, request) => {
   const result = createInstance(request);
   // New Daisy instances start with the performance mods. They install in the background so
   // the new instance shows up straight away.
-  if (result.ok && result.instance?.river) {
+  if (result.ok && result.instance?.daisy) {
     installPerformanceMods(result.instance).catch((error) => emit("launcher:log", `[optimize] ${error.message}`));
   }
   return result;
@@ -5592,7 +5592,7 @@ ipcMain.handle("launcher:get-playtime-summary", async () => {
   const externalMs = await new Promise((resolve) => {
     setImmediate(() => resolve(getExternalPlaytimeMs()));
   });
-  return { daisyMs, riverMs: daisyMs, externalMs, combinedMs: daisyMs + externalMs };
+  return { daisyMs, daisyMs: daisyMs, externalMs, combinedMs: daisyMs + externalMs };
 });
 
 /**
@@ -5659,7 +5659,7 @@ ipcMain.handle("launcher:get-news", async () => {
   try {
     const controller = new AbortController();
     setTimeout(() => controller.abort(), 4000);
-    const res = await fetch("https://updates.riverclient.xyz/news.json", {
+    const res = await fetch("https://updates.daisyclient.xyz/news.json", {
       signal: controller.signal,
       headers: { "Accept": "application/json", "User-Agent": launcherUserAgent }
     });
@@ -5708,7 +5708,7 @@ ipcMain.handle("launcher:upload-crash-report", async (_event, options = {}) => {
   };
 
   try {
-    const response = await fetch("https://updates.riverclient.xyz/crash-report", {
+    const response = await fetch("https://updates.daisyclient.xyz/crash-report", {
       method: "POST",
       headers: { "Content-Type": "application/json", "User-Agent": launcherUserAgent },
       body: JSON.stringify(payload)
@@ -5821,8 +5821,8 @@ async function buildUpdateStuckReport() {
   add("== Release data from the updater job ==");
   add(JSON.stringify(update, null, 2));
   add();
-  add("== Staging folder (%TEMP%/river-client-updates) ==");
-  listDirForReport(path.join(os.tmpdir(), "river-client-updates")).forEach((line) => add(line));
+  add("== Staging folder (%TEMP%/daisy-client-updates) ==");
+  listDirForReport(path.join(os.tmpdir(), "daisy-client-updates")).forEach((line) => add(line));
   add();
   add("== Update server, right now ==");
   add(await probeForReport(updateManifestUrl));
@@ -5853,7 +5853,7 @@ ipcMain.handle("launcher:report-update-stuck", async () => {
   traceUpdate("report", "Downloading stuck? pressed");
   try {
     const log = scrubCrashLog(await buildUpdateStuckReport());
-    const response = await fetch("https://updates.riverclient.xyz/crash-report", {
+    const response = await fetch("https://updates.daisyclient.xyz/crash-report", {
       method: "POST",
       headers: { "Content-Type": "application/json", "User-Agent": launcherUserAgent },
       body: JSON.stringify({
@@ -6741,7 +6741,7 @@ async function importModpackArchive(filePath) {
     version: pack.version,
     loader: pack.loader,
     loaderVersion: pack.loaderVersion,
-    river: false
+    daisy: false
   }, { inherit: false });
   if (!created.ok) return created;
   const instancePath = created.instance.path;
@@ -7061,8 +7061,8 @@ ipcMain.handle("launcher:update-instance", (_event, patch) => {
   return { ok: true, message: "Instance updated." };
 });
 
-const RVR_FORMAT_ID = "river.rvr";
-const RVR_FORMAT_VERSION = 1;
+const DAISY_FORMAT_ID = "daisy.rvr";
+const DAISY_FORMAT_VERSION = 1;
 
 function countRvrContentFiles(stagingDir) {
   const counts = { mods: 0, resourcepacks: 0, shaders: 0 };
@@ -7226,7 +7226,7 @@ async function buildRvrStagingDir(instance, progress = () => { }) {
   const files = listRvrContentFiles(instance.path);
 
   // Daisy's own jar is put into every instance by the launcher, so it is never exported.
-  const isOwn = (entry) => isCoreClientMod(entry.file) || manifestSection(manifest, entry.contentType)[entry.file]?.source === "river";
+  const isOwn = (entry) => isCoreClientMod(entry.file) || manifestSection(manifest, entry.contentType)[entry.file]?.source === "daisy";
   const fromModrinthAlready = (entry) => {
     const meta = manifestSection(manifest, entry.contentType)[entry.file];
     return meta?.source === "modrinth" && meta.projectId && meta.versionId;
@@ -7268,9 +7268,9 @@ async function buildRvrStagingDir(instance, progress = () => { }) {
     bundled.add(key);
     bundledCount += 1;
   }
-  fs.writeFileSync(path.join(stagingDir, "riv3r-mods.json"), JSON.stringify(exportManifest, null, 2));
+  fs.writeFileSync(path.join(stagingDir, "daisy-mods.json"), JSON.stringify(exportManifest, null, 2));
 
-  const instanceMetaPath = path.join(instance.path, "riv3r-instance.json");
+  const instanceMetaPath = path.join(instance.path, "daisy-instance.json");
   let instanceMeta = {
     name: instance.name,
     version: instance.version || "1.21.11",
@@ -7298,8 +7298,8 @@ async function buildRvrStagingDir(instance, progress = () => { }) {
   fs.writeFileSync(path.join(stagingDir, "instance-settings.json"), JSON.stringify(lightweightSettings, null, 2));
 
   const daisyManifest = {
-    format: RVR_FORMAT_ID,
-    version: RVR_FORMAT_VERSION,
+    format: DAISY_FORMAT_ID,
+    version: DAISY_FORMAT_VERSION,
     exportedAt: new Date().toISOString(),
     instance: {
       name: instance.name,
@@ -7310,16 +7310,16 @@ async function buildRvrStagingDir(instance, progress = () => { }) {
     bundled: bundledCount,
     contents: contentIndex.totals
   };
-  fs.writeFileSync(path.join(stagingDir, "river-manifest.json"), JSON.stringify(daisyManifest, null, 2));
+  fs.writeFileSync(path.join(stagingDir, "daisy-manifest.json"), JSON.stringify(daisyManifest, null, 2));
   return { stagingDir, daisyManifest };
 }
 
 function readRvrManifest(rootPath) {
-  const manifestPath = path.join(rootPath, "river-manifest.json");
+  const manifestPath = path.join(rootPath, "daisy-manifest.json");
   if (!fs.existsSync(manifestPath)) return null;
   try {
     const payload = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
-    if (payload?.format !== RVR_FORMAT_ID) return null;
+    if (payload?.format !== DAISY_FORMAT_ID) return null;
     return payload;
   } catch {
     return null;
@@ -7377,7 +7377,7 @@ function importRvrArchive(rootPath, manifest, fallbackName) {
     try { return JSON.parse(fs.readFileSync(path.join(rootPath, name), "utf8")); } catch { return null; }
   };
   const plan = planRvrRestore(
-    readArchiveJson("riv3r-mods.json"),
+    readArchiveJson("daisy-mods.json"),
     readArchiveJson("content-index.json"),
     (contentType, file) => fs.existsSync(path.join(destPath, contentTypeInfo(contentType).folder, file)),
     isCoreClientMod
@@ -7386,17 +7386,17 @@ function importRvrArchive(rootPath, manifest, fallbackName) {
 
   const compactContentIndexPath = path.join(rootPath, "content-index.json");
   if (fs.existsSync(compactContentIndexPath)) {
-    fs.copyFileSync(compactContentIndexPath, path.join(destPath, "riv3r-content.json"));
+    fs.copyFileSync(compactContentIndexPath, path.join(destPath, "daisy-content.json"));
   }
 
   // Exports made before this check can carry the loader's version number as the loader.
   const importedLoader = knownLoader(instanceMeta.loader) || knownLoader(manifest?.instance?.loader) || "fabric";
-  fs.writeFileSync(path.join(destPath, "riv3r-instance.json"), JSON.stringify({
+  fs.writeFileSync(path.join(destPath, "daisy-instance.json"), JSON.stringify({
     name: baseName,
     version: instanceMeta.version || manifest?.instance?.version || "1.21.11",
     loader: importedLoader,
     importedAt: new Date().toISOString(),
-    sourceFormat: RVR_FORMAT_ID
+    sourceFormat: DAISY_FORMAT_ID
   }, null, 2));
 
   fs.mkdirSync(path.join(destPath, "config"), { recursive: true });
@@ -8328,7 +8328,7 @@ ipcMain.handle("launcher:quick-launch", async () => {
 });
 
 const presenceRosterUrl = String(
-  process.env.RIVER_PRESENCE_URL || "https://updates.riverclient.xyz/presence/roster"
+  process.env.RIVER_PRESENCE_URL || "https://updates.daisyclient.xyz/presence/roster"
 ).trim();
 
 /**
@@ -8339,7 +8339,7 @@ const presenceRosterUrl = String(
  * so a friend sitting in the launcher is correctly not online. Failures degrade to
  * "unknown" rather than lying that everyone is offline.
  */
-const daisySocialBase = String(process.env.RIVER_SOCIAL_URL || "https://updates.riverclient.xyz/social");
+const daisySocialBase = String(process.env.RIVER_SOCIAL_URL || "https://updates.daisyclient.xyz/social");
 let daisySessionCache = { token: "", expiresAt: 0 };
 /*
   Why the friends list could say "Daisy unreachable" for good. Signing in asks Mojang for
@@ -8352,7 +8352,7 @@ let daisySessionCache = { token: "", expiresAt: 0 };
 let daisySignInError = "";
 let daisySignInRetryAt = 0;
 let daisySignInBackoffMs = 0;
-function daisySessionFile() { return path.join(app.getPath("userData"), "river-session.json"); }
+function daisySessionFile() { return path.join(app.getPath("userData"), "daisy-session.json"); }
 function readStoredDaisySession(uuid) {
   try {
     const stored = JSON.parse(fs.readFileSync(daisySessionFile(), "utf8"));
@@ -8523,7 +8523,7 @@ async function handleDaisySocial(_event, request = {}) {
   }
 }
 ipcMain.handle("launcher:daisy-social", handleDaisySocial);
-ipcMain.handle("launcher:river-social", handleDaisySocial);
+ipcMain.handle("launcher:daisy-social", handleDaisySocial);
 
 /** Username to {id, name} via Mojang. Cached alongside skins; reachable from the user's PC. */
 async function resolveMojangProfile(name) {
@@ -8597,8 +8597,8 @@ async function announceSocialStatus(settings = readSettings()) {
   which is a single request either way, and as the fallback below for anyone whose
   network will not carry a WebSocket at all.
 */
-const PRESENCE_WS_URL = "wss://updates.riverclient.xyz/presence/ws";
-const PRESENCE_WS_PROTOCOL = "river.presence.v1";
+const PRESENCE_WS_URL = "wss://updates.daisyclient.xyz/presence/ws";
+const PRESENCE_WS_PROTOCOL = "daisy.presence.v1";
 const PRESENCE_PING_MS = 4 * 60 * 1000;
 const PRESENCE_MAX_BACKOFF_MS = 2 * 60 * 1000;
 /* Give the socket a fair few tries before falling back to announcing over HTTP. */
@@ -8715,9 +8715,9 @@ function schedulePresenceReconnect() {
   launcher already stores the Minecraft access token that the certificate is fetched with,
   so this needs nothing new from the player.
 */
-const SOCIAL_BASE = "https://updates.riverclient.xyz/social";
-const SOCIAL_WS_URL = "wss://updates.riverclient.xyz/social/ws";
-const SOCIAL_PROTOCOL = "river.social.v1";
+const SOCIAL_BASE = "https://updates.daisyclient.xyz/social";
+const SOCIAL_WS_URL = "wss://updates.daisyclient.xyz/social/ws";
+const SOCIAL_PROTOCOL = "daisy.social.v1";
 const SOCIAL_PING_MS = 4 * 60 * 1000;
 const SOCIAL_MAX_BACKOFF_MS = 2 * 60 * 1000;
 
@@ -11217,17 +11217,17 @@ async function prepareStandaloneMinecraftLaunch(status, auth, authenticated, joi
     // growing the heap in small steps during the first minutes of play.
     `-Xms${Math.min(1024, maxHeapMb)}M`,
     `-Xmx${maxHeapMb}M`,
-    // Intel's graphics driver looks for "minecraft.exe" on the command line to turn on its
+    // Intel's graphics ddaisy looks for "minecraft.exe" on the command line to turn on its
     // Minecraft performance profile. Mojang's launcher and Prism Launcher pass it this way.
     ...(process.platform === "win32"
-      ? ["-XX:HeapDumpPath=MojangTricksIntelDriversForPerformance_javaw.exe_minecraft.exe.heapdump"]
+      ? ["-XX:HeapDumpPath=MojangTricksIntelDdaisysForPerformance_javaw.exe_minecraft.exe.heapdump"]
       : []),
     ...ensureRequiredJvmArgs(parseJvmArgs(status.settings.jvmArgs)),
     ...injectorArgs,
     `-Djava.library.path=${nativesDir}`,
     "-Dminecraft.launcher.brand=daisy-client",
     `-Dminecraft.launcher.version=${app.getVersion()}`,
-    ...(daisyInjection ? [`-javaagent:${runtime.bootstrapJar}`, `-Driver.client.jar=${runtime.clientJar}`] : []),
+    ...(daisyInjection ? [`-javaagent:${runtime.bootstrapJar}`, `-Ddaisy.client.jar=${runtime.clientJar}`] : []),
     "-cp",
     runtimeClasspath,
     mainClass,
@@ -12425,7 +12425,7 @@ async function ensureRequiredSupportMods(instancePath, gameVersion, loader = "fa
 }
 
 async function createPvpInstance(gameVersion) {
-  const id = `riv3r-pvp-${gameVersion.replace(/[^a-z0-9_.-]/gi, "-")}`;
+  const id = `daisy-pvp-${gameVersion.replace(/[^a-z0-9_.-]/gi, "-")}`;
   const instancePath = path.join(instancesRootPath(), id);
   const now = new Date().toISOString();
   const instance = {

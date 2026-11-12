@@ -204,21 +204,21 @@ object DaisyMainMenu {
     private fun ensureTextures() {
         if (loaded) return
         loaded = true
-        loadTexture("/assets/clientcore/textures/menu_title.png", "river_menu_title")?.let { (id, w, h) ->
+        loadTexture("/assets/clientcore/textures/menu_title.png", "daisy_menu_title")?.let { (id, w, h) ->
             titleTex = id; titleW = w; titleH = h
         }
         // Same art recoloured for Halloween, same size, so it drops into the same rect.
-        loadTexture("/assets/clientcore/textures/menu_title_halloween.png", "river_menu_title_halloween")?.let { (id, _, _) ->
+        loadTexture("/assets/clientcore/textures/menu_title_halloween.png", "daisy_menu_title_halloween")?.let { (id, _, _) ->
             titleHalloweenTex = id
         }
-        loadTexture("/assets/clientcore/textures/menu_background.png", "river_menu_bg")?.let { (id, w, h) ->
+        loadTexture("/assets/clientcore/textures/menu_background.png", "daisy_menu_bg")?.let { (id, w, h) ->
             bgTex = id; bgW = w; bgH = h
         }
         // The same view at night, moon and stars in the sky, for Halloween. Same size.
-        loadTexture("/assets/clientcore/textures/menu_background_halloween.png", "river_menu_bg_halloween")?.let { (id, _, _) ->
+        loadTexture("/assets/clientcore/textures/menu_background_halloween.png", "daisy_menu_bg_halloween")?.let { (id, _, _) ->
             bgHalloweenTex = id
         }
-        loadTexture("/assets/clientcore/textures/watermark_logo.png", "river_menu_logo")?.let { (id, _, _) ->
+        loadTexture("/assets/clientcore/textures/watermark_logo.png", "daisy_menu_logo")?.let { (id, _, _) ->
             logoTex = id
         }
     }

@@ -2,7 +2,7 @@ import React from "react";
 
 /**
  * Modern layout: a Minecraft landscape behind the whole window, with every surface above it
- * drawn as frosted glass (see the glass tokens in styles.css). The river valley from Daisy's
+ * drawn as frosted glass (see the glass tokens in styles.css). The daisy valley from Daisy's
  * title screen; the Halloween forest while that season is on.
  *
  * It does not move. Everything on top is blurred through it, so a moving image would have the

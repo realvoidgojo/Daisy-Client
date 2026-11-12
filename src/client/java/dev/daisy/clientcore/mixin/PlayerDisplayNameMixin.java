@@ -50,7 +50,7 @@ public abstract class PlayerDisplayNameMixin {
         }
 
         NameTagModule badge = ModuleRegistry.INSTANCE.get("nametag");
-        if (badge != null && badge.getActive() && badge.showRiverBadge() && DaisyBadgeState.shouldShow(uuid)) {
+        if (badge != null && badge.getActive() && badge.showDaisyBadge() && DaisyBadgeState.shouldShow(uuid)) {
             prefix.append(DaisyBadgeState.badgeComponent()).append(Component.literal(" "));
             any = true;
         }

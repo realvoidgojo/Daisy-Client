@@ -25,7 +25,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
  * static createGlfwWindow, right after the graphics backend sets its own hints, so that is
  * hooked as well; each hook simply finds nothing to attach to on the other generation.
  *
- * A dev client started with -Driver.dev.secondScreen=true is meant to be looked at, just not
+ * A dev client started with -Ddaisy.dev.secondScreen=true is meant to be looked at, just not
  * on the main monitor: it is created hidden the same way, then moved to the first monitor
  * that is not the primary one and shown there without taking focus. It skips the startup
  * switch to full screen (that would land on the primary monitor); F11 still works after.
@@ -67,7 +67,7 @@ public abstract class DevShotWindowMixin {
     }
 
     @Unique
-    private static final boolean clientcore$secondScreen = Boolean.getBoolean("river.dev.secondScreen");
+    private static final boolean clientcore$secondScreen = Boolean.getBoolean("daisy.dev.secondScreen");
     @Unique
     private static boolean clientcore$startupFullscreenSkipped;
     @Unique

@@ -204,9 +204,9 @@ class DaisyCosmeticsScreen(private val parent: Screen?) : Screen(Component.liter
         val nametag = nametagModule()
         if (nametag != null) {
             val badgeY = afterCards + BADGE_TOP
-            val badgeOn = nametag.enabled && nametag.showRiverBadge()
+            val badgeOn = nametag.enabled && nametag.showDaisyBadge()
             drawToggleRow(g, rx, badgeY, rw, "Daisy badge", badgeOn, mouseX, mouseY, "fx:badge") { on ->
-                nametag.setShowRiverBadge(on)
+                nametag.setShowDaisyBadge(on)
                 if (on) nametag.enabled = true
                 DaisyRuntime.saveConfig()
             }
@@ -355,7 +355,7 @@ class DaisyCosmeticsScreen(private val parent: Screen?) : Screen(Component.liter
 *///?}
             val nametag = nametagModule()
             var name: Component = Component.literal(mcClient.user.name)
-            if (nametag?.active == true && nametag.showRiverBadge()) {
+            if (nametag?.active == true && nametag.showDaisyBadge()) {
                 name = Component.empty().append(DaisyBadgeState.badgeComponent()).append(Component.literal(" ")).append(name)
             }
 //? if >=1.21.9 {

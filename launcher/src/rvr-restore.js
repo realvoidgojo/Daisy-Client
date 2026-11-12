@@ -28,7 +28,7 @@ function fromModrinth(entry) {
 }
 
 /**
- * @param manifest     the archive's riv3r-mods.json
+ * @param manifest     the archive's daisy-mods.json
  * @param contentIndex the archive's content-index.json
  * @param hasFile      (contentType, file) => whether the imported instance already has the file
  * @param isCore       file => whether Daisy stages the file itself
@@ -66,7 +66,7 @@ function planRvrRestore(manifest, contentIndex, hasFile, isCore = () => false) {
         keep[section][file] = meta;
       } else if (fromModrinth(meta)) {
         addRestore(contentType, file, meta);
-      } else if (!isCore(file) && meta.source !== "river") {
+      } else if (!isCore(file) && meta.source !== "daisy") {
         local.push({ contentType, file, title: meta.title || file });
       }
     }

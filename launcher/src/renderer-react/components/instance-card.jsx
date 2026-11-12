@@ -7,7 +7,7 @@ import { useT } from "../i18n/context.jsx";
 /** Instances made without Daisy (any loader but Fabric, or plain Fabric) lack it on purpose, so that is no warning there. */
 export function isPlainInstance(instance) {
   const loader = String(instance?.loader || "fabric").toLowerCase();
-  return (loader !== "fabric" && ["forge", "neoforge", "quilt", "vanilla"].includes(loader)) || instance?.river === false;
+  return (loader !== "fabric" && ["forge", "neoforge", "quilt", "vanilla"].includes(loader)) || instance?.daisy === false;
 }
 
 /** "NeoForge 1.21.1" rather than "neoforge 1.21.1". */

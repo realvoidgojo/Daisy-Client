@@ -8,7 +8,7 @@ import java.time.LocalDate
  * (renderer-react/lib/seasons.js) - change both together.
  *
  * A window that crosses New Year (end before start) is supported. The system property
- * -Driver.season=halloween forces a season for testing, and -Driver.season=off turns them off.
+ * -Ddaisy.season=halloween forces a season for testing, and -Ddaisy.season=off turns them off.
  */
 object Seasons {
 
@@ -51,13 +51,13 @@ object Seasons {
         val season = active() ?: return false
         if (config.seasonOffered == season.id) return false
         config.seasonOffered = season.id
-        val current = config.theme ?: "river"
-        if (current == "river") config.theme = season.paletteKey
+        val current = config.theme ?: "daisy"
+        if (current == "daisy") config.theme = season.paletteKey
         return true
     }
 
     private fun resolve(): Season? {
-        when (val forced = System.getProperty("river.season")?.trim()?.lowercase()) {
+        when (val forced = System.getProperty("daisy.season")?.trim()?.lowercase()) {
             null, "" -> Unit
             "off" -> return null
             else -> all.firstOrNull { it.id == forced }?.let { return it }

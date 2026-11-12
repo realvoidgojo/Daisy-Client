@@ -198,7 +198,7 @@ data class ArmorHudSettings(
 )
 
 data class NameTagSettings(
-    var showRiverBadge: Boolean = true,
+    var showDaisyBadge: Boolean = true,
     var textShadow: Boolean = false
 )
 

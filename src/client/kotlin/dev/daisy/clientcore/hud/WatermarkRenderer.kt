@@ -63,10 +63,10 @@ object WatermarkRenderer {
                 ) ?: return@runCatching null
                 val image = stream.use { NativeImage.read(it) }
 //? if >=1.21.5 {
-                val id = McId.fromNamespaceAndPath("clientcore", "river_watermark_dynamic")
-                Minecraft.getInstance().textureManager.register(id, DynamicTexture({ "river-watermark" }, image))
+                val id = McId.fromNamespaceAndPath("clientcore", "daisy_watermark_dynamic")
+                Minecraft.getInstance().textureManager.register(id, DynamicTexture({ "daisy-watermark" }, image))
 //?} else {
-/*                val id = ResourceLocation.fromNamespaceAndPath("clientcore", "river_watermark_dynamic")
+/*                val id = ResourceLocation.fromNamespaceAndPath("clientcore", "daisy_watermark_dynamic")
                 Minecraft.getInstance().textureManager.register(id, DynamicTexture(image))
 *///?}
                 id

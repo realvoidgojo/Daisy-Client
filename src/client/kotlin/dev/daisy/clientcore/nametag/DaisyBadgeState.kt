@@ -26,10 +26,10 @@ object DaisyBadgeState {
 */
 //? if >=1.21.9 {
     private val BADGE_FONT = FontDescription.Resource(
-        McId.fromNamespaceAndPath("clientcore", "river_badge")
+        McId.fromNamespaceAndPath("clientcore", "daisy_badge")
     )
 //?} else {
-/*    private val BADGE_FONT: McId = McId.fromNamespaceAndPath("clientcore", "river_badge")
+/*    private val BADGE_FONT: McId = McId.fromNamespaceAndPath("clientcore", "daisy_badge")
 *///?}
 
     /**

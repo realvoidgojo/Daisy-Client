@@ -28,11 +28,11 @@ class NameTagModule : Module(
     override val editorProfile: ModuleEditorProfile = ModuleEditorProfile.MINIMAL
     override val showInMenu: Boolean = false // managed from the Cosmetics screen
 
-    fun showRiverBadge(): Boolean = editorNameTag().showRiverBadge
+    fun showDaisyBadge(): Boolean = editorNameTag().showDaisyBadge
 
     /** Used by the Cosmetics screen to flip the badge cosmetic directly. */
-    fun setShowRiverBadge(value: Boolean) {
-        mutableNameTag().showRiverBadge = value
+    fun setShowDaisyBadge(value: Boolean) {
+        mutableNameTag().showDaisyBadge = value
     }
 
     fun textShadow(): Boolean = editorNameTag().textShadow
@@ -42,6 +42,6 @@ class NameTagModule : Module(
     override fun showPositionControlsInEditor(): Boolean = false
 
     override fun addModuleSettings(list: MutableList<Setting>) {
-        list.add(BoolSetting("Daisy badge", { mutableNameTag().showRiverBadge }, { mutableNameTag().showRiverBadge = it }))
+        list.add(BoolSetting("Daisy badge", { mutableNameTag().showDaisyBadge }, { mutableNameTag().showDaisyBadge = it }))
     }
 }

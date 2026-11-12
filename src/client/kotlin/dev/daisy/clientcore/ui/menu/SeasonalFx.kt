@@ -64,7 +64,7 @@ object SeasonalFx {
         if (!halloweenLogoLoaded) {
             halloweenLogoLoaded = true
             halloweenLogoTex = DaisyMainMenu.loadTexture(
-                "/assets/clientcore/textures/watermark_logo_halloween.png", "river_logo_halloween"
+                "/assets/clientcore/textures/watermark_logo_halloween.png", "daisy_logo_halloween"
             )?.first
         }
         return halloweenLogoTex
@@ -79,12 +79,12 @@ object SeasonalFx {
     fun halloweenAtBoot(): Boolean = runCatching {
         val season = Seasons.active()
         val cfg = dev.daisy.clientcore.DaisyRuntime.configOrNull() ?: dev.daisy.clientcore.config.ConfigService.load()
-        val theme = cfg.theme ?: "river"
+        val theme = cfg.theme ?: "daisy"
         // Outside October only somebody who earned Halloween for good still has it.
         if (season == null || season.id != "halloween") {
             return dev.daisy.clientcore.ui.SeasonEvent.kept("halloween") && theme == "halloween"
         }
-        theme == season.paletteKey || (theme == "river" && cfg.seasonOffered != season.id)
+        theme == season.paletteKey || (theme == "daisy" && cfg.seasonOffered != season.id)
     }.getOrDefault(false)
 
     /** True while the Halloween theme is the one in use. Everything Halloween hangs off this. */

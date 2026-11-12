@@ -29,7 +29,7 @@ import kotlin.math.roundToInt
  *    which turns into "yours for good" once they have. After finishing, the main menu is
  *    the only place it shows.
  *
- * The last progress is kept in `config/river-client/rewards.json`, outside the profiles,
+ * The last progress is kept in `config/daisy-client/rewards.json`, outside the profiles,
  * so the main menu can show it before any world is open, and a season kept for good is
  * there from the first frame and survives switching profiles. Whether other players see
  * the cape is still decided by the server, which only lets it through for those who earned it.
@@ -75,7 +75,7 @@ object SeasonEvent {
     private var pendingMessage: String? = null
 
     private fun rewardsPath() = net.fabricmc.loader.api.FabricLoader.getInstance().gameDir
-        .resolve("config").resolve("river-client").resolve("rewards.json")
+        .resolve("config").resolve("daisy-client").resolve("rewards.json")
 
     private fun rewards(): Rewards = rewards ?: runCatching {
         Files.newBufferedReader(rewardsPath()).use { gson.fromJson(it, Rewards::class.java) }

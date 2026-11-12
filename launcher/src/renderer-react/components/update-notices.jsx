@@ -14,7 +14,7 @@ const UPDATES_CHANNEL_URL = "https://github.com/realvoidgojo/Daisy-Client/releas
 
 const DISMISS_KEY = "daisy:dismissedUpdateVersion";
 
-/** Same two river shots Home uses for its hero. */
+/** Same two daisy shots Home uses for its hero. */
 const BANNER = `../assets/home-bg-${1 + Math.floor(Math.random() * 2)}.jpg`;
 
 // Session storage: closing the bar hides it until the launcher is next opened, so an
@@ -172,7 +172,7 @@ export function WhatsNewDialog({ status, refresh }) {
   return (
     <Dialog open={open} onOpenChange={(next) => { if (!next) close(); }}>
       <DialogContent className="max-w-lg gap-0 overflow-hidden p-0">
-        {/* Banner: one of Home's own river shots, fading into the dialog. */}
+        {/* Banner: one of Home's own daisy shots, fading into the dialog. */}
         <div className="relative h-28 overflow-hidden border-b border-border">
           <img src={document.documentElement.dataset.season === "halloween" ? "../assets/home-bg-halloween.jpg" : BANNER} alt="" className="absolute inset-0 size-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-t from-popover via-popover/70 to-popover/10" />

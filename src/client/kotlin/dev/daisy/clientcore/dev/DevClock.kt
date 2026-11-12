@@ -2,7 +2,7 @@ package dev.daisy.clientcore.dev
 
 /**
  * The clock the lyrics read. It is the real clock, except during a hidden recording run
- * (DevShot, -Driver.devshot.record), which steps it one video frame at a time so every
+ * (DevShot, -Ddaisy.devshot.record), which steps it one video frame at a time so every
  * captured frame lands exactly 1/30 s after the last, however slow the capture is.
  */
 object DevClock {

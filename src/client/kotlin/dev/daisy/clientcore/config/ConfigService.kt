@@ -14,7 +14,7 @@ import kotlin.io.path.writer
 
 /**
  * Profile-based config storage. Every profile is a full [ClientCoreConfig] JSON file under
- * `config/river-client/profiles/`. The active profile name lives in `config/river-client/state.json`.
+ * `config/daisy-client/profiles/`. The active profile name lives in `config/daisy-client/state.json`.
  * The pre-profile config (`config/clientcore.json`) is migrated into the "default" profile once.
  */
 object ConfigService {
@@ -28,7 +28,7 @@ object ConfigService {
 
     private fun configRoot(): Path = Minecraft.getInstance().gameDirectory.toPath().resolve("config")
 
-    private fun daisyDir(): Path = configRoot().resolve("river-client")
+    private fun daisyDir(): Path = configRoot().resolve("daisy-client")
 
     /** Daisy's own folder under config/, for files that are not profiles (such as pack presets). */
     fun daisyDirectory(): Path = daisyDir()
@@ -121,12 +121,12 @@ object ConfigService {
 
     /** The active profile as a shareable JSON string, tagged so imports can be validated. */
     fun exportActive(config: ClientCoreConfig): String {
-        val wrapper = mapOf("river_profile" to 1, "name" to activeProfileName, "config" to config)
+        val wrapper = mapOf("daisy_profile" to 1, "name" to activeProfileName, "config" to config)
         return gson.toJson(wrapper)
     }
 
     /**
-     * Imports a `river_profile` JSON string as a new profile. Returns the created
+     * Imports a `daisy_profile` JSON string as a new profile. Returns the created
      * profile name, or null if the string is not a valid Daisy profile export.
      */
     fun importProfile(raw: String): String? {
@@ -134,7 +134,7 @@ object ConfigService {
         val parsed = runCatching {
             com.google.gson.JsonParser.parseString(json).asJsonObject
         }.getOrNull() ?: return null
-        if (!parsed.has("river_profile") || !parsed.has("config")) return null
+        if (!parsed.has("daisy_profile") || !parsed.has("config")) return null
         val config = runCatching {
             gson.fromJson(parsed.get("config"), ClientCoreConfig::class.java)
         }.getOrNull() ?: return null

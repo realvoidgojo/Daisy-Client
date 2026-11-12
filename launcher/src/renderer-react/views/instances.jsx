@@ -68,7 +68,7 @@ function QuiltIcon({ className }) {
 }
 
 function LoaderIcon({ id, className }) {
-  if (id === "river") {
+  if (id === "daisy") {
     return (
       <span className="inline-flex items-center gap-1">
         <FabricIcon className={className} />
@@ -88,7 +88,7 @@ function LoaderIcon({ id, className }) {
   vanilla are Minecraft without it. `api` is what main lists versions under.
 */
 const LOADERS = [
-  { id: "river", label: "Fabric + Daisy", prefix: "Daisy", loader: "fabric", api: "fabric" },
+  { id: "daisy", label: "Fabric + Daisy", prefix: "Daisy", loader: "fabric", api: "fabric" },
   { id: "fabric", label: "Fabric", prefix: "Fabric", loader: "fabric", api: "fabric-plain" },
   { id: "forge", label: "Forge", prefix: "Forge", loader: "forge", api: "forge" },
   { id: "neoforge", label: "NeoForge", prefix: "NeoForge", loader: "neoforge", api: "neoforge" },
@@ -146,7 +146,7 @@ function usePlainVersions(open, loader) {
   const [lists, setLists] = useState({});
   const [error, setError] = useState("");
   useEffect(() => {
-    if (!open || loader === "river" || lists[loader]) return;
+    if (!open || loader === "daisy" || lists[loader]) return;
     let live = true;
     setError("");
     api()?.getGameVersions?.(loaderOption(loader).api).then((res) => {
@@ -183,7 +183,7 @@ function PlainVersionSelect({ loader, list, error, value, onChange, available })
       <SelectContent className="max-h-72">
         {list.map((v) => {
           const isRec = recSet.has(v.id) || v.recommended;
-          const label = loader === "river"
+          const label = loader === "daisy"
             ? `Daisy ${v.id}`
             : loader === "vanilla"
               ? v.id
@@ -229,7 +229,7 @@ function versionGroups(list) {
 function ElegantVersionPicker({ loader, value, onChange, available, plainList, plainError }) {
   const t = useT();
 
-  if (loader === "river") {
+  if (loader === "daisy") {
     // For Fabric + Daisy, provide all supported versions in the dropdown
     return (
       <div className="space-y-2">
@@ -282,24 +282,24 @@ function CreateInstanceDialog({ open, onOpenChange, onCreated, notify, versions 
     : [{ id: "1.21.11", status: "Primary" }, { id: "1.21.4", status: "Supported" }];
   const defaultVersion = available.find((v) => v.selected)?.id || available[0].id;
   const [name, setName] = useState("");
-  const [loader, setLoader] = useState("river");
+  const [loader, setLoader] = useState("daisy");
   const [fabricVersion, setFabricVersion] = useState(defaultVersion);
   const [plainPick, setPlainPick] = useState({});
   const [busy, setBusy] = useState(false);
   const plain = usePlainVersions(open, loader);
 
   // Reset the picked version to the current default each time the dialog opens.
-  useEffect(() => { if (open) { setFabricVersion(defaultVersion); setLoader("river"); } }, [open, defaultVersion]);
+  useEffect(() => { if (open) { setFabricVersion(defaultVersion); setLoader("daisy"); } }, [open, defaultVersion]);
 
   // Forge defaults to the newest version with a recommended build, vanilla to the newest release.
   const plainEntry = plain.list
     ? plain.list.find((v) => v.id === plainPick[loader]) || plain.list.find((v) => v.recommended) || plain.list[0]
     : null;
-  const version = loader === "river" ? fabricVersion : plainEntry?.id || "";
-  const setVersion = (id) => (loader === "river" ? setFabricVersion(id) : setPlainPick((prev) => ({ ...prev, [loader]: id })));
-  const tag = loader === "vanilla" ? version : `${loader === "river" ? "Fabric" : loaderOption(loader).label} ${version}`;
+  const version = loader === "daisy" ? fabricVersion : plainEntry?.id || "";
+  const setVersion = (id) => (loader === "daisy" ? setFabricVersion(id) : setPlainPick((prev) => ({ ...prev, [loader]: id })));
+  const tag = loader === "vanilla" ? version : `${loader === "daisy" ? "Fabric" : loaderOption(loader).label} ${version}`;
   const placeholder = `${loaderPrefix(loader)} ${version}`.trim();
-  const description = loader === "river"
+  const description = loader === "daisy"
     ? t("A separate mods, worlds and settings folder on its own Fabric version.")
     : loader === "fabric"
       ? t("Plain Fabric with your own mods, without Daisy in game.")
@@ -318,9 +318,9 @@ function CreateInstanceDialog({ open, onOpenChange, onCreated, notify, versions 
         name: name.trim() || undefined,
         version,
         loader: loaderOption(loader).loader,
-        river: loader === "river",
-        daisySkin: (loader === "river" || loader === "fabric") && daisySkin,
-        loaderVersion: loader === "river" || loader === "vanilla" ? undefined : plainEntry?.loaderVersion
+        daisy: loader === "daisy",
+        daisySkin: (loader === "daisy" || loader === "fabric") && daisySkin,
+        loaderVersion: loader === "daisy" || loader === "vanilla" ? undefined : plainEntry?.loaderVersion
       });
       if (res && res.ok === false) {
         notify(res.message || t("Could not create the instance."), "error");
@@ -410,7 +410,7 @@ function CreateInstanceDialog({ open, onOpenChange, onCreated, notify, versions 
             <div
               className={cn(
                 "flex items-center justify-between rounded-xl border-2 border-border/70 bg-card/70 px-3.5 py-2.5 shadow-[2px_2px_0px_#080808] transition-opacity",
-                (loader === "river" || loader === "fabric") ? "opacity-100" : "opacity-35 pointer-events-none"
+                (loader === "daisy" || loader === "fabric") ? "opacity-100" : "opacity-35 pointer-events-none"
               )}
             >
               <div className="space-y-0.5">
@@ -422,8 +422,8 @@ function CreateInstanceDialog({ open, onOpenChange, onCreated, notify, versions 
               </div>
               <Switch
                 id="daisy-skin-toggle"
-                disabled={!(loader === "river" || loader === "fabric")}
-                checked={(loader === "river" || loader === "fabric") && daisySkin}
+                disabled={!(loader === "daisy" || loader === "fabric")}
+                checked={(loader === "daisy" || loader === "fabric") && daisySkin}
                 onCheckedChange={setDaisySkin}
               />
             </div>
@@ -469,7 +469,7 @@ function CreateInstanceDialog({ open, onOpenChange, onCreated, notify, versions 
             onKeyDown={(e) => { if (e.key === "Enter" && !busy) create(); }}
           />
         </div>
-        {loader !== "river" ? (
+        {loader !== "daisy" ? (
           <div className="space-y-2">
             <Label>{t("Minecraft version")}</Label>
             <PlainVersionSelect loader={loader} list={plain.list} error={plain.error} value={version} onChange={setVersion} />

@@ -14,7 +14,7 @@
  */
 
 const API = "https://api.curseforge.com/v1";
-const DAISY_PROXY = "https://updates.riverclient.xyz/cf/v1";
+const DAISY_PROXY = "https://updates.daisyclient.xyz/cf/v1";
 
 /** CurseForge groups content by classId under game 432 (Minecraft). */
 const CLASS_IDS = {

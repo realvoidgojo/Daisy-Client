@@ -49,7 +49,7 @@ contextBridge.exposeInMainWorld("clientcore", {
   setSocialStatus: (status) => ipcRenderer.invoke("launcher:set-social-status", status),
   getPlayerSkin: (name) => ipcRenderer.invoke("launcher:get-player-skin", name),
   daisySocial: (action, payload) => ipcRenderer.invoke("launcher:daisy-social", { action, payload }),
-  riverSocial: (action, payload) => ipcRenderer.invoke("launcher:river-social", { action, payload }),
+  daisySocial: (action, payload) => ipcRenderer.invoke("launcher:daisy-social", { action, payload }),
   getRecentServers: () => ipcRenderer.invoke("launcher:get-recent-servers"),
   getNews: () => ipcRenderer.invoke("launcher:get-news"),
   readCrashReport: (filePath) => ipcRenderer.invoke("launcher:read-crash-report", filePath),

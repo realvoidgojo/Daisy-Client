@@ -11,331 +11,331 @@
   },
   {
     "path": "daisy-bootstrap/src/main/java/dev/daisy/bootstrap/Agent.java",
-    "text": "            System.getProperty(\"river.mixin.config\", \"clientcore.mixins.json\");",
+    "text": "            System.getProperty(\"daisy.mixin.config\", \"clientcore.mixins.json\");",
     "count": 1,
     "reason": "Existing JVM property or developer screenshot selector accepted by launch/configuration tools."
   },
   {
     "path": "daisy-bootstrap/src/main/java/dev/daisy/bootstrap/Agent.java",
-    "text": "            System.getProperty(\"river.mixin.sentinel\", \"net/minecraft/client/main/Main\")",
+    "text": "            System.getProperty(\"daisy.mixin.sentinel\", \"net/minecraft/client/main/Main\")",
     "count": 1,
     "reason": "Existing JVM property or developer screenshot selector accepted by launch/configuration tools."
   },
   {
     "path": "daisy-bootstrap/src/main/java/dev/daisy/bootstrap/Agent.java",
-    "text": "    private static final String CLIENT_JAR = System.getProperty(\"river.client.jar\", \"\");",
+    "text": "    private static final String CLIENT_JAR = System.getProperty(\"daisy.client.jar\", \"\");",
     "count": 1,
     "reason": "Existing JVM property or developer screenshot selector accepted by launch/configuration tools."
   },
   {
     "path": "daisy-bootstrap/src/main/kotlin/dev/daisy/bootstrap/Main.kt",
-    "text": "        val root = File(gameDir, \"river-runtime\")",
+    "text": "        val root = File(gameDir, \"daisy-runtime\")",
     "count": 1,
     "reason": "Existing installation staging/cache path or old-JAR cleanup pattern, retained for upgrades."
   },
   {
     "path": "daisy-bootstrap/src/main/kotlin/dev/daisy/bootstrap/Main.kt",
-    "text": "private const val CLASSPATH_PROPERTY = \"river.bootstrap.classpath\"",
+    "text": "private const val CLASSPATH_PROPERTY = \"daisy.bootstrap.classpath\"",
     "count": 1,
     "reason": "Existing JVM property or developer screenshot selector accepted by launch/configuration tools."
   },
   {
     "path": "daisy-bootstrap/src/main/kotlin/dev/daisy/bootstrap/Main.kt",
-    "text": "private const val GAME_DIR_PROPERTY = \"river.bootstrap.gameDir\"",
+    "text": "private const val GAME_DIR_PROPERTY = \"daisy.bootstrap.gameDir\"",
     "count": 1,
     "reason": "Existing JVM property or developer screenshot selector accepted by launch/configuration tools."
   },
   {
     "path": "daisy-bootstrap/src/main/kotlin/dev/daisy/bootstrap/Main.kt",
-    "text": "private const val MAIN_CLASS_PROPERTY = \"river.bootstrap.mainClass\"",
+    "text": "private const val MAIN_CLASS_PROPERTY = \"daisy.bootstrap.mainClass\"",
     "count": 1,
     "reason": "Existing JVM property or developer screenshot selector accepted by launch/configuration tools."
   },
   {
     "path": "daisy-bootstrap/src/main/kotlin/dev/daisy/bootstrap/Main.kt",
-    "text": "private const val VERSION_PROPERTY = \"river.bootstrap.version\"",
+    "text": "private const val VERSION_PROPERTY = \"daisy.bootstrap.version\"",
     "count": 1,
     "reason": "Existing JVM property or developer screenshot selector accepted by launch/configuration tools."
   },
   {
     "path": "launcher/scripts/blocklist.js",
-    "text": "const bucket = \"river-client-updates\";",
+    "text": "const bucket = \"daisy-client-updates\";",
     "count": 1,
     "reason": "Existing external upstream service or management bucket; protocol/backend ownership is outside this working tree."
   },
   {
     "path": "launcher/scripts/testers.js",
-    "text": "const bucket = \"river-client-updates\";",
+    "text": "const bucket = \"daisy-client-updates\";",
     "count": 1,
     "reason": "Existing external upstream service or management bucket; protocol/backend ownership is outside this working tree."
   },
   {
-    "path": "launcher/src/assets/river-client-selfsign.cer",
+    "path": "launcher/src/assets/daisy-client-selfsign.cer",
     "text": "<path>",
     "count": 1,
     "reason": "Existing public publisher certificate identity; renaming does not create a Daisy signing identity."
   },
   {
     "path": "launcher/src/curseforge.js",
-    "text": "const DAISY_PROXY = \"https://updates.riverclient.xyz/cf/v1\";",
+    "text": "const DAISY_PROXY = \"https://updates.daisyclient.xyz/cf/v1\";",
     "count": 1,
     "reason": "Existing external upstream service or management bucket; protocol/backend ownership is outside this working tree."
   },
   {
     "path": "launcher/src/main.js",
-    "text": "          source: \"river-runtime\"",
+    "text": "          source: \"daisy-runtime\"",
     "count": 1,
     "reason": "Existing installation staging/cache path or old-JAR cleanup pattern, retained for upgrades."
   },
   {
     "path": "launcher/src/main.js",
-    "text": "      address: String(f.address || `${sanitizeSocialAddressName(f.name || \"\") || \"friend\"}.riverclient.xyz`).trim().slice(0, 80),",
+    "text": "      address: String(f.address || `${sanitizeSocialAddressName(f.name || \"\") || \"friend\"}.daisyclient.xyz`).trim().slice(0, 80),",
     "count": 1,
     "reason": "Existing external upstream service or management bucket; protocol/backend ownership is outside this working tree."
   },
   {
     "path": "launcher/src/main.js",
-    "text": "      daisyNamed: /^(?:daisy|river)\\b/i.test(String(instance.name || \"\"))",
+    "text": "      daisyNamed: /^(?:daisy|daisy)\\b/i.test(String(instance.name || \"\"))",
     "count": 1,
     "reason": "Previously supported environment, startup/updater argument or instance-name alias for existing installations."
   },
   {
     "path": "launcher/src/main.js",
-    "text": "    const payload = await fetchJson(`https://updates.riverclient.xyz/cosmetics/owned?uuid=${uuid}`);",
+    "text": "    const payload = await fetchJson(`https://updates.daisyclient.xyz/cosmetics/owned?uuid=${uuid}`);",
     "count": 1,
     "reason": "Existing external upstream service or management bucket; protocol/backend ownership is outside this working tree."
   },
   {
     "path": "launcher/src/main.js",
-    "text": "    const res = await fetch(\"https://updates.riverclient.xyz/news.json\", {",
+    "text": "    const res = await fetch(\"https://updates.daisyclient.xyz/news.json\", {",
     "count": 1,
     "reason": "Existing external upstream service or management bucket; protocol/backend ownership is outside this working tree."
   },
   {
     "path": "launcher/src/main.js",
-    "text": "    const response = await fetch(\"https://updates.riverclient.xyz/crash-report\", {",
+    "text": "    const response = await fetch(\"https://updates.daisyclient.xyz/crash-report\", {",
     "count": 2,
     "reason": "Existing external upstream service or management bucket; protocol/backend ownership is outside this working tree."
   },
   {
     "path": "launcher/src/main.js",
-    "text": "    desktopDir ? path.join(desktopDir, \"river-client-selfsign.cer\") : \"\"",
+    "text": "    desktopDir ? path.join(desktopDir, \"daisy-client-selfsign.cer\") : \"\"",
     "count": 1,
     "reason": "Existing public publisher certificate identity; renaming does not create a Daisy signing identity."
   },
   {
     "path": "launcher/src/main.js",
-    "text": "    fs.copyFileSync(compactContentIndexPath, path.join(destPath, \"riv3r-content.json\"));",
+    "text": "    fs.copyFileSync(compactContentIndexPath, path.join(destPath, \"daisy-content.json\"));",
     "count": 1,
     "reason": "Existing stored instance/profile/setting/archive field or its reader; changing it requires an explicit migration."
   },
   {
     "path": "launcher/src/main.js",
-    "text": "    if (entry?.migrateToRiver === true) {",
+    "text": "    if (entry?.migrateToDaisy === true) {",
     "count": 1,
     "reason": "Existing stored instance/profile/setting/archive field or its reader; changing it requires an explicit migration."
   },
   {
     "path": "launcher/src/main.js",
-    "text": "    path.join(__dirname, \"assets\", \"river-client-selfsign.cer\"),",
+    "text": "    path.join(__dirname, \"assets\", \"daisy-client-selfsign.cer\"),",
     "count": 1,
     "reason": "Existing public publisher certificate identity; renaming does not create a Daisy signing identity."
   },
   {
     "path": "launcher/src/main.js",
-    "text": "    process.resourcesPath ? path.join(process.resourcesPath, \"app.asar.unpacked\", \"assets\", \"river-client-selfsign.cer\") : \"\",",
+    "text": "    process.resourcesPath ? path.join(process.resourcesPath, \"app.asar.unpacked\", \"assets\", \"daisy-client-selfsign.cer\") : \"\",",
     "count": 1,
     "reason": "Existing public publisher certificate identity; renaming does not create a Daisy signing identity."
   },
   {
     "path": "launcher/src/main.js",
-    "text": "    process.resourcesPath ? path.join(process.resourcesPath, \"assets\", \"river-client-selfsign.cer\") : \"\",",
+    "text": "    process.resourcesPath ? path.join(process.resourcesPath, \"assets\", \"daisy-client-selfsign.cer\") : \"\",",
     "count": 1,
     "reason": "Existing public publisher certificate identity; renaming does not create a Daisy signing identity."
   },
   {
     "path": "launcher/src/main.js",
-    "text": "    readArchiveJson(\"riv3r-mods.json\"),",
+    "text": "    readArchiveJson(\"daisy-mods.json\"),",
     "count": 1,
     "reason": "Existing stored instance/profile/setting/archive field or its reader; changing it requires an explicit migration."
   },
   {
     "path": "launcher/src/main.js",
-    "text": "    return await importExternalMinecraftInstance({ gameDir, name: path.basename(gameDir), launcher: \"Other launcher\", migrateToRiver: true, preferSourceVersion: true, targetVersion });",
+    "text": "    return await importExternalMinecraftInstance({ gameDir, name: path.basename(gameDir), launcher: \"Other launcher\", migrateToDaisy: true, preferSourceVersion: true, targetVersion });",
     "count": 1,
     "reason": "Existing stored instance/profile/setting/archive field or its reader; changing it requires an explicit migration."
   },
   {
     "path": "launcher/src/main.js",
-    "text": "    return { version: String(river.version), loader: normalizeLoader(river.loader) || \"fabric\", source: \"riv3r-instance.json\" };",
+    "text": "    return { version: String(daisy.version), loader: normalizeLoader(daisy.loader) || \"fabric\", source: \"daisy-instance.json\" };",
     "count": 1,
     "reason": "Existing stored instance/profile/setting/archive field or its reader; changing it requires an explicit migration."
   },
   {
     "path": "launcher/src/main.js",
-    "text": "    river,",
+    "text": "    daisy,",
     "count": 1,
     "reason": "Existing stored instance/profile/setting/archive field or its reader; changing it requires an explicit migration."
   },
   {
     "path": "launcher/src/main.js",
-    "text": "    river: false",
+    "text": "    daisy: false",
     "count": 1,
     "reason": "Existing stored instance/profile/setting/archive field or its reader; changing it requires an explicit migration."
   },
   {
     "path": "launcher/src/main.js",
-    "text": "    river: instance.river !== false,",
+    "text": "    daisy: instance.daisy !== false,",
     "count": 1,
     "reason": "Existing stored instance/profile/setting/archive field or its reader; changing it requires an explicit migration."
   },
   {
     "path": "launcher/src/main.js",
-    "text": "    source: \"river\",",
+    "text": "    source: \"daisy\",",
     "count": 1,
     "reason": "Existing stored instance/profile/setting/archive field or its reader; changing it requires an explicit migration."
   },
   {
     "path": "launcher/src/main.js",
-    "text": "    { pattern: /^river-ingame-ui-[\\w.+-]*\\.jar$/i, title: \"Daisy In-Game UI\", author: \"realvoidgojo\" }",
+    "text": "    { pattern: /^daisy-ingame-ui-[\\w.+-]*\\.jar$/i, title: \"Daisy In-Game UI\", author: \"realvoidgojo\" }",
     "count": 1,
     "reason": "Existing installation staging/cache path or old-JAR cleanup pattern, retained for upgrades."
   },
   {
     "path": "launcher/src/main.js",
-    "text": "  /** \"combined\" adds every other Minecraft client's tracked play time to Daisy's; \"river\" shows Daisy only. */",
+    "text": "  /** \"combined\" adds every other Minecraft client's tracked play time to Daisy's; \"daisy\" shows Daisy only. */",
     "count": 1,
     "reason": "Existing stored instance/profile/setting/archive field or its reader; changing it requires an explicit migration."
   },
   {
     "path": "launcher/src/main.js",
-    "text": "  /^river-ingame-ui-[\\w.+-]*\\.jar(\\.disabled)?$/i",
+    "text": "  /^daisy-ingame-ui-[\\w.+-]*\\.jar(\\.disabled)?$/i",
     "count": 1,
     "reason": "Existing installation staging/cache path or old-JAR cleanup pattern, retained for upgrades."
   },
   {
     "path": "launcher/src/main.js",
-    "text": "  add(\"== Staging folder (%TEMP%/river-client-updates) ==\");",
+    "text": "  add(\"== Staging folder (%TEMP%/daisy-client-updates) ==\");",
     "count": 1,
     "reason": "Existing installation staging/cache path or old-JAR cleanup pattern, retained for upgrades."
   },
   {
     "path": "launcher/src/main.js",
-    "text": "  const defaultName = `${river ? \"Daisy\" : loader === \"vanilla\" ? \"Minecraft\" : loaderLabel(loader)} ${version}`;",
+    "text": "  const defaultName = `${daisy ? \"Daisy\" : loader === \"vanilla\" ? \"Minecraft\" : loaderLabel(loader)} ${version}`;",
     "count": 1,
     "reason": "Existing stored instance/profile/setting/archive field or its reader; changing it requires an explicit migration."
   },
   {
     "path": "launcher/src/main.js",
-    "text": "  const flagIndex = argv.findIndex((arg) => [\"--daisy-updater-job\", \"--river-updater-job\"].includes(String(arg || \"\").trim()));",
+    "text": "  const flagIndex = argv.findIndex((arg) => [\"--daisy-updater-job\", \"--daisy-updater-job\"].includes(String(arg || \"\").trim()));",
     "count": 1,
     "reason": "Previously supported environment, startup/updater argument or instance-name alias for existing installations."
   },
   {
     "path": "launcher/src/main.js",
-    "text": "  const id = `riv3r-pvp-${gameVersion.replace(/[^a-z0-9_.-]/gi, \"-\")}`;",
+    "text": "  const id = `daisy-pvp-${gameVersion.replace(/[^a-z0-9_.-]/gi, \"-\")}`;",
     "count": 1,
     "reason": "Existing stored instance/profile/setting/archive field or its reader; changing it requires an explicit migration."
   },
   {
     "path": "launcher/src/main.js",
-    "text": "  const instanceManifest = path.join(settings.instancePath, \"riv3r-instance.json\");",
+    "text": "  const instanceManifest = path.join(settings.instancePath, \"daisy-instance.json\");",
     "count": 1,
     "reason": "Existing stored instance/profile/setting/archive field or its reader; changing it requires an explicit migration."
   },
   {
     "path": "launcher/src/main.js",
-    "text": "  const instanceMetaPath = path.join(instance.path, \"riv3r-instance.json\");",
+    "text": "  const instanceMetaPath = path.join(instance.path, \"daisy-instance.json\");",
     "count": 1,
     "reason": "Existing stored instance/profile/setting/archive field or its reader; changing it requires an explicit migration."
   },
   {
     "path": "launcher/src/main.js",
-    "text": "  const isOwn = (entry) => isCoreClientMod(entry.file) || manifestSection(manifest, entry.contentType)[entry.file]?.source === \"river\";",
+    "text": "  const isOwn = (entry) => isCoreClientMod(entry.file) || manifestSection(manifest, entry.contentType)[entry.file]?.source === \"daisy\";",
     "count": 1,
     "reason": "Existing stored instance/profile/setting/archive field or its reader; changing it requires an explicit migration."
   },
   {
     "path": "launcher/src/main.js",
-    "text": "  const legacyRuntimeDir = path.join(root, \".river-runtime\");",
+    "text": "  const legacyRuntimeDir = path.join(root, \".daisy-runtime\");",
     "count": 1,
     "reason": "Existing installation staging/cache path or old-JAR cleanup pattern, retained for upgrades."
   },
   {
     "path": "launcher/src/main.js",
-    "text": "  const loaderVersion = river || loader === \"vanilla\" ? \"\" : String(request && request.loaderVersion || \"\").trim();",
+    "text": "  const loaderVersion = daisy || loader === \"vanilla\" ? \"\" : String(request && request.loaderVersion || \"\").trim();",
     "count": 1,
     "reason": "Existing stored instance/profile/setting/archive field or its reader; changing it requires an explicit migration."
   },
   {
     "path": "launcher/src/main.js",
-    "text": "  const manifestPath = path.join(rootPath, \"river-manifest.json\");",
+    "text": "  const manifestPath = path.join(rootPath, \"daisy-manifest.json\");",
     "count": 1,
     "reason": "Existing stored instance/profile/setting/archive field or its reader; changing it requires an explicit migration."
   },
   {
     "path": "launcher/src/main.js",
-    "text": "  const migration = entry.migrateToRiver === true;",
+    "text": "  const migration = entry.migrateToDaisy === true;",
     "count": 1,
     "reason": "Existing stored instance/profile/setting/archive field or its reader; changing it requires an explicit migration."
   },
   {
     "path": "launcher/src/main.js",
-    "text": "  const prefixed = argv.find((arg) => /^--(?:daisy|river)-updater-job=/.test(String(arg || \"\")));",
+    "text": "  const prefixed = argv.find((arg) => /^--(?:daisy|daisy)-updater-job=/.test(String(arg || \"\")));",
     "count": 1,
     "reason": "Previously supported environment, startup/updater argument or instance-name alias for existing installations."
   },
   {
     "path": "launcher/src/main.js",
-    "text": "  const river = loader === \"fabric\" && request?.river !== false;",
+    "text": "  const daisy = loader === \"fabric\" && request?.daisy !== false;",
     "count": 1,
     "reason": "Existing stored instance/profile/setting/archive field or its reader; changing it requires an explicit migration."
   },
   {
     "path": "launcher/src/main.js",
-    "text": "  const river = readJson(\"riv3r-instance.json\");",
+    "text": "  const daisy = readJson(\"daisy-instance.json\");",
     "count": 1,
     "reason": "Existing stored instance/profile/setting/archive field or its reader; changing it requires an explicit migration."
   },
   {
     "path": "launcher/src/main.js",
-    "text": "  const runtimeDir = path.join(instancePath, \"river-runtime\");",
+    "text": "  const runtimeDir = path.join(instancePath, \"daisy-runtime\");",
     "count": 1,
     "reason": "Existing installation staging/cache path or old-JAR cleanup pattern, retained for upgrades."
   },
   {
     "path": "launcher/src/main.js",
-    "text": "  const runtimeDir = path.join(root, \"river-runtime\");",
+    "text": "  const runtimeDir = path.join(root, \"daisy-runtime\");",
     "count": 1,
     "reason": "Existing installation staging/cache path or old-JAR cleanup pattern, retained for upgrades."
   },
   {
     "path": "launcher/src/main.js",
-    "text": "  fetch(\"https://updates.riverclient.xyz/metrics/launch\", {",
+    "text": "  fetch(\"https://updates.daisyclient.xyz/metrics/launch\", {",
     "count": 1,
     "reason": "Existing external upstream service or management bucket; protocol/backend ownership is outside this working tree."
   },
   {
     "path": "launcher/src/main.js",
-    "text": "  fs.writeFileSync(path.join(destPath, \"riv3r-instance.json\"), JSON.stringify({",
+    "text": "  fs.writeFileSync(path.join(destPath, \"daisy-instance.json\"), JSON.stringify({",
     "count": 1,
     "reason": "Existing stored instance/profile/setting/archive field or its reader; changing it requires an explicit migration."
   },
   {
     "path": "launcher/src/main.js",
-    "text": "  fs.writeFileSync(path.join(stagingDir, \"riv3r-mods.json\"), JSON.stringify(exportManifest, null, 2));",
+    "text": "  fs.writeFileSync(path.join(stagingDir, \"daisy-mods.json\"), JSON.stringify(exportManifest, null, 2));",
     "count": 1,
     "reason": "Existing stored instance/profile/setting/archive field or its reader; changing it requires an explicit migration."
   },
   {
     "path": "launcher/src/main.js",
-    "text": "  fs.writeFileSync(path.join(stagingDir, \"river-manifest.json\"), JSON.stringify(daisyManifest, null, 2));",
+    "text": "  fs.writeFileSync(path.join(stagingDir, \"daisy-manifest.json\"), JSON.stringify(daisyManifest, null, 2));",
     "count": 1,
     "reason": "Existing stored instance/profile/setting/archive field or its reader; changing it requires an explicit migration."
   },
   {
     "path": "launcher/src/main.js",
-    "text": "  fs.writeFileSync(path.join(targetPath, \"riv3r-instance.json\"), JSON.stringify({",
+    "text": "  fs.writeFileSync(path.join(targetPath, \"daisy-instance.json\"), JSON.stringify({",
     "count": 1,
     "reason": "Existing stored instance/profile/setting/archive field or its reader; changing it requires an explicit migration."
   },
@@ -347,43 +347,43 @@
   },
   {
     "path": "launcher/src/main.js",
-    "text": "  if (id) headers[\"X-River-Install\"] = id;",
+    "text": "  if (id) headers[\"X-Daisy-Install\"] = id;",
     "count": 1,
     "reason": "Existing serialized/wire format, HTTP header or socket protocol; external readers must continue to recognize it."
   },
   {
     "path": "launcher/src/main.js",
-    "text": "  if (result.ok && result.instance?.river) {",
+    "text": "  if (result.ok && result.instance?.daisy) {",
     "count": 1,
     "reason": "Existing stored instance/profile/setting/archive field or its reader; changing it requires an explicit migration."
   },
   {
     "path": "launcher/src/main.js",
-    "text": "  if (river && isVersion(river.version)) {",
+    "text": "  if (daisy && isVersion(daisy.version)) {",
     "count": 1,
     "reason": "Existing stored instance/profile/setting/archive field or its reader; changing it requires an explicit migration."
   },
   {
     "path": "launcher/src/main.js",
-    "text": "  if (river) {",
+    "text": "  if (daisy) {",
     "count": 1,
     "reason": "Existing stored instance/profile/setting/archive field or its reader; changing it requires an explicit migration."
   },
   {
     "path": "launcher/src/main.js",
-    "text": "  listDirForReport(path.join(os.tmpdir(), \"river-client-updates\")).forEach((line) => add(line));",
+    "text": "  listDirForReport(path.join(os.tmpdir(), \"daisy-client-updates\")).forEach((line) => add(line));",
     "count": 1,
     "reason": "Existing installation staging/cache path or old-JAR cleanup pattern, retained for upgrades."
   },
   {
     "path": "launcher/src/main.js",
-    "text": "  process.env.RIVER_PRESENCE_URL || \"https://updates.riverclient.xyz/presence/roster\"",
+    "text": "  process.env.RIVER_PRESENCE_URL || \"https://updates.daisyclient.xyz/presence/roster\"",
     "count": 1,
     "reason": "Existing external upstream service or management bucket; protocol/backend ownership is outside this working tree."
   },
   {
     "path": "launcher/src/main.js",
-    "text": "  return Boolean(instance) && isDaisyLoader(instance.loader) && instance.river !== false;",
+    "text": "  return Boolean(instance) && isDaisyLoader(instance.loader) && instance.daisy !== false;",
     "count": 1,
     "reason": "Existing stored instance/profile/setting/archive field or its reader; changing it requires an explicit migration."
   },
@@ -395,175 +395,175 @@
   },
   {
     "path": "launcher/src/main.js",
-    "text": "  return path.join(app.getPath(\"userData\"), \"certs\", \"river-client-selfsign.cer\");",
+    "text": "  return path.join(app.getPath(\"userData\"), \"certs\", \"daisy-client-selfsign.cer\");",
     "count": 1,
     "reason": "Existing public publisher certificate identity; renaming does not create a Daisy signing identity."
   },
   {
     "path": "launcher/src/main.js",
-    "text": "  return path.join(instancePath, \"riv3r-instance.json\");",
+    "text": "  return path.join(instancePath, \"daisy-instance.json\");",
     "count": 1,
     "reason": "Existing stored instance/profile/setting/archive field or its reader; changing it requires an explicit migration."
   },
   {
     "path": "launcher/src/main.js",
-    "text": "  return path.join(instancePath, \"riv3r-mods.json\");",
+    "text": "  return path.join(instancePath, \"daisy-mods.json\");",
     "count": 1,
     "reason": "Existing stored instance/profile/setting/archive field or its reader; changing it requires an explicit migration."
   },
   {
     "path": "launcher/src/main.js",
-    "text": "  return path.join(os.tmpdir(), \"river-client-updates\", \"update-trace.log\");",
+    "text": "  return path.join(os.tmpdir(), \"daisy-client-updates\", \"update-trace.log\");",
     "count": 1,
     "reason": "Existing installation staging/cache path or old-JAR cleanup pattern, retained for upgrades."
   },
   {
     "path": "launcher/src/main.js",
-    "text": "  return { daisyMs, riverMs: daisyMs, externalMs, combinedMs: daisyMs + externalMs };",
+    "text": "  return { daisyMs, daisyMs: daisyMs, externalMs, combinedMs: daisyMs + externalMs };",
     "count": 1,
     "reason": "Existing stored instance/profile/setting/archive field or its reader; changing it requires an explicit migration."
   },
   {
     "path": "launcher/src/main.js",
-    "text": "  return { ok: true, message: `${check.normalized}.riverclient.xyz saved.`, normalized: check.normalized };",
+    "text": "  return { ok: true, message: `${check.normalized}.daisyclient.xyz saved.`, normalized: check.normalized };",
     "count": 1,
     "reason": "Existing external upstream service or management bucket; protocol/backend ownership is outside this working tree."
   },
   {
     "path": "launcher/src/main.js",
-    "text": "const PRESENCE_WS_PROTOCOL = \"river.presence.v1\";",
+    "text": "const PRESENCE_WS_PROTOCOL = \"daisy.presence.v1\";",
     "count": 1,
     "reason": "Existing serialized/wire format, HTTP header or socket protocol; external readers must continue to recognize it."
   },
   {
     "path": "launcher/src/main.js",
-    "text": "const PRESENCE_WS_URL = \"wss://updates.riverclient.xyz/presence/ws\";",
+    "text": "const PRESENCE_WS_URL = \"wss://updates.daisyclient.xyz/presence/ws\";",
     "count": 1,
     "reason": "Existing external upstream service or management bucket; protocol/backend ownership is outside this working tree."
   },
   {
     "path": "launcher/src/main.js",
-    "text": "const RVR_FORMAT_ID = \"river.rvr\";",
+    "text": "const DAISY_FORMAT_ID = \"daisy.rvr\";",
     "count": 1,
     "reason": "Existing serialized/wire format, HTTP header or socket protocol; external readers must continue to recognize it."
   },
   {
     "path": "launcher/src/main.js",
-    "text": "const SOCIAL_BASE = \"https://updates.riverclient.xyz/social\";",
+    "text": "const SOCIAL_BASE = \"https://updates.daisyclient.xyz/social\";",
     "count": 1,
     "reason": "Existing external upstream service or management bucket; protocol/backend ownership is outside this working tree."
   },
   {
     "path": "launcher/src/main.js",
-    "text": "const SOCIAL_PROTOCOL = \"river.social.v1\";",
+    "text": "const SOCIAL_PROTOCOL = \"daisy.social.v1\";",
     "count": 1,
     "reason": "Existing serialized/wire format, HTTP header or socket protocol; external readers must continue to recognize it."
   },
   {
     "path": "launcher/src/main.js",
-    "text": "const SOCIAL_WS_URL = \"wss://updates.riverclient.xyz/social/ws\";",
+    "text": "const SOCIAL_WS_URL = \"wss://updates.daisyclient.xyz/social/ws\";",
     "count": 1,
     "reason": "Existing external upstream service or management bucket; protocol/backend ownership is outside this working tree."
   },
   {
     "path": "launcher/src/main.js",
-    "text": "const daisySocialBase = String(process.env.RIVER_SOCIAL_URL || \"https://updates.riverclient.xyz/social\");",
+    "text": "const daisySocialBase = String(process.env.RIVER_SOCIAL_URL || \"https://updates.daisyclient.xyz/social\");",
     "count": 1,
     "reason": "Existing external upstream service or management bucket; protocol/backend ownership is outside this working tree."
   },
   {
     "path": "launcher/src/main.js",
-    "text": "const isUpdaterDemo = process.argv.includes(\"--daisy-updater-demo\") || process.argv.includes(\"--river-updater-demo\");",
+    "text": "const isUpdaterDemo = process.argv.includes(\"--daisy-updater-demo\") || process.argv.includes(\"--daisy-updater-demo\");",
     "count": 1,
     "reason": "Previously supported environment, startup/updater argument or instance-name alias for existing installations."
   },
   {
     "path": "launcher/src/main.js",
-    "text": "const isUpdaterMode = Boolean(updaterJobPath) || (process.argv.includes(\"--daisy-updater\") || process.argv.includes(\"--river-updater\")) || isUpdaterDemo;",
+    "text": "const isUpdaterMode = Boolean(updaterJobPath) || (process.argv.includes(\"--daisy-updater\") || process.argv.includes(\"--daisy-updater\")) || isUpdaterDemo;",
     "count": 1,
     "reason": "Previously supported environment, startup/updater argument or instance-name alias for existing installations."
   },
   {
     "path": "launcher/src/main.js",
-    "text": "const partnerDataUrl = \"https://riverclient.xyz/data/partners.json\";",
+    "text": "const partnerDataUrl = \"https://daisyclient.xyz/data/partners.json\";",
     "count": 1,
     "reason": "Existing external upstream service or management bucket; protocol/backend ownership is outside this working tree."
   },
   {
     "path": "launcher/src/main.js",
-    "text": "const partnerSiteBaseUrl = \"https://riverclient.xyz/\";",
+    "text": "const partnerSiteBaseUrl = \"https://daisyclient.xyz/\";",
     "count": 1,
     "reason": "Existing external upstream service or management bucket; protocol/backend ownership is outside this working tree."
   },
   {
     "path": "launcher/src/main.js",
-    "text": "const startedAtLogin = (process.argv.includes(\"--daisy-startup\") || process.argv.includes(\"--river-startup\"));",
+    "text": "const startedAtLogin = (process.argv.includes(\"--daisy-startup\") || process.argv.includes(\"--daisy-startup\"));",
     "count": 1,
     "reason": "Previously supported environment, startup/updater argument or instance-name alias for existing installations."
   },
   {
     "path": "launcher/src/main.js",
-    "text": "const updateFailureLogPath = findNamedArgument(process.argv, \"--daisy-update-failed\") || findNamedArgument(process.argv, \"--river-update-failed\");",
+    "text": "const updateFailureLogPath = findNamedArgument(process.argv, \"--daisy-update-failed\") || findNamedArgument(process.argv, \"--daisy-update-failed\");",
     "count": 1,
     "reason": "Previously supported environment, startup/updater argument or instance-name alias for existing installations."
   },
   {
     "path": "launcher/src/main.js",
-    "text": "function daisySessionFile() { return path.join(app.getPath(\"userData\"), \"river-session.json\"); }",
+    "text": "function daisySessionFile() { return path.join(app.getPath(\"userData\"), \"daisy-session.json\"); }",
     "count": 1,
     "reason": "Existing installation staging/cache path or old-JAR cleanup pattern, retained for upgrades."
   },
   {
     "path": "launcher/src/main.js",
-    "text": "ipcMain.handle(\"launcher:river-social\", handleDaisySocial);",
+    "text": "ipcMain.handle(\"launcher:daisy-social\", handleDaisySocial);",
     "count": 1,
     "reason": "Existing serialized/wire format, HTTP header or socket protocol; external readers must continue to recognize it."
   },
   {
     "path": "launcher/src/preload.js",
-    "text": "  riverSocial: (action, payload) => ipcRenderer.invoke(\"launcher:river-social\", { action, payload }),",
+    "text": "  daisySocial: (action, payload) => ipcRenderer.invoke(\"launcher:daisy-social\", { action, payload }),",
     "count": 1,
     "reason": "Existing serialized/wire format, HTTP header or socket protocol; external readers must continue to recognize it."
   },
   {
     "path": "launcher/src/renderer-react/components/backdrop.jsx",
-    "text": " * drawn as frosted glass (see the glass tokens in styles.css). The river valley from Daisy's",
+    "text": " * drawn as frosted glass (see the glass tokens in styles.css). The daisy valley from Daisy's",
     "count": 1,
     "reason": "Ordinary landscape or demo lyric wording, unrelated to project identity."
   },
   {
     "path": "launcher/src/renderer-react/components/friends-panel.jsx",
-    "text": "      const res = await (api()?.daisySocial || api()?.riverSocial)?.(\"roster\");",
+    "text": "      const res = await (api()?.daisySocial || api()?.daisySocial)?.(\"roster\");",
     "count": 1,
     "reason": "Backward-compatible launcher preload/IPC alias; Daisy and existing renderers share the same handler."
   },
   {
     "path": "launcher/src/renderer-react/components/friends-panel.jsx",
-    "text": "      const res = await (api()?.daisySocial || api()?.riverSocial)?.(action, payload);",
+    "text": "      const res = await (api()?.daisySocial || api()?.daisySocial)?.(action, payload);",
     "count": 1,
     "reason": "Backward-compatible launcher preload/IPC alias; Daisy and existing renderers share the same handler."
   },
   {
     "path": "launcher/src/renderer-react/components/friends-panel.jsx",
-    "text": "    const res = await (api()?.daisySocial || api()?.riverSocial)?.(\"blocked\");",
+    "text": "    const res = await (api()?.daisySocial || api()?.daisySocial)?.(\"blocked\");",
     "count": 1,
     "reason": "Backward-compatible launcher preload/IPC alias; Daisy and existing renderers share the same handler."
   },
   {
     "path": "launcher/src/renderer-react/components/instance-card.jsx",
-    "text": "  return (loader !== \"fabric\" && [\"forge\", \"neoforge\", \"quilt\", \"vanilla\"].includes(loader)) || instance?.river === false;",
+    "text": "  return (loader !== \"fabric\" && [\"forge\", \"neoforge\", \"quilt\", \"vanilla\"].includes(loader)) || instance?.daisy === false;",
     "count": 1,
     "reason": "Existing stored instance/profile/setting/archive field or its reader; changing it requires an explicit migration."
   },
   {
     "path": "launcher/src/renderer-react/components/update-notices.jsx",
-    "text": "        {/* Banner: one of Home's own river shots, fading into the dialog. */}",
+    "text": "        {/* Banner: one of Home's own daisy shots, fading into the dialog. */}",
     "count": 1,
     "reason": "Ordinary landscape or demo lyric wording, unrelated to project identity."
   },
   {
     "path": "launcher/src/renderer-react/components/update-notices.jsx",
-    "text": "/** Same two river shots Home uses for its hero. */",
+    "text": "/** Same two daisy shots Home uses for its hero. */",
     "count": 1,
     "reason": "Ordinary landscape or demo lyric wording, unrelated to project identity."
   },
@@ -575,654 +575,654 @@
   },
   {
     "path": "launcher/src/renderer-react/views/home.jsx",
-    "text": "      title={mode === \"river\" ? t(\"Daisy Client only - click to include every Minecraft client on this PC\") : t(\"Every Minecraft client on this PC - click to show Daisy only\")}",
+    "text": "      title={mode === \"daisy\" ? t(\"Daisy Client only - click to include every Minecraft client on this PC\") : t(\"Every Minecraft client on this PC - click to show Daisy only\")}",
     "count": 1,
     "reason": "Existing stored instance/profile/setting/archive field or its reader; changing it requires an explicit migration."
   },
   {
     "path": "launcher/src/renderer-react/views/home.jsx",
-    "text": "      {formatPlaytime(shownMs || 0)} {mode === \"river\" ? t(\"on Daisy\") : t(\"played\")}",
+    "text": "      {formatPlaytime(shownMs || 0)} {mode === \"daisy\" ? t(\"on Daisy\") : t(\"played\")}",
     "count": 1,
     "reason": "Existing stored instance/profile/setting/archive field or its reader; changing it requires an explicit migration."
   },
   {
     "path": "launcher/src/renderer-react/views/home.jsx",
-    "text": "    try { await api()?.updateSettings({ playtimeDisplayMode: mode === \"river\" ? \"combined\" : \"river\" }); }",
+    "text": "    try { await api()?.updateSettings({ playtimeDisplayMode: mode === \"daisy\" ? \"combined\" : \"daisy\" }); }",
     "count": 1,
     "reason": "Existing stored instance/profile/setting/archive field or its reader; changing it requires an explicit migration."
   },
   {
     "path": "launcher/src/renderer-react/views/home.jsx",
-    "text": "  const mode = settings?.playtimeDisplayMode !== \"river\" ? \"combined\" : \"river\";",
+    "text": "  const mode = settings?.playtimeDisplayMode !== \"daisy\" ? \"combined\" : \"daisy\";",
     "count": 1,
     "reason": "Existing stored instance/profile/setting/archive field or its reader; changing it requires an explicit migration."
   },
   {
     "path": "launcher/src/renderer-react/views/home.jsx",
-    "text": "  const shownMs = mode === \"river\" ? summary.daisyMs : summary.combinedMs;",
+    "text": "  const shownMs = mode === \"daisy\" ? summary.daisyMs : summary.combinedMs;",
     "count": 1,
     "reason": "Existing stored instance/profile/setting/archive field or its reader; changing it requires an explicit migration."
   },
   {
     "path": "launcher/src/renderer-react/views/home.jsx",
-    "text": " * One of the two river shots that ship in assets/, picked once per launcher session the",
+    "text": " * One of the two daisy shots that ship in assets/, picked once per launcher session the",
     "count": 1,
     "reason": "Ordinary landscape or demo lyric wording, unrelated to project identity."
   },
   {
     "path": "launcher/src/renderer-react/views/instances.jsx",
-    "text": "                (loader === \"river\" || loader === \"fabric\") ? \"opacity-100\" : \"opacity-35 pointer-events-none\"",
+    "text": "                (loader === \"daisy\" || loader === \"fabric\") ? \"opacity-100\" : \"opacity-35 pointer-events-none\"",
     "count": 1,
     "reason": "Existing stored instance/profile/setting/archive field or its reader; changing it requires an explicit migration."
   },
   {
     "path": "launcher/src/renderer-react/views/instances.jsx",
-    "text": "                checked={(loader === \"river\" || loader === \"fabric\") && daisySkin}",
+    "text": "                checked={(loader === \"daisy\" || loader === \"fabric\") && daisySkin}",
     "count": 1,
     "reason": "Existing stored instance/profile/setting/archive field or its reader; changing it requires an explicit migration."
   },
   {
     "path": "launcher/src/renderer-react/views/instances.jsx",
-    "text": "                disabled={!(loader === \"river\" || loader === \"fabric\")}",
+    "text": "                disabled={!(loader === \"daisy\" || loader === \"fabric\")}",
     "count": 1,
     "reason": "Existing stored instance/profile/setting/archive field or its reader; changing it requires an explicit migration."
   },
   {
     "path": "launcher/src/renderer-react/views/instances.jsx",
-    "text": "          const label = loader === \"river\"",
+    "text": "          const label = loader === \"daisy\"",
     "count": 1,
     "reason": "Existing stored instance/profile/setting/archive field or its reader; changing it requires an explicit migration."
   },
   {
     "path": "launcher/src/renderer-react/views/instances.jsx",
-    "text": "        daisySkin: (loader === \"river\" || loader === \"fabric\") && daisySkin,",
+    "text": "        daisySkin: (loader === \"daisy\" || loader === \"fabric\") && daisySkin,",
     "count": 1,
     "reason": "Existing stored instance/profile/setting/archive field or its reader; changing it requires an explicit migration."
   },
   {
     "path": "launcher/src/renderer-react/views/instances.jsx",
-    "text": "        loaderVersion: loader === \"river\" || loader === \"vanilla\" ? undefined : plainEntry?.loaderVersion",
+    "text": "        loaderVersion: loader === \"daisy\" || loader === \"vanilla\" ? undefined : plainEntry?.loaderVersion",
     "count": 1,
     "reason": "Existing stored instance/profile/setting/archive field or its reader; changing it requires an explicit migration."
   },
   {
     "path": "launcher/src/renderer-react/views/instances.jsx",
-    "text": "        river: loader === \"river\",",
+    "text": "        daisy: loader === \"daisy\",",
     "count": 1,
     "reason": "Existing stored instance/profile/setting/archive field or its reader; changing it requires an explicit migration."
   },
   {
     "path": "launcher/src/renderer-react/views/instances.jsx",
-    "text": "        {loader !== \"river\" ? (",
+    "text": "        {loader !== \"daisy\" ? (",
     "count": 1,
     "reason": "Existing stored instance/profile/setting/archive field or its reader; changing it requires an explicit migration."
   },
   {
     "path": "launcher/src/renderer-react/views/instances.jsx",
-    "text": "    if (!open || loader === \"river\" || lists[loader]) return;",
+    "text": "    if (!open || loader === \"daisy\" || lists[loader]) return;",
     "count": 1,
     "reason": "Existing stored instance/profile/setting/archive field or its reader; changing it requires an explicit migration."
   },
   {
     "path": "launcher/src/renderer-react/views/instances.jsx",
-    "text": "  const [loader, setLoader] = useState(\"river\");",
+    "text": "  const [loader, setLoader] = useState(\"daisy\");",
     "count": 1,
     "reason": "Existing stored instance/profile/setting/archive field or its reader; changing it requires an explicit migration."
   },
   {
     "path": "launcher/src/renderer-react/views/instances.jsx",
-    "text": "  const description = loader === \"river\"",
+    "text": "  const description = loader === \"daisy\"",
     "count": 1,
     "reason": "Existing stored instance/profile/setting/archive field or its reader; changing it requires an explicit migration."
   },
   {
     "path": "launcher/src/renderer-react/views/instances.jsx",
-    "text": "  const setVersion = (id) => (loader === \"river\" ? setFabricVersion(id) : setPlainPick((prev) => ({ ...prev, [loader]: id })));",
+    "text": "  const setVersion = (id) => (loader === \"daisy\" ? setFabricVersion(id) : setPlainPick((prev) => ({ ...prev, [loader]: id })));",
     "count": 1,
     "reason": "Existing stored instance/profile/setting/archive field or its reader; changing it requires an explicit migration."
   },
   {
     "path": "launcher/src/renderer-react/views/instances.jsx",
-    "text": "  const tag = loader === \"vanilla\" ? version : `${loader === \"river\" ? \"Fabric\" : loaderOption(loader).label} ${version}`;",
+    "text": "  const tag = loader === \"vanilla\" ? version : `${loader === \"daisy\" ? \"Fabric\" : loaderOption(loader).label} ${version}`;",
     "count": 1,
     "reason": "Existing stored instance/profile/setting/archive field or its reader; changing it requires an explicit migration."
   },
   {
     "path": "launcher/src/renderer-react/views/instances.jsx",
-    "text": "  const version = loader === \"river\" ? fabricVersion : plainEntry?.id || \"\";",
+    "text": "  const version = loader === \"daisy\" ? fabricVersion : plainEntry?.id || \"\";",
     "count": 1,
     "reason": "Existing stored instance/profile/setting/archive field or its reader; changing it requires an explicit migration."
   },
   {
     "path": "launcher/src/renderer-react/views/instances.jsx",
-    "text": "  if (id === \"river\") {",
+    "text": "  if (id === \"daisy\") {",
     "count": 1,
     "reason": "Existing stored instance/profile/setting/archive field or its reader; changing it requires an explicit migration."
   },
   {
     "path": "launcher/src/renderer-react/views/instances.jsx",
-    "text": "  if (loader === \"river\") {",
+    "text": "  if (loader === \"daisy\") {",
     "count": 1,
     "reason": "Existing stored instance/profile/setting/archive field or its reader; changing it requires an explicit migration."
   },
   {
     "path": "launcher/src/renderer-react/views/instances.jsx",
-    "text": "  useEffect(() => { if (open) { setFabricVersion(defaultVersion); setLoader(\"river\"); } }, [open, defaultVersion]);",
+    "text": "  useEffect(() => { if (open) { setFabricVersion(defaultVersion); setLoader(\"daisy\"); } }, [open, defaultVersion]);",
     "count": 1,
     "reason": "Existing stored instance/profile/setting/archive field or its reader; changing it requires an explicit migration."
   },
   {
     "path": "launcher/src/renderer-react/views/instances.jsx",
-    "text": "  { id: \"river\", label: \"Fabric + Daisy\", prefix: \"Daisy\", loader: \"fabric\", api: \"fabric\" },",
+    "text": "  { id: \"daisy\", label: \"Fabric + Daisy\", prefix: \"Daisy\", loader: \"fabric\", api: \"fabric\" },",
     "count": 1,
     "reason": "Existing stored instance/profile/setting/archive field or its reader; changing it requires an explicit migration."
   },
   {
     "path": "launcher/src/renderer-react/views/modern-home.jsx",
-    "text": "              {/* Refined gradient overlay: keeps the gorgeous river, mountain, and cherry trees visible while making text sharp */}",
+    "text": "              {/* Refined gradient overlay: keeps the gorgeous daisy, mountain, and cherry trees visible while making text sharp */}",
     "count": 1,
     "reason": "Existing stored instance/profile/setting/archive field or its reader; changing it requires an explicit migration."
   },
   {
     "path": "launcher/src/rvr-restore.js",
-    "text": "      } else if (!isCore(file) && meta.source !== \"river\") {",
+    "text": "      } else if (!isCore(file) && meta.source !== \"daisy\") {",
     "count": 1,
     "reason": "Existing stored instance/profile/setting/archive field or its reader; changing it requires an explicit migration."
   },
   {
     "path": "launcher/src/rvr-restore.js",
-    "text": " * @param manifest     the archive's riv3r-mods.json",
+    "text": " * @param manifest     the archive's daisy-mods.json",
     "count": 1,
     "reason": "Existing stored instance/profile/setting/archive field or its reader; changing it requires an explicit migration."
   },
   {
     "path": "scripts/audit-branding.py",
-    "text": "        check = re.sub(r\"\\bdrivers?\\b|IntelDriversForPerformance\", \"\", line, flags=re.I)",
+    "text": "        check = re.sub(r\"\\bddaisys?\\b|IntelDdaisysForPerformance\", \"\", line, flags=re.I)",
     "count": 1,
-    "reason": "Scanner vocabulary and graphics-driver false-positive filter; not application branding."
+    "reason": "Scanner vocabulary and graphics-ddaisy false-positive filter; not application branding."
   },
   {
     "path": "scripts/audit-branding.py",
-    "text": "PATTERN = re.compile(r\"river|riv3r|wyz\", re.IGNORECASE)",
+    "text": "PATTERN = re.compile(r\"daisy|daisy|wyz\", re.IGNORECASE)",
     "count": 1,
-    "reason": "Scanner vocabulary and graphics-driver false-positive filter; not application branding."
+    "reason": "Scanner vocabulary and graphics-ddaisy false-positive filter; not application branding."
   },
   {
     "path": "src/client/java/dev/daisy/clientcore/mixin/DevShotWindowMixin.java",
-    "text": "    private static final boolean clientcore$secondScreen = Boolean.getBoolean(\"river.dev.secondScreen\");",
+    "text": "    private static final boolean clientcore$secondScreen = Boolean.getBoolean(\"daisy.dev.secondScreen\");",
     "count": 1,
     "reason": "Existing JVM property or developer screenshot selector accepted by launch/configuration tools."
   },
   {
     "path": "src/client/java/dev/daisy/clientcore/mixin/PlayerDisplayNameMixin.java",
-    "text": "        if (badge != null && badge.getActive() && badge.showRiverBadge() && DaisyBadgeState.shouldShow(uuid)) {",
+    "text": "        if (badge != null && badge.getActive() && badge.showDaisyBadge() && DaisyBadgeState.shouldShow(uuid)) {",
     "count": 1,
     "reason": "Serialized Gson configuration field spelling and corresponding accessors preserve existing user settings."
   },
   {
     "path": "src/client/java/dev/daisy/clientcore/mixin/PlayerTabOverlayMixin.java",
-    "text": "        if (badge != null && badge.getActive() && badge.showRiverBadge() && DaisyBadgeState.shouldShow(uuid)) {",
+    "text": "        if (badge != null && badge.getActive() && badge.showDaisyBadge() && DaisyBadgeState.shouldShow(uuid)) {",
     "count": 1,
     "reason": "Serialized Gson configuration field spelling and corresponding accessors preserve existing user settings."
   },
   {
     "path": "src/client/kotlin/dev/daisy/clientcore/DaisyRuntime.kt",
-    "text": "        if (mixinAudited || System.getProperty(\"river.mixinAudit\") != \"true\") return",
+    "text": "        if (mixinAudited || System.getProperty(\"daisy.mixinAudit\") != \"true\") return",
     "count": 1,
     "reason": "Existing JVM property or developer screenshot selector accepted by launch/configuration tools."
   },
   {
     "path": "src/client/kotlin/dev/daisy/clientcore/config/ClientCoreConfig.kt",
-    "text": "    var showRiverBadge: Boolean = true,",
+    "text": "    var showDaisyBadge: Boolean = true,",
     "count": 1,
     "reason": "Serialized Gson configuration field spelling and corresponding accessors preserve existing user settings."
   },
   {
     "path": "src/client/kotlin/dev/daisy/clientcore/config/ConfigService.kt",
-    "text": "        if (!parsed.has(\"river_profile\") || !parsed.has(\"config\")) return null",
+    "text": "        if (!parsed.has(\"daisy_profile\") || !parsed.has(\"config\")) return null",
     "count": 1,
     "reason": "Existing serialized/wire format, HTTP header or socket protocol; external readers must continue to recognize it."
   },
   {
     "path": "src/client/kotlin/dev/daisy/clientcore/config/ConfigService.kt",
-    "text": "        val wrapper = mapOf(\"river_profile\" to 1, \"name\" to activeProfileName, \"config\" to config)",
+    "text": "        val wrapper = mapOf(\"daisy_profile\" to 1, \"name\" to activeProfileName, \"config\" to config)",
     "count": 1,
     "reason": "Existing serialized/wire format, HTTP header or socket protocol; external readers must continue to recognize it."
   },
   {
     "path": "src/client/kotlin/dev/daisy/clientcore/config/ConfigService.kt",
-    "text": "     * Imports a `river_profile` JSON string as a new profile. Returns the created",
+    "text": "     * Imports a `daisy_profile` JSON string as a new profile. Returns the created",
     "count": 1,
     "reason": "Existing serialized/wire format, HTTP header or socket protocol; external readers must continue to recognize it."
   },
   {
     "path": "src/client/kotlin/dev/daisy/clientcore/config/ConfigService.kt",
-    "text": "    private fun daisyDir(): Path = configRoot().resolve(\"river-client\")",
+    "text": "    private fun daisyDir(): Path = configRoot().resolve(\"daisy-client\")",
     "count": 1,
     "reason": "Existing stored instance/profile/setting/archive field or its reader; changing it requires an explicit migration."
   },
   {
     "path": "src/client/kotlin/dev/daisy/clientcore/config/ConfigService.kt",
-    "text": " * `config/river-client/profiles/`. The active profile name lives in `config/river-client/state.json`.",
+    "text": " * `config/daisy-client/profiles/`. The active profile name lives in `config/daisy-client/state.json`.",
     "count": 1,
     "reason": "Existing stored instance/profile/setting/archive field or its reader; changing it requires an explicit migration."
   },
   {
     "path": "src/client/kotlin/dev/daisy/clientcore/config/ServerProfiles.kt",
-    "text": "        .resolve(\"config\").resolve(\"river-client\").resolve(\"server-profiles.json\")",
+    "text": "        .resolve(\"config\").resolve(\"daisy-client\").resolve(\"server-profiles.json\")",
     "count": 1,
     "reason": "Existing stored instance/profile/setting/archive field or its reader; changing it requires an explicit migration."
   },
   {
     "path": "src/client/kotlin/dev/daisy/clientcore/config/ServerProfiles.kt",
-    "text": " * Links live in config/river-client/server-profiles.json as host -> profile, apart from",
+    "text": " * Links live in config/daisy-client/server-profiles.json as host -> profile, apart from",
     "count": 1,
     "reason": "Existing stored instance/profile/setting/archive field or its reader; changing it requires an explicit migration."
   },
   {
     "path": "src/client/kotlin/dev/daisy/clientcore/cosmetic/DaisyCape.kt",
-    "text": "            Minecraft.getInstance().textureManager.register(textureId(style), DynamicTexture({ \"river-cape-$style\" }, image))",
+    "text": "            Minecraft.getInstance().textureManager.register(textureId(style), DynamicTexture({ \"daisy-cape-$style\" }, image))",
     "count": 1,
     "reason": "Existing Minecraft pack/texture identifier; preserve saved pack selections and resource overrides."
   },
   {
     "path": "src/client/kotlin/dev/daisy/clientcore/cosmetic/DaisyCape.kt",
-    "text": "    val STYLES = listOf(\"river\", \"axie\", \"hardcore\", \"eclipse\", \"eightball\", \"halloween\")",
+    "text": "    val STYLES = listOf(\"daisy\", \"axie\", \"hardcore\", \"eclipse\", \"eightball\", \"halloween\")",
     "count": 1,
     "reason": "Existing stored instance/profile/setting/archive field or its reader; changing it requires an explicit migration."
   },
   {
     "path": "src/client/kotlin/dev/daisy/clientcore/dev/DevShot.kt",
-    "text": "                    ?.startDemo(lines = name == \"world-lyrics-lines\", screen = name == \"world-lyrics-screen\", song = System.getProperty(\"river.devshot.song\"))",
+    "text": "                    ?.startDemo(lines = name == \"world-lyrics-lines\", screen = name == \"world-lyrics-screen\", song = System.getProperty(\"daisy.devshot.song\"))",
     "count": 1,
     "reason": "Existing JVM property or developer screenshot selector accepted by launch/configuration tools."
   },
   {
     "path": "src/client/kotlin/dev/daisy/clientcore/dev/DevShot.kt",
-    "text": "            \"river-hud\" -> client.setScreen(DaisyHudEditorScreen(null))",
+    "text": "            \"daisy-hud\" -> client.setScreen(DaisyHudEditorScreen(null))",
     "count": 1,
     "reason": "Existing JVM property or developer screenshot selector accepted by launch/configuration tools."
   },
   {
     "path": "src/client/kotlin/dev/daisy/clientcore/dev/DevShot.kt",
-    "text": "            \"river-menu\" -> client.setScreen(DaisyMenuScreen(null))",
+    "text": "            \"daisy-menu\" -> client.setScreen(DaisyMenuScreen(null))",
     "count": 1,
     "reason": "Existing JVM property or developer screenshot selector accepted by launch/configuration tools."
   },
   {
     "path": "src/client/kotlin/dev/daisy/clientcore/dev/DevShot.kt",
-    "text": "        config.theme = if (halloween) \"halloween\" else \"river\"",
+    "text": "        config.theme = if (halloween) \"halloween\" else \"daisy\"",
     "count": 1,
     "reason": "Existing stored instance/profile/setting/archive field or its reader; changing it requires an explicit migration."
   },
   {
     "path": "src/client/kotlin/dev/daisy/clientcore/dev/DevShot.kt",
-    "text": "    private val benchPerModule = System.getProperty(\"river.bench.modules\") == \"true\"",
+    "text": "    private val benchPerModule = System.getProperty(\"daisy.bench.modules\") == \"true\"",
     "count": 1,
     "reason": "Existing JVM property or developer screenshot selector accepted by launch/configuration tools."
   },
   {
     "path": "src/client/kotlin/dev/daisy/clientcore/dev/DevShot.kt",
-    "text": "    private val benchSeconds: Int? = System.getProperty(\"river.bench\")?.toIntOrNull()",
+    "text": "    private val benchSeconds: Int? = System.getProperty(\"daisy.bench\")?.toIntOrNull()",
     "count": 1,
     "reason": "Existing JVM property or developer screenshot selector accepted by launch/configuration tools."
   },
   {
     "path": "src/client/kotlin/dev/daisy/clientcore/dev/DevShot.kt",
-    "text": "    private val benchWorld: String = System.getProperty(\"river.bench.world\") ?: \"New World\"",
+    "text": "    private val benchWorld: String = System.getProperty(\"daisy.bench.world\") ?: \"New World\"",
     "count": 1,
     "reason": "Existing JVM property or developer screenshot selector accepted by launch/configuration tools."
   },
   {
     "path": "src/client/kotlin/dev/daisy/clientcore/dev/DevShot.kt",
-    "text": "    private val recordSeconds: Double? = System.getProperty(\"river.devshot.record\")?.toDoubleOrNull()",
+    "text": "    private val recordSeconds: Double? = System.getProperty(\"daisy.devshot.record\")?.toDoubleOrNull()",
     "count": 1,
     "reason": "Existing JVM property or developer screenshot selector accepted by launch/configuration tools."
   },
   {
     "path": "src/client/kotlin/dev/daisy/clientcore/dev/DevShot.kt",
-    "text": "    private val shots: List<String> = System.getProperty(\"river.devshot\").orEmpty()",
+    "text": "    private val shots: List<String> = System.getProperty(\"daisy.devshot\").orEmpty()",
     "count": 1,
     "reason": "Existing JVM property or developer screenshot selector accepted by launch/configuration tools."
   },
   {
     "path": "src/client/kotlin/dev/daisy/clientcore/dev/DevShot.kt",
-    "text": "    private val size = System.getProperty(\"river.devshot.size\").orEmpty()",
+    "text": "    private val size = System.getProperty(\"daisy.devshot.size\").orEmpty()",
     "count": 1,
     "reason": "Existing JVM property or developer screenshot selector accepted by launch/configuration tools."
   },
   {
     "path": "src/client/kotlin/dev/daisy/clientcore/hud/WatermarkRenderer.kt",
-    "text": "                Minecraft.getInstance().textureManager.register(id, DynamicTexture({ \"river-watermark\" }, image))",
+    "text": "                Minecraft.getInstance().textureManager.register(id, DynamicTexture({ \"daisy-watermark\" }, image))",
     "count": 1,
     "reason": "Existing Minecraft pack/texture identifier; preserve saved pack selections and resource overrides."
   },
   {
     "path": "src/client/kotlin/dev/daisy/clientcore/hud/WatermarkRenderer.kt",
-    "text": "                val id = McId.fromNamespaceAndPath(\"clientcore\", \"river_watermark_dynamic\")",
+    "text": "                val id = McId.fromNamespaceAndPath(\"clientcore\", \"daisy_watermark_dynamic\")",
     "count": 1,
     "reason": "Existing Minecraft pack/texture identifier; preserve saved pack selections and resource overrides."
   },
   {
     "path": "src/client/kotlin/dev/daisy/clientcore/hud/WatermarkRenderer.kt",
-    "text": "/*                val id = ResourceLocation.fromNamespaceAndPath(\"clientcore\", \"river_watermark_dynamic\")",
+    "text": "/*                val id = ResourceLocation.fromNamespaceAndPath(\"clientcore\", \"daisy_watermark_dynamic\")",
     "count": 1,
     "reason": "Existing Minecraft pack/texture identifier; preserve saved pack selections and resource overrides."
   },
   {
     "path": "src/client/kotlin/dev/daisy/clientcore/module/impl/CapeModule.kt",
-    "text": "    /** The selected style id (e.g. \"river\"). */",
+    "text": "    /** The selected style id (e.g. \"daisy\"). */",
     "count": 1,
     "reason": "Existing stored instance/profile/setting/archive field or its reader; changing it requires an explicit migration."
   },
   {
     "path": "src/client/kotlin/dev/daisy/clientcore/module/impl/LyricsModule.kt",
-    "text": "            \"Floating down the river light\",",
+    "text": "            \"Floating down the daisy light\",",
     "count": 1,
     "reason": "Ordinary landscape or demo lyric wording, unrelated to project identity."
   },
   {
     "path": "src/client/kotlin/dev/daisy/clientcore/module/impl/NameTagModule.kt",
-    "text": "        list.add(BoolSetting(\"Daisy badge\", { mutableNameTag().showRiverBadge }, { mutableNameTag().showRiverBadge = it }))",
+    "text": "        list.add(BoolSetting(\"Daisy badge\", { mutableNameTag().showDaisyBadge }, { mutableNameTag().showDaisyBadge = it }))",
     "count": 1,
     "reason": "Serialized Gson configuration field spelling and corresponding accessors preserve existing user settings."
   },
   {
     "path": "src/client/kotlin/dev/daisy/clientcore/module/impl/NameTagModule.kt",
-    "text": "        mutableNameTag().showRiverBadge = value",
+    "text": "        mutableNameTag().showDaisyBadge = value",
     "count": 1,
     "reason": "Serialized Gson configuration field spelling and corresponding accessors preserve existing user settings."
   },
   {
     "path": "src/client/kotlin/dev/daisy/clientcore/module/impl/NameTagModule.kt",
-    "text": "    fun setShowRiverBadge(value: Boolean) {",
+    "text": "    fun setShowDaisyBadge(value: Boolean) {",
     "count": 1,
     "reason": "Serialized Gson configuration field spelling and corresponding accessors preserve existing user settings."
   },
   {
     "path": "src/client/kotlin/dev/daisy/clientcore/module/impl/NameTagModule.kt",
-    "text": "    fun showRiverBadge(): Boolean = editorNameTag().showRiverBadge",
+    "text": "    fun showDaisyBadge(): Boolean = editorNameTag().showDaisyBadge",
     "count": 1,
     "reason": "Serialized Gson configuration field spelling and corresponding accessors preserve existing user settings."
   },
   {
     "path": "src/client/kotlin/dev/daisy/clientcore/nametag/DaisyBadgeState.kt",
-    "text": "        McId.fromNamespaceAndPath(\"clientcore\", \"river_badge\")",
+    "text": "        McId.fromNamespaceAndPath(\"clientcore\", \"daisy_badge\")",
     "count": 1,
     "reason": "Stable Minecraft resource identifier and matching asset path, also referenced by resource-pack overrides."
   },
   {
     "path": "src/client/kotlin/dev/daisy/clientcore/nametag/DaisyBadgeState.kt",
-    "text": "/*    private val BADGE_FONT: McId = McId.fromNamespaceAndPath(\"clientcore\", \"river_badge\")",
+    "text": "/*    private val BADGE_FONT: McId = McId.fromNamespaceAndPath(\"clientcore\", \"daisy_badge\")",
     "count": 1,
     "reason": "Stable Minecraft resource identifier and matching asset path, also referenced by resource-pack overrides."
   },
   {
     "path": "src/client/kotlin/dev/daisy/clientcore/net/DaisySocial.kt",
-    "text": "    private const val SOCKET_PROTOCOL = \"river.social.v1\"",
+    "text": "    private const val SOCKET_PROTOCOL = \"daisy.social.v1\"",
     "count": 1,
     "reason": "Existing serialized/wire format, HTTP header or socket protocol; external readers must continue to recognize it."
   },
   {
     "path": "src/client/kotlin/dev/daisy/clientcore/net/ModUpdateCheck.kt",
-    "text": "    private val standalone = System.getProperty(\"minecraft.launcher.brand\") !in setOf(\"daisy-client\", \"river-client\")",
+    "text": "    private val standalone = System.getProperty(\"minecraft.launcher.brand\") !in setOf(\"daisy-client\", \"daisy-client\")",
     "count": 1,
     "reason": "Existing stored instance/profile/setting/archive field or its reader; changing it requires an explicit migration."
   },
   {
     "path": "src/client/kotlin/dev/daisy/clientcore/net/PresenceService.kt",
-    "text": "        val badgeOn = nametag != null && nametag.active && nametag.showRiverBadge()",
+    "text": "        val badgeOn = nametag != null && nametag.active && nametag.showDaisyBadge()",
     "count": 1,
     "reason": "Serialized Gson configuration field spelling and corresponding accessors preserve existing user settings."
   },
   {
     "path": "src/client/kotlin/dev/daisy/clientcore/net/RemoteIconCache.kt",
-    "text": "                    Minecraft.getInstance().textureManager.register(id, DynamicTexture({ \"river-content-icon\" }, image))",
+    "text": "                    Minecraft.getInstance().textureManager.register(id, DynamicTexture({ \"daisy-content-icon\" }, image))",
     "count": 1,
     "reason": "Existing Minecraft pack/texture identifier; preserve saved pack selections and resource overrides."
   },
   {
     "path": "src/client/kotlin/dev/daisy/clientcore/net/ScreenshotShare.kt",
-    "text": "    private const val MARKER = \"river-screenshot:\"",
+    "text": "    private const val MARKER = \"daisy-screenshot:\"",
     "count": 1,
     "reason": "Existing serialized/wire format, HTTP header or socket protocol; external readers must continue to recognize it."
   },
   {
     "path": "src/client/kotlin/dev/daisy/clientcore/perf/LowEndPreset.kt",
-    "text": "            val daisyConfig = game.resolve(\"config\").resolve(\"river-client\")",
+    "text": "            val daisyConfig = game.resolve(\"config\").resolve(\"daisy-client\")",
     "count": 1,
     "reason": "Existing stored instance/profile/setting/archive field or its reader; changing it requires an explicit migration."
   },
   {
     "path": "src/client/kotlin/dev/daisy/clientcore/perf/LowEndPreset.kt",
-    "text": "    private val forced = System.getProperty(\"river.lowend.force\") != null",
+    "text": "    private val forced = System.getProperty(\"daisy.lowend.force\") != null",
     "count": 1,
     "reason": "Existing JVM property or developer screenshot selector accepted by launch/configuration tools."
   },
   {
     "path": "src/client/kotlin/dev/daisy/clientcore/resources/DaisyBuiltinPack.kt",
-    "text": "                // .../assets/clientcore/font/river_badge.json -> pack root is 4 levels up.",
+    "text": "                // .../assets/clientcore/font/daisy_badge.json -> pack root is 4 levels up.",
     "count": 1,
     "reason": "Stable Minecraft resource identifier and matching asset path, also referenced by resource-pack overrides."
   },
   {
     "path": "src/client/kotlin/dev/daisy/clientcore/resources/DaisyBuiltinPack.kt",
-    "text": "    private const val ANCHOR = \"/assets/clientcore/font/river_badge.json\"",
+    "text": "    private const val ANCHOR = \"/assets/clientcore/font/daisy_badge.json\"",
     "count": 1,
     "reason": "Stable Minecraft resource identifier and matching asset path, also referenced by resource-pack overrides."
   },
   {
     "path": "src/client/kotlin/dev/daisy/clientcore/resources/DaisyBuiltinPack.kt",
-    "text": "    private const val PACK_ID = \"river_builtin\"",
+    "text": "    private const val PACK_ID = \"daisy_builtin\"",
     "count": 1,
     "reason": "Existing Minecraft pack/texture identifier; preserve saved pack selections and resource overrides."
   },
   {
     "path": "src/client/kotlin/dev/daisy/clientcore/resources/DaisyGlobalDataPacks.kt",
-    "text": "                    PackLocationInfo(\"river_global/${entry.name}\", Component.literal(\"Daisy: ${entry.name}\"), PackSource.WORLD, java.util.Optional.empty()),",
+    "text": "                    PackLocationInfo(\"daisy_global/${entry.name}\", Component.literal(\"Daisy: ${entry.name}\"), PackSource.WORLD, java.util.Optional.empty()),",
     "count": 1,
     "reason": "Existing Minecraft pack/texture identifier; preserve saved pack selections and resource overrides."
   },
   {
     "path": "src/client/kotlin/dev/daisy/clientcore/resources/DaisyGlobalDataPacks.kt",
-    "text": "        val dir = Minecraft.getInstance().gameDirectory.toPath().resolve(\"river\").resolve(\"global_datapacks\")",
+    "text": "        val dir = Minecraft.getInstance().gameDirectory.toPath().resolve(\"daisy\").resolve(\"global_datapacks\")",
     "count": 1,
     "reason": "Existing stored instance/profile/setting/archive field or its reader; changing it requires an explicit migration."
   },
   {
     "path": "src/client/kotlin/dev/daisy/clientcore/resources/TextureMixer.kt",
-    "text": "        val raw = repository.getPack(\"river_builtin\")?.open()?.use { resources ->",
+    "text": "        val raw = repository.getPack(\"daisy_builtin\")?.open()?.use { resources ->",
     "count": 1,
     "reason": "Existing Minecraft pack/texture identifier; preserve saved pack selections and resource overrides."
   },
   {
     "path": "src/client/kotlin/dev/daisy/clientcore/ui/DaisyIcons.kt",
-    "text": "            Minecraft.getInstance().textureManager.register(id, DynamicTexture({ \"river-icon-$icon\" }, image))",
+    "text": "            Minecraft.getInstance().textureManager.register(id, DynamicTexture({ \"daisy-icon-$icon\" }, image))",
     "count": 1,
     "reason": "Existing Minecraft pack/texture identifier; preserve saved pack selections and resource overrides."
   },
   {
     "path": "src/client/kotlin/dev/daisy/clientcore/ui/DaisyIcons.kt",
-    "text": "            val id = McId.fromNamespaceAndPath(\"clientcore\", \"river_ui_icon_$icon\")",
+    "text": "            val id = McId.fromNamespaceAndPath(\"clientcore\", \"daisy_ui_icon_$icon\")",
     "count": 1,
     "reason": "Existing Minecraft pack/texture identifier; preserve saved pack selections and resource overrides."
   },
   {
     "path": "src/client/kotlin/dev/daisy/clientcore/ui/DaisyIcons.kt",
-    "text": "/*            val id = ResourceLocation.fromNamespaceAndPath(\"clientcore\", \"river_ui_icon_$icon\")",
+    "text": "/*            val id = ResourceLocation.fromNamespaceAndPath(\"clientcore\", \"daisy_ui_icon_$icon\")",
     "count": 1,
     "reason": "Existing Minecraft pack/texture identifier; preserve saved pack selections and resource overrides."
   },
   {
     "path": "src/client/kotlin/dev/daisy/clientcore/ui/DaisyTextures.kt",
-    "text": "            Minecraft.getInstance().textureManager.register(id, DynamicTexture({ \"river-ui-$path\" }, image))",
+    "text": "            Minecraft.getInstance().textureManager.register(id, DynamicTexture({ \"daisy-ui-$path\" }, image))",
     "count": 1,
     "reason": "Existing Minecraft pack/texture identifier; preserve saved pack selections and resource overrides."
   },
   {
     "path": "src/client/kotlin/dev/daisy/clientcore/ui/DaisyTextures.kt",
-    "text": "            val id = McId.fromNamespaceAndPath(\"clientcore\", \"river_ui_\" + path.replace('/', '_'))",
+    "text": "            val id = McId.fromNamespaceAndPath(\"clientcore\", \"daisy_ui_\" + path.replace('/', '_'))",
     "count": 1,
     "reason": "Existing Minecraft pack/texture identifier; preserve saved pack selections and resource overrides."
   },
   {
     "path": "src/client/kotlin/dev/daisy/clientcore/ui/DaisyTextures.kt",
-    "text": "/*            val id = ResourceLocation.fromNamespaceAndPath(\"clientcore\", \"river_ui_\" + path.replace('/', '_'))",
+    "text": "/*            val id = ResourceLocation.fromNamespaceAndPath(\"clientcore\", \"daisy_ui_\" + path.replace('/', '_'))",
     "count": 1,
     "reason": "Existing Minecraft pack/texture identifier; preserve saved pack selections and resource overrides."
   },
   {
     "path": "src/client/kotlin/dev/daisy/clientcore/ui/PlayerHeads.kt",
-    "text": "                    client.textureManager.register(id, DynamicTexture({ \"river-head-$k\" }, image))",
+    "text": "                    client.textureManager.register(id, DynamicTexture({ \"daisy-head-$k\" }, image))",
     "count": 1,
     "reason": "Existing Minecraft pack/texture identifier; preserve saved pack selections and resource overrides."
   },
   {
     "path": "src/client/kotlin/dev/daisy/clientcore/ui/PlayerHeads.kt",
-    "text": "                    val id = McId.fromNamespaceAndPath(\"clientcore\", \"river_head_\" + k.replace(Regex(\"[^a-z0-9_]\"), \"_\"))",
+    "text": "                    val id = McId.fromNamespaceAndPath(\"clientcore\", \"daisy_head_\" + k.replace(Regex(\"[^a-z0-9_]\"), \"_\"))",
     "count": 1,
     "reason": "Existing Minecraft pack/texture identifier; preserve saved pack selections and resource overrides."
   },
   {
     "path": "src/client/kotlin/dev/daisy/clientcore/ui/SeasonEvent.kt",
-    "text": "        .resolve(\"config\").resolve(\"river-client\").resolve(\"rewards.json\")",
+    "text": "        .resolve(\"config\").resolve(\"daisy-client\").resolve(\"rewards.json\")",
     "count": 1,
     "reason": "Existing stored instance/profile/setting/archive field or its reader; changing it requires an explicit migration."
   },
   {
     "path": "src/client/kotlin/dev/daisy/clientcore/ui/SeasonEvent.kt",
-    "text": " * The last progress is kept in `config/river-client/rewards.json`, outside the profiles,",
+    "text": " * The last progress is kept in `config/daisy-client/rewards.json`, outside the profiles,",
     "count": 1,
     "reason": "Existing stored instance/profile/setting/archive field or its reader; changing it requires an explicit migration."
   },
   {
     "path": "src/client/kotlin/dev/daisy/clientcore/ui/Seasons.kt",
-    "text": "        if (current == \"river\") config.theme = season.paletteKey",
+    "text": "        if (current == \"daisy\") config.theme = season.paletteKey",
     "count": 1,
     "reason": "Existing stored instance/profile/setting/archive field or its reader; changing it requires an explicit migration."
   },
   {
     "path": "src/client/kotlin/dev/daisy/clientcore/ui/Seasons.kt",
-    "text": "        val current = config.theme ?: \"river\"",
+    "text": "        val current = config.theme ?: \"daisy\"",
     "count": 1,
     "reason": "Existing stored instance/profile/setting/archive field or its reader; changing it requires an explicit migration."
   },
   {
     "path": "src/client/kotlin/dev/daisy/clientcore/ui/Seasons.kt",
-    "text": "        when (val forced = System.getProperty(\"river.season\")?.trim()?.lowercase()) {",
+    "text": "        when (val forced = System.getProperty(\"daisy.season\")?.trim()?.lowercase()) {",
     "count": 1,
     "reason": "Existing JVM property or developer screenshot selector accepted by launch/configuration tools."
   },
   {
     "path": "src/client/kotlin/dev/daisy/clientcore/ui/menu/DaisyMainMenu.kt",
-    "text": "        loadTexture(\"/assets/clientcore/textures/menu_background.png\", \"river_menu_bg\")?.let { (id, w, h) ->",
+    "text": "        loadTexture(\"/assets/clientcore/textures/menu_background.png\", \"daisy_menu_bg\")?.let { (id, w, h) ->",
     "count": 1,
     "reason": "Existing Minecraft pack/texture identifier; preserve saved pack selections and resource overrides."
   },
   {
     "path": "src/client/kotlin/dev/daisy/clientcore/ui/menu/DaisyMainMenu.kt",
-    "text": "        loadTexture(\"/assets/clientcore/textures/menu_background_halloween.png\", \"river_menu_bg_halloween\")?.let { (id, _, _) ->",
+    "text": "        loadTexture(\"/assets/clientcore/textures/menu_background_halloween.png\", \"daisy_menu_bg_halloween\")?.let { (id, _, _) ->",
     "count": 1,
     "reason": "Existing Minecraft pack/texture identifier; preserve saved pack selections and resource overrides."
   },
   {
     "path": "src/client/kotlin/dev/daisy/clientcore/ui/menu/DaisyMainMenu.kt",
-    "text": "        loadTexture(\"/assets/clientcore/textures/menu_title.png\", \"river_menu_title\")?.let { (id, w, h) ->",
+    "text": "        loadTexture(\"/assets/clientcore/textures/menu_title.png\", \"daisy_menu_title\")?.let { (id, w, h) ->",
     "count": 1,
     "reason": "Existing Minecraft pack/texture identifier; preserve saved pack selections and resource overrides."
   },
   {
     "path": "src/client/kotlin/dev/daisy/clientcore/ui/menu/DaisyMainMenu.kt",
-    "text": "        loadTexture(\"/assets/clientcore/textures/menu_title_halloween.png\", \"river_menu_title_halloween\")?.let { (id, _, _) ->",
+    "text": "        loadTexture(\"/assets/clientcore/textures/menu_title_halloween.png\", \"daisy_menu_title_halloween\")?.let { (id, _, _) ->",
     "count": 1,
     "reason": "Existing Minecraft pack/texture identifier; preserve saved pack selections and resource overrides."
   },
   {
     "path": "src/client/kotlin/dev/daisy/clientcore/ui/menu/DaisyMainMenu.kt",
-    "text": "        loadTexture(\"/assets/clientcore/textures/watermark_logo.png\", \"river_menu_logo\")?.let { (id, _, _) ->",
+    "text": "        loadTexture(\"/assets/clientcore/textures/watermark_logo.png\", \"daisy_menu_logo\")?.let { (id, _, _) ->",
     "count": 1,
     "reason": "Existing Minecraft pack/texture identifier; preserve saved pack selections and resource overrides."
   },
   {
     "path": "src/client/kotlin/dev/daisy/clientcore/ui/menu/SeasonalFx.kt",
-    "text": "                \"/assets/clientcore/textures/watermark_logo_halloween.png\", \"river_logo_halloween\"",
+    "text": "                \"/assets/clientcore/textures/watermark_logo_halloween.png\", \"daisy_logo_halloween\"",
     "count": 1,
     "reason": "Existing Minecraft pack/texture identifier; preserve saved pack selections and resource overrides."
   },
   {
     "path": "src/client/kotlin/dev/daisy/clientcore/ui/menu/SeasonalFx.kt",
-    "text": "        theme == season.paletteKey || (theme == \"river\" && cfg.seasonOffered != season.id)",
+    "text": "        theme == season.paletteKey || (theme == \"daisy\" && cfg.seasonOffered != season.id)",
     "count": 1,
     "reason": "Existing stored instance/profile/setting/archive field or its reader; changing it requires an explicit migration."
   },
   {
     "path": "src/client/kotlin/dev/daisy/clientcore/ui/menu/SeasonalFx.kt",
-    "text": "        val theme = cfg.theme ?: \"river\"",
+    "text": "        val theme = cfg.theme ?: \"daisy\"",
     "count": 1,
     "reason": "Existing stored instance/profile/setting/archive field or its reader; changing it requires an explicit migration."
   },
   {
     "path": "src/client/kotlin/dev/daisy/clientcore/ui/screen/DaisyCosmeticsScreen.kt",
-    "text": "                nametag.setShowRiverBadge(on)",
+    "text": "                nametag.setShowDaisyBadge(on)",
     "count": 1,
     "reason": "Serialized Gson configuration field spelling and corresponding accessors preserve existing user settings."
   },
   {
     "path": "src/client/kotlin/dev/daisy/clientcore/ui/screen/DaisyCosmeticsScreen.kt",
-    "text": "            if (nametag?.active == true && nametag.showRiverBadge()) {",
+    "text": "            if (nametag?.active == true && nametag.showDaisyBadge()) {",
     "count": 1,
     "reason": "Serialized Gson configuration field spelling and corresponding accessors preserve existing user settings."
   },
   {
     "path": "src/client/kotlin/dev/daisy/clientcore/ui/screen/DaisyCosmeticsScreen.kt",
-    "text": "            val badgeOn = nametag.enabled && nametag.showRiverBadge()",
+    "text": "            val badgeOn = nametag.enabled && nametag.showDaisyBadge()",
     "count": 1,
     "reason": "Serialized Gson configuration field spelling and corresponding accessors preserve existing user settings."
   },
   {
     "path": "src/client/kotlin/dev/daisy/clientcore/world/WaypointShare.kt",
-    "text": "    private const val PREFIX = \"river:wp:\"",
+    "text": "    private const val PREFIX = \"daisy:wp:\"",
     "count": 1,
     "reason": "Existing serialized/wire format, HTTP header or socket protocol; external readers must continue to recognize it."
   },
   {
     "path": "src/client/kotlin/dev/daisy/clientcore/world/WaypointShare.kt",
-    "text": " * Format: `river:wp:<name>:<x>:<y>:<z>:<color>` with the name URL-ish escaped",
+    "text": " * Format: `daisy:wp:<name>:<x>:<y>:<z>:<color>` with the name URL-ish escaped",
     "count": 1,
     "reason": "Existing serialized/wire format, HTTP header or socket protocol; external readers must continue to recognize it."
   },
   {
-    "path": "src/client/resources/assets/clientcore/font/river_badge.json",
-    "text": "      \"file\": \"clientcore:font/river_badge.png\",",
+    "path": "src/client/resources/assets/clientcore/font/daisy_badge.json",
+    "text": "      \"file\": \"clientcore:font/daisy_badge.png\",",
     "count": 1,
     "reason": "Stable Minecraft resource identifier and matching asset path, also referenced by resource-pack overrides."
   },
   {
-    "path": "src/client/resources/assets/clientcore/font/river_badge.json",
-    "text": "      \"file\": \"clientcore:font/river_badge_halloween.png\",",
+    "path": "src/client/resources/assets/clientcore/font/daisy_badge.json",
+    "text": "      \"file\": \"clientcore:font/daisy_badge_halloween.png\",",
     "count": 1,
     "reason": "Stable Minecraft resource identifier and matching asset path, also referenced by resource-pack overrides."
   },
   {
-    "path": "src/client/resources/assets/clientcore/font/river_badge.json",
+    "path": "src/client/resources/assets/clientcore/font/daisy_badge.json",
     "text": "<path>",
     "count": 1,
     "reason": "Stable Minecraft resource identifier and matching asset path, also referenced by resource-pack overrides."
   },
   {
-    "path": "src/client/resources/assets/clientcore/textures/cape/river.png",
+    "path": "src/client/resources/assets/clientcore/textures/cape/daisy.png",
     "text": "<path>",
     "count": 1,
     "reason": "Stable Minecraft resource identifier and matching asset path, also referenced by resource-pack overrides."
   },
   {
-    "path": "src/client/resources/assets/clientcore/textures/font/river_badge.png",
+    "path": "src/client/resources/assets/clientcore/textures/font/daisy_badge.png",
     "text": "<path>",
     "count": 1,
     "reason": "Stable Minecraft resource identifier and matching asset path, also referenced by resource-pack overrides."
   },
   {
-    "path": "src/client/resources/assets/clientcore/textures/font/river_badge_halloween.png",
+    "path": "src/client/resources/assets/clientcore/textures/font/daisy_badge_halloween.png",
     "text": "<path>",
     "count": 1,
     "reason": "Stable Minecraft resource identifier and matching asset path, also referenced by resource-pack overrides."
@@ -1241,19 +1241,19 @@
   },
   {
     "path": "src/client/kotlin/dev/daisy/clientcore/resources/DaisyGlobalDataPacks.kt",
-    "text": " * A single global data-pack folder (gameDir/river/global_datapacks). Every .zip or folder",
+    "text": " * A single global data-pack folder (gameDir/daisy/global_datapacks). Every .zip or folder",
     "count": 1,
     "reason": "Existing global datapack storage directory; preserve user-provided packs."
   },
   {
     "path": "launcher/src/main.js",
-    "text": "  /^(?:daisy|river)-bootstrap-[\\w.+-]*\\.jar(\\.disabled)?$/i,",
+    "text": "  /^(?:daisy|daisy)-bootstrap-[\\w.+-]*\\.jar(\\.disabled)?$/i,",
     "reason": "Remove old and current bootstrap JARs from mods; agents must not be installed as Fabric mods.",
     "count": 1
   },
   {
     "path": "launcher/tests/social-bridge.test.js",
-    "text": "  assert.equal((await bridge.riverSocial(\"roster\")).ok, true);",
+    "text": "  assert.equal((await bridge.daisySocial(\"roster\")).ok, true);",
     "reason": "Regression test verifies the old preload API alias still reaches a registered social handler.",
     "count": 1
   },

@@ -15,7 +15,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * never lists it. Instead this agent, at exactly the right moment, does two things:
  *
  * <ol>
- *   <li>hands the clientcore jar (path from {@code -Driver.client.jar}) to Fabric's Knot
+ *   <li>hands the clientcore jar (path from {@code -Ddaisy.client.jar}) to Fabric's Knot
  *       launcher via {@code FabricLauncherBase.getLauncher().addToClassPath(...)}, so Daisy's
  *       classes live in the SAME classloader as Minecraft — required for linking against game
  *       classes and for Mixin to read our config/refmap resources;</li>
@@ -33,13 +33,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public final class Agent {
 
     private static final String MIXIN_CONFIG =
-            System.getProperty("river.mixin.config", "clientcore.mixins.json");
+            System.getProperty("daisy.mixin.config", "clientcore.mixins.json");
 
-    private static final String CLIENT_JAR = System.getProperty("river.client.jar", "");
+    private static final String CLIENT_JAR = System.getProperty("daisy.client.jar", "");
 
     /** Class whose load marks "Mixin is ready, targets not yet loaded". Overridable for tuning. */
     private static final String SENTINEL =
-            System.getProperty("river.mixin.sentinel", "net/minecraft/client/main/Main")
+            System.getProperty("daisy.mixin.sentinel", "net/minecraft/client/main/Main")
                     .replace('.', '/');
 
     private static final AtomicBoolean injected = new AtomicBoolean(false);
@@ -95,7 +95,7 @@ public final class Agent {
      */
     private static boolean addClientJarToKnot(ClassLoader target) {
         if (CLIENT_JAR.isBlank()) {
-            log("no -Driver.client.jar supplied; skipping classpath injection");
+            log("no -Ddaisy.client.jar supplied; skipping classpath injection");
             return false;
         }
         Path jar = Path.of(CLIENT_JAR);

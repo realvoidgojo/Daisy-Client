@@ -136,7 +136,7 @@ export function ModernHomeView({ status, refresh, notify, launch: launchProp, st
                   className="size-full object-cover hero-drift"
                 />
               </div>
-              {/* Refined gradient overlay: keeps the gorgeous river, mountain, and cherry trees visible while making text sharp */}
+              {/* Refined gradient overlay: keeps the gorgeous daisy, mountain, and cherry trees visible while making text sharp */}
               <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/45 to-transparent" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-black/30" />
               {/* Soft yellow spotlight behind 3D skin */}

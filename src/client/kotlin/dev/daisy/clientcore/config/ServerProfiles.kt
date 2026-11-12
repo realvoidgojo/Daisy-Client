@@ -17,7 +17,7 @@ import java.nio.file.Path
  * Per-server profiles, the way Badlion had them: link a profile to a server and it
  * switches in when you join that server and back out when you leave.
  *
- * Links live in config/river-client/server-profiles.json as host -> profile, apart from
+ * Links live in config/daisy-client/server-profiles.json as host -> profile, apart from
  * the profiles themselves, so exporting or sharing a profile never carries someone's
  * server list with it. A link to "hypixel.net" also covers "mc.hypixel.net".
  */
@@ -33,7 +33,7 @@ object ServerProfiles {
     private var switchedTo: String? = null
 
     private fun path(): Path = Minecraft.getInstance().gameDirectory.toPath()
-        .resolve("config").resolve("river-client").resolve("server-profiles.json")
+        .resolve("config").resolve("daisy-client").resolve("server-profiles.json")
 
     private fun links(): MutableMap<String, String> {
         links?.let { return it }

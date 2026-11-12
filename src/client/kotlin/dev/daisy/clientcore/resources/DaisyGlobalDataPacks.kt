@@ -18,7 +18,7 @@ import kotlin.io.path.listDirectoryEntries
 import kotlin.io.path.name
 
 /**
- * A single global data-pack folder (gameDir/river/global_datapacks). Every .zip or folder
+ * A single global data-pack folder (gameDir/daisy/global_datapacks). Every .zip or folder
  * dropped in it is force-enabled as a data pack for every singleplayer world, so packs the
  * user downloads from the in-game browser apply everywhere with no per-world setup.
  *
@@ -29,7 +29,7 @@ import kotlin.io.path.name
 object DaisyGlobalDataPacks {
 
     fun folder(): Path {
-        val dir = Minecraft.getInstance().gameDirectory.toPath().resolve("river").resolve("global_datapacks")
+        val dir = Minecraft.getInstance().gameDirectory.toPath().resolve("daisy").resolve("global_datapacks")
         runCatching { if (!dir.exists()) dir.createDirectories() }
         return dir
     }
@@ -55,7 +55,7 @@ object DaisyGlobalDataPacks {
                 }
 
                 val pack = Pack.readMetaAndCreate(
-                    PackLocationInfo("river_global/${entry.name}", Component.literal("Daisy: ${entry.name}"), PackSource.WORLD, java.util.Optional.empty()),
+                    PackLocationInfo("daisy_global/${entry.name}", Component.literal("Daisy: ${entry.name}"), PackSource.WORLD, java.util.Optional.empty()),
                     supplier,
                     PackType.SERVER_DATA,
                     // required = true force-enables the pack, so downloaded data packs apply

@@ -35,10 +35,10 @@ object DaisyTextures {
             ) ?: return@runCatching null
             val image = stream.use { NativeImage.read(it) }
 //? if >=1.21.5 {
-            val id = McId.fromNamespaceAndPath("clientcore", "river_ui_" + path.replace('/', '_'))
-            Minecraft.getInstance().textureManager.register(id, DynamicTexture({ "river-ui-$path" }, image))
+            val id = McId.fromNamespaceAndPath("clientcore", "daisy_ui_" + path.replace('/', '_'))
+            Minecraft.getInstance().textureManager.register(id, DynamicTexture({ "daisy-ui-$path" }, image))
 //?} else {
-/*            val id = ResourceLocation.fromNamespaceAndPath("clientcore", "river_ui_" + path.replace('/', '_'))
+/*            val id = ResourceLocation.fromNamespaceAndPath("clientcore", "daisy_ui_" + path.replace('/', '_'))
             Minecraft.getInstance().textureManager.register(id, DynamicTexture(image))
 *///?}
             id

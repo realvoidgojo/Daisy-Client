@@ -13,7 +13,7 @@ import { Separator } from "../components/ui/separator";
 import { useT } from "../i18n/context.jsx";
 
 /**
- * One of the two river shots that ship in assets/, picked once per launcher session the
+ * One of the two daisy shots that ship in assets/, picked once per launcher session the
  * way the in-game menu picks a panorama, so Home has some variety without shuffling
  * underneath you while you use it.
  */
@@ -40,7 +40,7 @@ export function formatPlaytime(ms) {
 export function PlaytimeStat({ settings, notify, className }) {
   const t = useT();
   const [summary, setSummary] = useState(null);
-  const mode = settings?.playtimeDisplayMode !== "river" ? "combined" : "river";
+  const mode = settings?.playtimeDisplayMode !== "daisy" ? "combined" : "daisy";
 
   useEffect(() => {
     let alive = true;
@@ -52,9 +52,9 @@ export function PlaytimeStat({ settings, notify, className }) {
 
   if (!summary) return null;
 
-  const shownMs = mode === "river" ? summary.daisyMs : summary.combinedMs;
+  const shownMs = mode === "daisy" ? summary.daisyMs : summary.combinedMs;
   const toggle = async () => {
-    try { await api()?.updateSettings({ playtimeDisplayMode: mode === "river" ? "combined" : "river" }); }
+    try { await api()?.updateSettings({ playtimeDisplayMode: mode === "daisy" ? "combined" : "daisy" }); }
     catch (e) { notify?.(String(e?.message || e), "error"); }
   };
 
@@ -62,10 +62,10 @@ export function PlaytimeStat({ settings, notify, className }) {
     <button
       onClick={toggle}
       className={cn("inline-flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground hover:opacity-100", className)}
-      title={mode === "river" ? t("Daisy Client only - click to include every Minecraft client on this PC") : t("Every Minecraft client on this PC - click to show Daisy only")}
+      title={mode === "daisy" ? t("Daisy Client only - click to include every Minecraft client on this PC") : t("Every Minecraft client on this PC - click to show Daisy only")}
     >
       <Clock className="size-3" />
-      {formatPlaytime(shownMs || 0)} {mode === "river" ? t("on Daisy") : t("played")}
+      {formatPlaytime(shownMs || 0)} {mode === "daisy" ? t("on Daisy") : t("played")}
     </button>
   );
 }

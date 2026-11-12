@@ -101,7 +101,7 @@ object RemoteIconCache {
                 runCatching {
 //? if >=1.21.5 {
                     val id = McId.fromNamespaceAndPath("clientcore", "content_icon_${counter.incrementAndGet()}")
-                    Minecraft.getInstance().textureManager.register(id, DynamicTexture({ "river-content-icon" }, image))
+                    Minecraft.getInstance().textureManager.register(id, DynamicTexture({ "daisy-content-icon" }, image))
 //?} else {
 /*                    val id = ResourceLocation.fromNamespaceAndPath("clientcore", "content_icon_${counter.incrementAndGet()}")
                     Minecraft.getInstance().textureManager.register(id, DynamicTexture(image))

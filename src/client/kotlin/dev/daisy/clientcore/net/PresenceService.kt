@@ -60,7 +60,7 @@ object PresenceService {
         val server = client.currentServer
         val level = client.level
         val nametag = ModuleRegistry.get<NameTagModule>("nametag")
-        val badgeOn = nametag != null && nametag.active && nametag.showRiverBadge()
+        val badgeOn = nametag != null && nametag.active && nametag.showDaisyBadge()
         val capeModule = ModuleRegistry.get<dev.daisy.clientcore.module.impl.CapeModule>("cape")
         // Announce what this player actually sees on themselves: a seasonal cape they can't
         // wear any more goes out as Daisy's own.
