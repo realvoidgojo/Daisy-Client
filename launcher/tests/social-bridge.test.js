@@ -12,7 +12,10 @@ test("current and compatibility social bridges reach the same working handler", 
   const end = main.indexOf("/** Username to", start);
   assert.ok(start >= 0 && end > start);
   vm.runInNewContext(main.slice(start, end), {
-    ipcMain: { handle: (channel, handler) => handlers.set(channel, handler) },
+    ipcMain: { handle: (channel, handler) => {
+      assert.equal(handlers.has(channel), false, `Duplicate IPC handler: ${channel}`);
+      handlers.set(channel, handler);
+    } },
     readSettings: () => ({ socialStatus: "online" }),
     daisySocialCall: async (route, payload) => { calls.push({ route, payload }); return { ok: true }; }
   });
@@ -30,7 +33,7 @@ test("current and compatibility social bridges reach the same working handler", 
     })
   });
   assert.equal((await bridge.daisySocial("roster")).ok, true);
-  assert.equal((await bridge.daisySocial("roster")).ok, true);
+  assert.equal((await bridge.riverSocial("roster")).ok, true);
   assert.equal(calls.length, 2);
   assert.equal(calls[0].route, "/presence");
   assert.equal(calls[1].payload.status, "online");

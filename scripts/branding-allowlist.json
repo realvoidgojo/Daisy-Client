@@ -1262,5 +1262,29 @@
     "text": "            if any(name.startswith(\"dev/wyz/\") for name in archive.namelist()):",
     "count": 1,
     "reason": "Negative packaging check rejects compiled classes from the original namespace."
+  },
+  {
+    "path": "launcher/src/main.js",
+    "text": "  return { daisyMs, riverMs: daisyMs, externalMs, combinedMs: daisyMs + externalMs };",
+    "count": 1,
+    "reason": "Existing stored instance/profile/setting/archive field or its reader; changing it requires an explicit migration."
+  },
+  {
+    "path": "launcher/src/main.js",
+    "text": "ipcMain.handle(\"launcher:river-social\", handleDaisySocial);",
+    "count": 1,
+    "reason": "Existing serialized/wire format, HTTP header or socket protocol; external readers must continue to recognize it."
+  },
+  {
+    "path": "launcher/src/preload.js",
+    "text": "  riverSocial: (action, payload) => ipcRenderer.invoke(\"launcher:river-social\", { action, payload }),",
+    "count": 1,
+    "reason": "Existing serialized/wire format, HTTP header or socket protocol; external readers must continue to recognize it."
+  },
+  {
+    "path": "launcher/tests/social-bridge.test.js",
+    "text": "  assert.equal((await bridge.riverSocial(\"roster\")).ok, true);",
+    "reason": "Regression test verifies the old preload API alias still reaches a registered social handler.",
+    "count": 1
   }
 ]

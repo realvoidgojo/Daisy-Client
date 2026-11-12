@@ -11,7 +11,7 @@ and electron-builder. It is not a Gradle module or a JAR.
 
 Download the matching Fabric client JAR and the native Daisy Launcher separately
 from [GitHub Releases](https://github.com/realvoidgojo/Daisy-Client/releases).
-An authorized release may not yet exist. Install the client into the `mods/`
+Install the client into the `mods/`
 directory of a matching Minecraft/Fabric profile with Fabric API and Fabric
 Language Kotlin. On Windows run the launcher installer or portable executable;
 on Linux extract the launcher archive and run `./daisy`. Sign in and create an
@@ -54,7 +54,7 @@ python scripts/audit-branding.py --show-allowed
 
 The unqualified `build check` selects all configured Stonecutter targets and the existing
 bootstrap component. Client artifacts are
-`versions/<minecraft>/build/libs/daisy-client-0.2.8.2+<minecraft>.jar`.
+`versions/<minecraft>/build/libs/daisy-client-<client-version>+<minecraft>.jar`.
 Source JARs are also generated; use the regular versioned JAR as the mod.
 The source-controlled active version remains 1.21.11. No extra client/launcher Gradle
 modules or separate launcher JARs are required.
@@ -112,36 +112,51 @@ client target, launcher tests, renderer/main-process bundling and Windows direct
 packaging. It collects actual Fabric/agent JARs and the unpacked Electron application.
 Workflow execution on GitHub is separate from local verification.
 
-`.github/workflows/release.yml` runs for `v*` tags and first reuses CI. Distribution and
-publication are gated by the repository variable `DAISY_DISTRIBUTION_AUTHORIZED=true`;
-set it only after written authorization is documented. The tag must equal
-`v<launcher/package.json daisyVersion>` (currently `v0.2.8.2`). Keep that client version,
-the version in `build.gradle.kts`, and `launcher/src/config/build-version.json` consistent when
-preparing the next release. Electron's three-part `package.json version` is separate.
+`.github/workflows/release.yml` runs for version tags and manual dispatch. It validates
+coordinated versions, reuses CI, packages Windows installer/portable and Linux tar
+builds, and publishes a complete GitHub Release. Existing releases are never overwritten.
+No external hosting service or distribution variable is needed for GitHub Releases.
 
-The workflow stages the verified Fabric clients into each Electron build, packages
-Windows NSIS/portable and Linux tar distributions, then generates `latest.json` and
-`SHA256SUMS` from the produced files using `scripts/package-release.py collect --tag
-v<version>`. It uploads those artifacts to a GitHub Release. It does not invent a
-launcher JAR and preserves the actual launcher runtime.
+Prepare the next release with:
 
-The client-mod download manifest URL defaults to this repository's GitHub Releases `latest.json`
-asset; `DAISY_UPDATE_MANIFEST_URL` overrides it. The checked-in update manifest has no
-unverified download links or reused upstream hashes. Until an authorized Daisy release
-exists, remote update downloads may be unavailable; bundled client builds still work.
-The launcher checks release manifests and verifies full-distribution downloads against
-SHA-256. On installed Windows builds it opens the interactive installer; portable
-and Linux builds reveal the verified download for manual replacement. Differential
-patching is not used by this path. This integration has unit coverage; installer
-handoff and a live published release have not been exercised in this migration.
+```sh
+python scripts/prepare-release.py <client-version> --launcher-version <electron-version>
+```
 
-Existing `npm run release:draft` / `publish:update` scripts support the separate external
-Cloudflare/site release infrastructure. Draft generation reads Git history, so it was
-not run during this working-tree-only audit. `publish:update` now requires explicit
-`DAISY_DISTRIBUTION_AUTHORIZED`, `DAISY_SITE_BASE_URL`, `DAISY_UPDATE_BASE_URL` and
-`DAISY_UPDATE_BUCKET` settings, Cloudflare credentials, and the external site/worker
-projects. Those projects are absent here; this route was not deployed or verified.
-Do not point Daisy publishing scripts at upstream infrastructure without authorization.
+This updates Gradle, npm package/lock metadata and build metadata together. Update
+`CHANGELOG.md`, run the contribution checks, commit, and push `main` with a matching
+`v<client-version>` tag. The tag must match `launcher/package.json daisyVersion`.
+Electron's package version must be a separate three-part version. See
+[CONTRIBUTING.md](CONTRIBUTING.md) for the publishing commands.
+
+The release workflow stages verified Fabric clients and the bootstrap agent into
+both launcher distributions. It generates `latest.json` and `SHA256SUMS` from the
+produced files, uploads all assets, and verifies their published digests. It then
+exercises the production client updater against real released JARs for Minecraft
+1.21.11 and 26.2, including cache reuse, offline reuse and instance installation.
+A failed verification marks the workflow failed; publication is not rolled back.
+
+### Automatic client updates
+
+Daisy instances check this repository's latest stable GitHub release when created
+and before launch. The launcher downloads the exact Minecraft-version client JAR,
+checks its size and SHA-256, and installs it before removing older client versions.
+New client releases do not require reinstalling the launcher. Disabled clients stay
+disabled. Verified cached or bundled clients remain available when GitHub is offline;
+Minecraft, loader and account setup can still require a network connection.
+
+`DAISY_UPDATE_MANIFEST_URL` overrides the manifest endpoint for development. Downloaded
+client JARs still must belong to this repository's matching versioned GitHub release.
+The local `update-manifest.json` is a development placeholder; production release
+metadata is generated from build outputs. See [client update behavior](docs/client-updates.md).
+
+Launcher application updates are separate from client JAR updates. The launcher checks
+GitHub manifests and verifies native distribution downloads. Installed Windows builds
+open the interactive installer; portable and Linux builds reveal the verified download
+for replacement. Installer handoff and in-game behavior require manual runtime testing.
+
+The optional `launcher/scripts/publish-update.js` path targets separate Cloudflare
+infrastructure and is not used by the GitHub release workflow.
 
 ## Compatibility and audit scope
 

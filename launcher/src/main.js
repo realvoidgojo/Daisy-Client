@@ -80,7 +80,9 @@ const nowPlaying = require("./now-playing.js");
 const curseforge = require("./curseforge.js");
 const { migrationPlan, migrationVersion } = require("./migration-plan.js");
 const { planRvrRestore } = require("./rvr-restore.js");
-const { pickDaisyModEntry, fileMatchesSha256, newestClientJar } = require("./daisy-mod-cache.js");
+const { newestClientJar, createDaisyModUpdater, installDaisyModJar } = require("./daisy-mod-cache.js");
+const ensureLatestDaisyMod = createDaisyModUpdater();
+const verifiedDaisyModJars = new Map();
 const { RELEASES_URL, compareVersions, launcherReleaseState, downloadReleaseAsset } = require("./launcher-release.js");
 // Never bundle Daisy's CurseForge credential into a distributed launcher.
 function effectiveCurseForgeKey(settings) { return String(settings?.curseForgeApiKey || ""); }
@@ -497,13 +499,12 @@ function instanceMcVersion(instancePath) {
 function findCoreClientJarInMods(instancePath, mcVersion = instanceMcVersion(instancePath)) {
   const modsDir = path.join(instancePath, "mods");
   const preferred = path.join(modsDir, clientcoreJarNameFor(mcVersion));
-  if (fs.existsSync(preferred)) return preferred;
   try {
-    if (!fs.existsSync(modsDir)) return preferred;
-    for (const file of fs.readdirSync(modsDir)) {
-      const n = String(file || "");
-      if (/^(?:daisy-client|clientcore)-[\w.+-]+\.jar$/i.test(n) && clientcoreJarMatchesMc(n, mcVersion)) return path.join(modsDir, file);
-    }
+    const candidates = fs.readdirSync(modsDir)
+      .filter((name) => /^(?:daisy-client|clientcore)-[\w.+-]+\.jar(?:\.disabled)?$/i.test(name)
+        && clientcoreJarMatchesMc(name.replace(/\.disabled$/i, ""), mcVersion))
+      .map((name) => path.join(modsDir, name));
+    return newestClientJar(candidates) || preferred;
   } catch { }
   return preferred;
 }
@@ -560,22 +561,17 @@ function resolveDaisyRuntimeJars(mcVersion = DEFAULT_MC_VERSION) {
   const bundledDirs = [
     process.resourcesPath ? path.join(process.resourcesPath, "bundled") : "",
     path.join(__dirname, "bundled"),
-    path.join(app.getAppPath(), "bundled"),
-    // Jars fetched from the update server for versions this build does not carry.
-    path.join(app.getPath("userData"), "daisy-mod-cache")
+    path.join(app.getAppPath(), "bundled")
     // Jars inside app.asar are virtual paths the JVM cannot open as a -javaagent
     // or add to the classloader, so never resolve to one.
   ].filter(Boolean).filter((dir) => !dir.includes(`app.asar${path.sep}`) && !dir.includes("app.asar/"));
-  // Each Minecraft target builds to its own Gradle output: the 1.21.11 tree at the repo
-  // root, and every forked version tree under clientcore-<mc>/. Both are searched (the
-  // per-version filter below picks the right jar) so a local `gradlew build` of either
-  // one is picked up in dev without having to copy it into bundled/ first.
+  // Search every configured Stonecutter target and bundled directory. Client
+  // versions determine precedence; file timestamps do not indicate release order.
   const clientLibDirs = [
     root ? path.join(root, "build", "libs") : "",
     // Stonecutter writes each target to versions/<mc>/build/libs. The clientcore-<mc>/
     // path is the pre-Stonecutter layout, kept so an older checkout still resolves.
     ...(root ? SUPPORTED_MC_VERSIONS.map((v) => path.join(root, "versions", v, "build", "libs")) : []),
-    path.join(app.getPath("userData"), "daisy-mod-cache"),
     ...bundledDirs
   ].filter(Boolean);
   const bootstrapLibDirs = [
@@ -592,10 +588,17 @@ function resolveDaisyRuntimeJars(mcVersion = DEFAULT_MC_VERSION) {
   const findClientIn = (dirs) => {
     const matches = [];
     for (const dir of dirs) {
-      const jar = newestJarMatching(dir, /^(?:daisy-client|clientcore)-[\w.+-]*\.jar$/i, (f) => clientcoreJarMatchesMc(f, mcVersion));
-      if (jar) matches.push(jar);
+      try {
+        for (const name of fs.readdirSync(dir)) {
+          if (/^(?:daisy-client|clientcore)-[\w.+-]*\.jar$/i.test(name)
+              && !/-(sources|dev)\.jar$/i.test(name) && clientcoreJarMatchesMc(name, mcVersion)) {
+            matches.push(path.join(dir, name));
+          }
+        }
+      } catch { }
     }
-    return newestClientJar(matches);
+    const verified = verifiedDaisyModJars.get(String(mcVersion));
+    return newestClientJar([verified, ...matches].filter((file) => isRealRuntimeJar(file)));
   };
   return {
     bootstrapJar: findIn(bootstrapLibDirs, /^daisy-bootstrap-[\w.+-]*\.jar$/i),
@@ -669,50 +672,30 @@ function instanceRunsDaisyAt(instancePath) {
  * without Daisy, the same as a version Daisy does not build for.
  */
 async function prefetchDaisyModJar(mcVersion) {
-  const cacheDir = path.join(app.getPath("userData"), "daisy-mod-cache");
-  const existing = resolveDaisyRuntimeJars(mcVersion).clientJar;
-  const haveExisting = isRealRuntimeJar(existing);
+  const version = String(mcVersion || "").trim();
+  // Recheck receipts on every request; never treat a previously selected cache as bundled.
+  verifiedDaisyModJars.delete(version);
+  const existingJar = resolveDaisyRuntimeJars(version).clientJar;
   try {
-    // Check even bundled versions, so client releases reach existing launcher installs.
-    const remote = await fetchRemoteUpdateManifest();
-    const entry = pickDaisyModEntry(remote && remote.payload, mcVersion);
-    // Offline or no build for this version: an older cached jar still beats no Daisy.
-    if (!entry) return haveExisting;
-    const target = path.join(cacheDir, entry.name);
-    if (await fileMatchesSha256(target, entry.sha256)) {
-      pruneDaisyModCache(cacheDir, mcVersion, entry.name);
-      return true;
+    const result = await ensureLatestDaisyMod({
+      mcVersion: version,
+      cacheDir: path.join(app.getPath("userData"), "daisy-mod-cache"),
+      existingJar,
+      fetchManifest: fetchRemoteUpdateManifest,
+      download: downloadFile,
+      onDownload: (entry) => emitActivity({ title: "Updating Daisy", detail: `Downloading ${entry.name}...`, current: 0, total: 1 })
+    });
+    if (result.path) verifiedDaisyModJars.set(version, result.path);
+    if (result.error) emit("launcher:log", `[daisy] ${result.error}`);
+    if (result.path) {
+      emit("launcher:log", `[daisy] Using ${path.basename(result.path)} (${result.source}).`);
+      emitActivity({ title: "Daisy ready", detail: `Daisy for Minecraft ${version} is ready.`, current: 1, total: 1, done: true });
     }
-
-    fs.mkdirSync(cacheDir, { recursive: true });
-    const partial = `${target}.partial`;
-    const url = resolveUpdateUrl(entry.url, (remote && remote.url) || "https://github.com/realvoidgojo/Daisy-Client/releases/latest/download/");
-    emitActivity({ title: "Downloading Daisy", detail: `Daisy for Minecraft ${mcVersion}...`, current: 0, total: 1 });
-    await downloadFile(url, partial);
-    if (!(await fileMatchesSha256(partial, entry.sha256))) {
-      fs.rmSync(partial, { force: true });
-      emit("launcher:log", `[daisy] The download for Minecraft ${mcVersion} did not match its checksum. Skipped.`);
-      return false;
-    }
-    fs.renameSync(partial, target);
-    pruneDaisyModCache(cacheDir, mcVersion, entry.name);
-    emitActivity({ title: "Daisy ready", detail: `Daisy for Minecraft ${mcVersion} downloaded.`, current: 1, total: 1, done: true });
-    return true;
+    return Boolean(result.path);
   } catch (error) {
-    emit("launcher:log", `[daisy] Could not download Daisy for Minecraft ${mcVersion}: ${error.message}`);
-    return haveExisting;
+    emit("launcher:log", `[daisy] Could not prepare Daisy for Minecraft ${version}: ${error.message}`);
+    return isRealRuntimeJar(existingJar);
   }
-}
-
-/** Drops older downloads of Daisy for this Minecraft version, so only the current one can be picked. */
-function pruneDaisyModCache(cacheDir, mcVersion, keepName) {
-  try {
-    for (const file of fs.readdirSync(cacheDir)) {
-      if (file === keepName || !/^(?:daisy-client|clientcore)-[\w.+-]*\.jar$/i.test(file) || !clientcoreJarMatchesMc(file, mcVersion)) continue;
-      fs.rmSync(path.join(cacheDir, file), { force: true });
-      emit("launcher:log", `[daisy] Removed an older download of Daisy: ${file}`);
-    }
-  } catch { }
 }
 
 
@@ -799,34 +782,18 @@ function ensureBundledClientCoreMod(instancePath, mcVersion = instanceMcVersion(
     return findCoreClientJarInMods(root, mcVersion);
   }
 
-  const targetName = path.basename(sourceJar);
-  const targetPath = path.join(modsDir, targetName);
-  const disabledTargetPath = `${targetPath}.disabled`;
-
-  if (fs.existsSync(disabledTargetPath)) {
-    // Keep it disabled if the user explicitly disabled it
-    return disabledTargetPath;
-  }
-
-  // Drop stale clientcore jars for this same version, keeping only the target.
-  for (const file of fs.readdirSync(modsDir)) {
-    if (!CLIENTCORE_MOD_PATTERN.test(String(file || ""))) continue;
-    if (!clientcoreJarMatchesMc(file, mcVersion)) continue;
-    const fullPath = path.join(modsDir, file);
-    if (fullPath.toLowerCase() === targetPath.toLowerCase()) continue;
-    try { fs.rmSync(fullPath, { force: true }); } catch { }
-  }
-
+  let installed;
   try {
-    const sourceStat = fs.statSync(sourceJar);
-    const targetStat = fs.existsSync(targetPath) ? fs.statSync(targetPath) : null;
-    if (!targetStat || targetStat.size !== sourceStat.size || targetStat.mtimeMs < sourceStat.mtimeMs) {
-      fs.copyFileSync(sourceJar, targetPath);
-      fs.utimesSync(targetPath, sourceStat.atime, sourceStat.mtime);
-    }
-  } catch { }
+    installed = installDaisyModJar(sourceJar, modsDir, mcVersion);
+  } catch (error) {
+    emit("launcher:log", `[daisy] Could not install the client update: ${error.message}`);
+    return findCoreClientJarInMods(root, mcVersion);
+  }
+  const targetPath = installed.path;
+  const targetName = path.basename(targetPath);
 
   const manifest = readModManifest(root);
+  for (const file of installed.removed) delete manifest.mods[file];
   const daisyIconDataUrl = getJarIconDataUrl(targetPath) || "";
   manifest.mods[targetName] = {
     ...(manifest.mods[targetName] || {}),
@@ -835,7 +802,7 @@ function ensureBundledClientCoreMod(instancePath, mcVersion = instanceMcVersion(
     name: "Daisy",
     author: "realvoidgojo",
     source: "daisy",
-    disabled: false,
+    disabled: installed.disabled,
     iconUrl: daisyIconDataUrl || (manifest.mods[targetName] || {}).iconUrl || ""
   };
   writeModManifest(root, manifest);
@@ -4815,6 +4782,11 @@ ipcMain.handle("launcher:create-instance", (_event, request) => {
   // New Daisy instances start with the performance mods. They install in the background so
   // the new instance shows up straight away.
   if (result.ok && result.instance?.daisy) {
+    const instance = result.instance;
+    prefetchDaisyModJar(instance.version).then(() => {
+      if (fs.existsSync(instance.path)) ensureBundledClientCoreMod(instance.path, instance.version);
+      emitStatus();
+    }).catch((error) => emit("launcher:log", `[daisy] ${error.message}`));
     installPerformanceMods(result.instance).catch((error) => emit("launcher:log", `[optimize] ${error.message}`));
   }
   return result;
@@ -5592,7 +5564,7 @@ ipcMain.handle("launcher:get-playtime-summary", async () => {
   const externalMs = await new Promise((resolve) => {
     setImmediate(() => resolve(getExternalPlaytimeMs()));
   });
-  return { daisyMs, daisyMs: daisyMs, externalMs, combinedMs: daisyMs + externalMs };
+  return { daisyMs, riverMs: daisyMs, externalMs, combinedMs: daisyMs + externalMs };
 });
 
 /**
@@ -8523,7 +8495,7 @@ async function handleDaisySocial(_event, request = {}) {
   }
 }
 ipcMain.handle("launcher:daisy-social", handleDaisySocial);
-ipcMain.handle("launcher:daisy-social", handleDaisySocial);
+ipcMain.handle("launcher:river-social", handleDaisySocial);
 
 /** Username to {id, name} via Mojang. Cached alongside skins; reachable from the user's PC. */
 async function resolveMojangProfile(name) {
@@ -11185,7 +11157,9 @@ async function prepareStandaloneMinecraftLaunch(status, auth, authenticated, joi
   // app.asar are virtual (readable only through Electron's fs shim) and make the JVM die with
   // "agent library failed Agent_OnLoad: instrument / Error opening zip file or JAR manifest missing".
   const daisyInjection = !fs.existsSync(installedClientMod) && isRealRuntimeJar(runtime.bootstrapJar) && isRealRuntimeJar(runtime.clientJar);
-  if (fs.existsSync(installedClientMod)) {
+  if (fs.existsSync(installedClientMod) && installedClientMod.endsWith(".disabled")) {
+    emit("launcher:log", "[launcher] Daisy remains disabled for this instance.");
+  } else if (fs.existsSync(installedClientMod)) {
     emit("launcher:log", `[launcher] Daisy will load from the instance mods folder (${path.basename(installedClientMod)}).`);
   } else if (daisyInjection) {
     emit("launcher:log", `[launcher] Daisy in-game injection enabled (agent: ${path.basename(runtime.bootstrapJar)}, client: ${path.basename(runtime.clientJar)}).`);

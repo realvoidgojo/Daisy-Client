@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.2.8.3 — 2026-11-12
+
+- Download the latest exact-version client from GitHub when creating or launching Daisy instances.
+- Validate release URLs, Minecraft targets, file sizes and SHA-256 hashes.
+- Recheck cached clients for offline use and share concurrent downloads.
+- Install replacements before cleanup and preserve disabled clients and newer local versions.
+- Fixed duplicate IPC registration and restored compatible launcher APIs.
+- Automate coordinated release metadata and verify published assets and real client downloads in CI/CD.
+
 ## 0.2.8.2 — 2026-11-12
 
 - Fixed the branding audit to accept Daisy branding while detecting legacy names.

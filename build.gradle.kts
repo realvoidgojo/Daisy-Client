@@ -35,7 +35,7 @@ apply(plugin = if (unobfuscated) "net.fabricmc.fabric-loom" else "net.fabricmc.f
 // accessor, so the extension is looked up by type instead.
 val loom = extensions.getByType<net.fabricmc.loom.api.LoomGradleExtensionAPI>()
 
-version = "0.2.8.2+$minecraftVersion"
+version = "0.2.8.3+$minecraftVersion"
 group = "dev.daisy"
 
 base {

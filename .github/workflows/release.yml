@@ -146,3 +146,17 @@ jobs:
           cp CHANGELOG.md release-notes.txt
           gh release create "$RELEASE_TAG" release-artifacts/* --target "$GITHUB_SHA" --draft --title "Daisy Client ${RELEASE_TAG#v}" --notes-file release-notes.txt
           gh release edit "$RELEASE_TAG" --draft=false --latest
+      - name: Verify published assets and checksums
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ needs.prepare.outputs.tag }}
+        run: python scripts/verify-release.py --tag "$RELEASE_TAG"
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+      - name: Verify automatic client downloads from the published release
+        env:
+          RELEASE_TAG: ${{ needs.prepare.outputs.tag }}
+        run: |
+          node launcher/scripts/verify-client-update.js "$RELEASE_TAG" 1.21.11
+          node launcher/scripts/verify-client-update.js "$RELEASE_TAG" 26.2
