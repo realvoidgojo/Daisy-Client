@@ -13,7 +13,7 @@ import { Slider } from "../components/ui/slider";
 import { Separator } from "../components/ui/separator";
 import { Badge } from "../components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
-import { UpdateAction } from "../components/update-gate";
+import { LauncherUpdateSettings } from "../components/launcher-update-settings";
 import { useT } from "../i18n/context.jsx";
 import { SUPPORTED_LANGUAGES } from "../i18n/translate.js";
 
@@ -563,26 +563,7 @@ export function SettingsView({ status, refresh, notify, startTour }) {
     { id: "storage", title: t("Storage"), icon: HardDrive, own: true },
     { id: "maintenance", title: t("Maintenance"), icon: Wrench, body: (
         <>
-          <Field label={t("Check for updates")} hint={status?.launcherUpdate?.available
-            ? t("An update is available.")
-            : status?.launcherUpdate?.checkFailed
-              ? t("Couldn't reach the update server. Check your internet, VPN or antivirus.")
-              : t("You are on the latest version.")}>
-            <UpdateAction status={status} notify={notify} />
-            <Button variant="outline" size="sm" disabled={busy} onClick={async () => {
-              setBusy(true);
-              try {
-                const res = await api()?.checkLauncherUpdates();
-                if (res?.available) notify(t("An update is available."), "info");
-                else if (res?.checkFailed) notify(t("Couldn't check for updates. Check your internet, VPN or antivirus."), "error");
-                else notify(t("You are up to date."), "info");
-                await refresh();
-              } finally { setBusy(false); }
-            }}>
-              <Download className="size-3.5" />
-              {t("Check")}
-            </Button>
-          </Field>
+          <LauncherUpdateSettings status={status} notify={notify} refresh={refresh} />
 
           <Field label={t("Releases")} hint={t("Client JARs and launcher downloads")}>
             <Button variant="outline" size="sm" onClick={() => api()?.openExternal("https://github.com/realvoidgojo/Daisy-Client/releases")}>

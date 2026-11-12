@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.8.4 — 2026-11-12
+
+- Added installed/latest launcher versions and direct update controls to Settings > Maintenance.
+- Show checking, downloading and retry states without claiming an unchecked launcher is current.
+- Recheck GitHub before installing and reject update attempts after a failed release check.
+
 ## 0.2.8.3 — 2026-11-12
 
 - Download the latest exact-version client from GitHub when creating or launching Daisy instances.

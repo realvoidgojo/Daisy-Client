@@ -150,7 +150,10 @@ client JARs still must belong to this repository's matching versioned GitHub rel
 The local `update-manifest.json` is a development placeholder; production release
 metadata is generated from build outputs. See [client update behavior](docs/client-updates.md).
 
-Launcher application updates are separate from client JAR updates. The launcher checks
+Launcher application updates are separate from client JAR updates. In Settings > Maintenance,
+select **Check for updates** to see the installed and latest versions, then **Update to
+<version>** to download a newer launcher. Failed checks show an error and can be retried.
+The launcher checks
 GitHub manifests and verifies native distribution downloads. Installed Windows builds
 open the interactive installer; portable and Linux builds reveal the verified download
 for replacement. Installer handoff and in-game behavior require manual runtime testing.

@@ -9501,6 +9501,7 @@ async function installLauncherUpdate() {
   launcherInstallRunning = true;
   try {
     const update = await checkLauncherUpdates();
+    if (update.checkFailed) return { ok: false, message: update.message };
     if (!update.available) return { ok: false, message: update.message };
     if (!update.asset) {
       await shell.openExternal(update.url || RELEASES_URL);

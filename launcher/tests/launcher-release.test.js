@@ -89,3 +89,28 @@ test("launcher check uses the remote manifest and reports offline failure honest
   assert.equal(offline.available, true);
   assert.match(offline.message, /Could not check/);
 });
+
+test("launcher installation rechecks the latest release and opens only a verified installer", async () => {
+  const source = fs.readFileSync(path.join(__dirname, "../src/main.js"), "utf8");
+  const start = source.indexOf("let launcherInstallRunning = false;");
+  const end = source.indexOf("/** Preview-only:", start);
+  const events = [];
+  let update = { ...launcherReleaseState("0.2.8.1", manifest(), "win32", "x64"), checkFailed: true, message: "Offline" };
+  const context = vm.createContext({
+    path, RELEASES_URL, launchProcess: null, process: { platform: "win32", env: {} },
+    checkLauncherUpdates: async () => { events.push("check"); return update; },
+    emitActivity: () => {}, downloadFileWithProgress: () => {},
+    downloadReleaseAsset: async (asset) => { events.push(`verified ${asset.version}`); return "Daisy-Setup.exe"; },
+    shell: { openPath: async () => { events.push("open installer"); return ""; } },
+    app: { getPath: () => os.tmpdir(), quit: () => events.push("quit") }
+  });
+  vm.runInContext(source.slice(start, end), context);
+  const offline = await vm.runInContext("installLauncherUpdate()", context);
+  assert.equal(offline.ok, false);
+  assert.deepEqual(events, ["check"]);
+  events.length = 0;
+  update = launcherReleaseState("0.2.8.1", manifest(), "win32", "x64");
+  const installed = await vm.runInContext("installLauncherUpdate()", context);
+  assert.equal(installed.ok, true);
+  assert.deepEqual(events, ["check", "verified 0.2.8.2", "open installer", "quit"]);
+});
