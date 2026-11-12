@@ -1,9 +1,30 @@
 # Daisy Client
 
 Daisy Client contains a Fabric Minecraft client and an Electron/React desktop launcher.
+Maintained by **realvoidgojo**. It provides configurable HUD modules, cosmetics,
+instance management, content downloads and launcher account integration.
 The shared Kotlin/Java client sources live in `src/client`; Stonecutter builds them for
 multiple Minecraft versions. The Electron launcher lives in `launcher/` and uses npm
 and electron-builder. It is not a Gradle module or a JAR.
+
+## Installation
+
+Download the matching Fabric client JAR and the native Daisy Launcher separately
+from [GitHub Releases](https://github.com/realvoidgojo/Daisy-Client/releases).
+An authorized release may not yet exist. Install the client into the `mods/`
+directory of a matching Minecraft/Fabric profile with Fabric API and Fabric
+Language Kotlin. On Windows run the launcher installer or portable executable;
+on Linux extract the launcher archive and run `./daisy`. Sign in and create an
+instance with the matching Minecraft version. Minecraft access requires an
+appropriate account. Release checksums accompany the downloads.
+
+## Structure
+
+`src/client/` holds shared Kotlin/Java client sources and resources;
+`src/main/resources/` holds Fabric metadata. `versions/` defines game targets.
+`daisy-bootstrap/` contains the existing Java agent, `launcher/` the independent
+Electron app, `scripts/` maintenance tools and `docs/` migration evidence.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for development and branch conventions.
 
 ## Requirements and supported targets
 
@@ -16,7 +37,6 @@ The authoritative target list is in `settings.gradle.kts`:
 `1.21`, `1.21.1`, `1.21.2`, `1.21.3`, `1.21.4`, `1.21.5`, `1.21.6`,
 `1.21.7`, `1.21.8`, `1.21.10`, `1.21.11`, `26.1.2`, `26.2`.
 
-`versions/1.21.9/gradle.properties` exists but 1.21.9 is not configured or supported.
 Configured targets are build targets, not a claim that each has been tested in game.
 The client mod requires Fabric Loader, Fabric API and Fabric Language Kotlin. Other
 launcher loader choices do not make this Fabric client compatible with those loaders.
@@ -39,14 +59,10 @@ Source JARs are also generated; use the regular versioned JAR as the mod.
 The source-controlled active version remains 1.21.11. No extra client/launcher Gradle
 modules or separate launcher JARs are required.
 
-`daisy-bootstrap/` (formerly `river-bootstrap/`) remains an existing Gradle component.
+`daisy-bootstrap/` remains an existing Gradle component.
 Its executable/agent JAR supports the launcher's existing injection fallback and is
 not a second client mod. Its launcher discovery paths and manifest classes are renamed
 together. JVM property names used by existing launch configurations are preserved.
-
-`legacy/` is a separate Legacy Fabric 1.8.9 build, not a Stonecutter target. Its sources
-and package names are rebranded, while its mod/resource identifiers remain compatible.
-See [legacy/README.md](legacy/README.md); it is not packaged by the main release workflow.
 
 ## Launcher build, tests and packaging
 
@@ -107,15 +123,17 @@ The workflow stages the verified Fabric clients into each Electron build, packag
 Windows NSIS/portable and Linux tar distributions, then generates `latest.json` and
 `SHA256SUMS` from the produced files using `scripts/package-release.py collect --tag
 v<version>`. It uploads those artifacts to a GitHub Release. It does not invent a
-launcher JAR or publish the independent Legacy Fabric build.
+launcher JAR and preserves the actual launcher runtime.
 
 The client-mod download manifest URL defaults to this repository's GitHub Releases `latest.json`
 asset; `DAISY_UPDATE_MANIFEST_URL` overrides it. The checked-in update manifest has no
 unverified download links or reused upstream hashes. Until an authorized Daisy release
 exists, remote update downloads may be unavailable; bundled client builds still work.
-The existing launcher self-update watcher, check and install functions are disabled
-stubs in this working tree and remain disabled. Install Electron releases manually;
-no automatic launcher self-update or differential update behavior is claimed.
+The launcher checks release manifests and verifies full-distribution downloads against
+SHA-256. On installed Windows builds it opens the interactive installer; portable
+and Linux builds reveal the verified download for manual replacement. Differential
+patching is not used by this path. This integration has unit coverage; installer
+handoff and a live published release have not been exercised in this migration.
 
 Existing `npm run release:draft` / `publish:update` scripts support the separate external
 Cloudflare/site release infrastructure. Draft generation reads Git history, so it was
@@ -132,5 +150,14 @@ The audit scans working-tree filenames and UTF-8 source/config/documentation, in
 untracked files, while pruning dependency caches and build outputs. Exact line exceptions
 have occurrence limits and reasons; immutable legal/history exceptions have SHA-256
 snapshots. Unexpected references exit nonzero. Use `--show-allowed` for file/line evidence.
-No redundant `verify-project.py` is needed: Gradle, npm, the branding audit and real
-artifact packaging cover the required checks.
+Run `python scripts/verify-project.py` for source/package/resource consistency.
+Run `python scripts/clean-build.py` for a clean client build, tests, staging and
+native launcher packaging (Windows or Linux). Use `--skip-install` to reuse npm
+dependencies. Generate the complete evidence inventory with
+`python scripts/audit-branding.py --report build/reports/branding.json`.
+
+## License and attribution
+
+Daisy Client and Daisy Launcher are open source software licensed under the [MIT License](LICENSE).
+Copyright (c) realvoidgojo. All third-party libraries and font notices are acknowledged in
+[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).

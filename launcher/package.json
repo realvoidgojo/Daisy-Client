@@ -3,7 +3,7 @@
   "version": "0.1.7",
   "daisyVersion": "0.2.8.1",
   "description": "Daisy Minecraft Launcher",
-  "author": "Daisy",
+  "author": "realvoidgojo",
   "main": "app/main.js",
   "private": true,
   "scripts": {
@@ -56,9 +56,9 @@
   },
   "build": {
     "appId": "dev.daisy.launcher",
-    "productName": "Daisy Client",
+    "productName": "Daisy Launcher",
     "artifactName": "Daisy-${version}-${arch}.${ext}",
-    "copyright": "Copyright 2026 Daisy",
+    "copyright": "Copyright 2026 realvoidgojo",
     "directories": {
       "output": "dist"
     },
@@ -137,5 +137,6 @@
       "**/np-helper.exe",
       "**/now-playing.ps1"
     ]
-  }
+  },
+  "license": "MIT"
 }

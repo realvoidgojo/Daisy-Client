@@ -5,6 +5,8 @@ import hashlib
 import json
 import os
 import re
+import struct
+import zlib
 from collections import Counter
 from pathlib import Path
 
@@ -36,6 +38,34 @@ def findings(path, root):
     if PATTERN.search(relative):
         yield relative, 0, "<path>"
     if path.suffix.lower() in BINARY_SUFFIXES:
+        # Read textual PNG metadata without interpreting compressed pixel data.
+        if path.suffix.lower() == ".png":
+            data = path.read_bytes()
+            offset = 8
+            while data.startswith(b"\x89PNG\r\n\x1a\n") and offset + 12 <= len(data):
+                size = struct.unpack_from(">I", data, offset)[0]
+                kind = data[offset + 4:offset + 8]
+                chunk = data[offset + 8:offset + 8 + size]
+                offset += size + 12
+                if kind not in {b"tEXt", b"iTXt", b"zTXt"}:
+                    continue
+                if kind == b"zTXt":
+                    try:
+                        keyword, value = chunk.split(b"\0", 1)
+                        chunk = keyword + b" " + zlib.decompress(value[1:])
+                    except (ValueError, zlib.error):
+                        continue
+                if kind == b"iTXt":
+                    try:
+                        keyword, rest = chunk.split(b"\0", 1)
+                        compressed, method = rest[:2]
+                        language, translated, value = rest[2:].split(b"\0", 2)
+                        chunk = keyword + b" " + translated + b" " + (zlib.decompress(value) if compressed else value)
+                    except (ValueError, zlib.error):
+                        continue
+                content = chunk.decode("utf-8", errors="replace").replace("\0", " ")
+                if PATTERN.search(content):
+                    yield relative, 0, "<PNG metadata> " + content
         return
     try:
         text = path.read_text(encoding="utf-8-sig")
@@ -54,6 +84,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, default=ROOT)
     parser.add_argument("--show-allowed", action="store_true")
+    parser.add_argument("--report", type=Path, help="Write every finding and action as JSON (prefer build/reports/)")
     args = parser.parse_args()
     root = args.root.resolve()
     rules = json.loads(ALLOWLIST.read_text(encoding="utf-8"))
@@ -70,6 +101,7 @@ def main():
             exact[key] += rule.get("count", 1)
             reasons[key] = rule["reason"]
     unexpected = allowed = scanned = 0
+    inventory = []
     for name, rule in snapshots.items():
         path = root / name
         if (path.exists() and hashlib.sha256(path.read_bytes()).hexdigest() != rule["sha256"]
@@ -93,6 +125,13 @@ def main():
             else:
                 unexpected += 1
                 print(f"UNEXPECTED {name}:{line}: {content.strip()}")
+            inventory.append({"path": name, "line": line, "text": content,
+                              "status": "allowed" if reason else "unexpected",
+                              "action": reason or "Review provenance and compatibility; rename project-owned branding."})
+    if args.report:
+        args.report.parent.mkdir(parents=True, exist_ok=True)
+        args.report.write_text(json.dumps({"scanned": scanned, "allowed": allowed,
+            "unexpected": unexpected, "findings": inventory}, indent=2) + "\n", encoding="utf-8")
     print(f"Branding audit: {scanned} files, {allowed} justified references, {unexpected} unexpected")
     return bool(unexpected)
 

@@ -1,10 +1,5 @@
 [
   {
-    "path": "LICENSE",
-    "sha256": "f25e76f1ec37fa341d0bf0c753ce4172c8f37151ac0bdfb3c05628e2d91470a6",
-    "reason": "Original source-available license and copyright; alteration is prohibited and relicensing authority is unverified."
-  },
-  {
     "path": "launcher/src/config/changelog.json",
     "sha256": "7090240cb745a6694a27d543f3f0712aaeff3e2039920085846e7d4694559b5b",
     "reason": "Unchanged upstream release record; rewriting it would invent Daisy release history."
@@ -13,18 +8,6 @@
     "path": "launcher/src/assets/fonts/PRESS-START-2P-LICENSE.txt",
     "sha256": "c1b854df7403c992063dcf42f796e54b9ce2b9dfa806d0fe9490a27056fa4edb",
     "reason": "Unchanged third-party font provenance and license notice."
-  },
-  {
-    "path": "README.md",
-    "text": "WyZ_EU's copyright and original terms, including restrictions on modification and",
-    "count": 1,
-    "reason": "Explicit documentation of original attribution and intentionally retained compatibility interfaces."
-  },
-  {
-    "path": "README.md",
-    "text": "`daisy-bootstrap/` (formerly `river-bootstrap/`) remains an existing Gradle component.",
-    "count": 1,
-    "reason": "Explicit documentation of original attribution and intentionally retained compatibility interfaces."
   },
   {
     "path": "daisy-bootstrap/src/main/java/dev/daisy/bootstrap/Agent.java",
@@ -73,102 +56,6 @@
     "text": "private const val VERSION_PROPERTY = \"river.bootstrap.version\"",
     "count": 1,
     "reason": "Existing JVM property or developer screenshot selector accepted by launch/configuration tools."
-  },
-  {
-    "path": "docs/branding-audit.md",
-    "text": "   `riv3r-instance.json`, `riv3r-mods.json`, `riv3r-content.json`, `river-manifest.json`,",
-    "count": 1,
-    "reason": "Explicit documentation of original attribution and intentionally retained compatibility interfaces."
-  },
-  {
-    "path": "docs/branding-audit.md",
-    "text": "   `river.mixin.*`, developer screenshot/benchmark property names and screenshot",
-    "count": 1,
-    "reason": "Explicit documentation of original attribution and intentionally retained compatibility interfaces."
-  },
-  {
-    "path": "docs/branding-audit.md",
-    "text": "   `river.rvr`, and the `.rvr` extension are persisted formats. Renaming them without",
-    "count": 1,
-    "reason": "Explicit documentation of original attribution and intentionally retained compatibility interfaces."
-  },
-  {
-    "path": "docs/branding-audit.md",
-    "text": "   `river.updates.v1`, screenshot/waypoint markers, `X-River-Install`, and existing",
-    "count": 1,
-    "reason": "Explicit documentation of original attribution and intentionally retained compatibility interfaces."
-  },
-  {
-    "path": "docs/branding-audit.md",
-    "text": "   `river_builtin`, `river_global/`, and runtime texture IDs remain stable for resource",
-    "count": 1,
-    "reason": "Explicit documentation of original attribution and intentionally retained compatibility interfaces."
-  },
-  {
-    "path": "docs/branding-audit.md",
-    "text": "   `showRiverBadge`, theme/cape style `river`, instance field `river`, migration keys,",
-    "count": 1,
-    "reason": "Explicit documentation of original attribution and intentionally retained compatibility interfaces."
-  },
-  {
-    "path": "docs/branding-audit.md",
-    "text": "   an IPC summary alias. Local artifact manifest format `river.artifacts.v1` also stays.",
-    "count": 1,
-    "reason": "Explicit documentation of original attribution and intentionally retained compatibility interfaces."
-  },
-  {
-    "path": "docs/branding-audit.md",
-    "text": "   and preload aliases continue to accept older integrations. `riverMs` is retained as",
-    "count": 1,
-    "reason": "Explicit documentation of original attribution and intentionally retained compatibility interfaces."
-  },
-  {
-    "path": "docs/branding-audit.md",
-    "text": "   legacy `river` mod ID/namespace, `river.mixins.json`, badge/cape texture paths,",
-    "count": 1,
-    "reason": "Explicit documentation of original attribution and intentionally retained compatibility interfaces."
-  },
-  {
-    "path": "docs/branding-audit.md",
-    "text": "   third-party font notices retain WyZ/WyZ_EU or upstream names. The existing",
-    "count": 1,
-    "reason": "Explicit documentation of original attribution and intentionally retained compatibility interfaces."
-  },
-  {
-    "path": "docs/branding-audit.md",
-    "text": "- Modern packages moved from `dev.wyz.clientcore` to `dev.daisy.clientcore` with",
-    "count": 1,
-    "reason": "Explicit documentation of original attribution and intentionally retained compatibility interfaces."
-  },
-  {
-    "path": "docs/branding-audit.md",
-    "text": "- `river-bootstrap/` moved to `daisy-bootstrap/`. Settings inclusion, artifact discovery,",
-    "count": 1,
-    "reason": "Explicit documentation of original attribution and intentionally retained compatibility interfaces."
-  },
-  {
-    "path": "docs/branding-audit.md",
-    "text": "2. **Saved configuration and archives:** `config/river-client`, `river_profile`,",
-    "count": 1,
-    "reason": "Explicit documentation of original attribution and intentionally retained compatibility interfaces."
-  },
-  {
-    "path": "docs/branding-audit.md",
-    "text": "4. **JVM and developer interfaces:** `river.bootstrap.*`, `river.client.jar`,",
-    "count": 1,
-    "reason": "Explicit documentation of original attribution and intentionally retained compatibility interfaces."
-  },
-  {
-    "path": "docs/branding-audit.md",
-    "text": "5. **Network contracts and shared services:** `river.social.v1`, `river.presence.v1`,",
-    "count": 1,
-    "reason": "Explicit documentation of original attribution and intentionally retained compatibility interfaces."
-  },
-  {
-    "path": "docs/branding-audit.md",
-    "text": "7. **Ordinary words:** comments about landscape rivers, a demo lyric, and real graphics",
-    "count": 1,
-    "reason": "Explicit documentation of original attribution and intentionally retained compatibility interfaces."
   },
   {
     "path": "launcher/scripts/blocklist.js",
@@ -580,18 +467,6 @@
   },
   {
     "path": "launcher/src/main.js",
-    "text": "const UPDATE_PUSH_PROTOCOL = \"river.updates.v1\";",
-    "count": 1,
-    "reason": "Existing serialized/wire format, HTTP header or socket protocol; external readers must continue to recognize it."
-  },
-  {
-    "path": "launcher/src/main.js",
-    "text": "const UPDATE_PUSH_URL = \"wss://updates.riverclient.xyz/ws/updates\";",
-    "count": 1,
-    "reason": "Existing external upstream service or management bucket; protocol/backend ownership is outside this working tree."
-  },
-  {
-    "path": "launcher/src/main.js",
     "text": "const daisySocialBase = String(process.env.RIVER_SOCIAL_URL || \"https://updates.riverclient.xyz/social\");",
     "count": 1,
     "reason": "Existing external upstream service or management bucket; protocol/backend ownership is outside this working tree."
@@ -859,72 +734,6 @@
     "text": " * @param manifest     the archive's riv3r-mods.json",
     "count": 1,
     "reason": "Existing stored instance/profile/setting/archive field or its reader; changing it requires an explicit migration."
-  },
-  {
-    "path": "legacy/src/main/resources/assets/river/icon.png",
-    "text": "<path>",
-    "count": 1,
-    "reason": "Original Legacy Fabric mod/resource identity and mixin filename, retained for saved packs and external compatibility."
-  },
-  {
-    "path": "legacy/src/main/resources/fabric.mod.json",
-    "text": "  \"authors\": [\"WyZ\"],",
-    "count": 1,
-    "reason": "Preserved original source authorship; rebranding does not transfer copyright."
-  },
-  {
-    "path": "legacy/src/main/resources/fabric.mod.json",
-    "text": "  \"icon\": \"assets/river/icon.png\",",
-    "count": 1,
-    "reason": "Original Legacy Fabric mod/resource identity and mixin filename, retained for saved packs and external compatibility."
-  },
-  {
-    "path": "legacy/src/main/resources/fabric.mod.json",
-    "text": "  \"id\": \"river\",",
-    "count": 1,
-    "reason": "Original Legacy Fabric mod/resource identity and mixin filename, retained for saved packs and external compatibility."
-  },
-  {
-    "path": "legacy/src/main/resources/fabric.mod.json",
-    "text": "  \"mixins\": [\"river.mixins.json\"],",
-    "count": 1,
-    "reason": "Original Legacy Fabric mod/resource identity and mixin filename, retained for saved packs and external compatibility."
-  },
-  {
-    "path": "legacy/src/main/resources/river.mixins.json",
-    "text": "<path>",
-    "count": 1,
-    "reason": "Original Legacy Fabric mod/resource identity and mixin filename, retained for saved packs and external compatibility."
-  },
-  {
-    "path": "local-artifacts/manifest.json",
-    "text": "  \"format\": \"river.artifacts.v1\",",
-    "count": 1,
-    "reason": "Existing serialized artifact-manifest schema identifier; not a display or artifact name."
-  },
-  {
-    "path": "scratch_generate_daisy_badge.py",
-    "text": "    \"src/client/resources/assets/clientcore/textures/font/river_badge.png\",",
-    "count": 1,
-    "reason": "Stable Minecraft resource identifier and matching asset path, also referenced by resource-pack overrides."
-  },
-  {
-    "path": "scratch_generate_daisy_badge.py",
-    "text": "    \"src/client/resources/assets/clientcore/textures/font/river_badge_halloween.png\"",
-    "count": 1,
-    "reason": "Stable Minecraft resource identifier and matching asset path, also referenced by resource-pack overrides."
-  },
-  {
-    "path": "scratch_generate_daisy_badge.py",
-    "text": "# Also update the cape texture for river.png to a beautiful Daisy Cape!",
-    "count": 1,
-    "reason": "Stable Minecraft resource identifier and matching asset path, also referenced by resource-pack overrides."
-  },
-  {
-    "path": "scratch_generate_daisy_badge.py",
-    "text": "cape_path = \"src/client/resources/assets/clientcore/textures/cape/river.png\"",
-    "count": 1,
-    "reason": "Stable Minecraft resource identifier and matching asset path, also referenced by resource-pack overrides."
   },
   {
     "path": "scripts/audit-branding.py",
@@ -1425,12 +1234,6 @@
     "reason": "Preserved original source authorship; rebranding does not transfer copyright."
   },
   {
-    "path": "update_jars.py",
-    "text": "                elif item.filename in ['assets/clientcore/icon.png', 'assets/river/icon.png']:",
-    "count": 1,
-    "reason": "Existing Legacy Fabric asset namespace; patching older archives must locate the original icon path."
-  },
-  {
     "path": "launcher/src/main.js",
     "text": "  return `RIVER-${crypto.randomBytes(3).toString(\"hex\").toUpperCase()}`;",
     "count": 1,
@@ -1453,5 +1256,11 @@
     "text": "  assert.equal((await bridge.riverSocial(\"roster\")).ok, true);",
     "reason": "Regression test verifies the old preload API alias still reaches a registered social handler.",
     "count": 1
+  },
+  {
+    "path": "scripts/package-release.py",
+    "text": "            if any(name.startswith(\"dev/wyz/\") for name in archive.namelist()):",
+    "count": 1,
+    "reason": "Negative packaging check rejects compiled classes from the original namespace."
   }
 ]

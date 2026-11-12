@@ -160,6 +160,15 @@ tasks.named<ProcessResources>("processClientResources") {
 // Client + main source sets can contribute the same resource path.
 tasks.withType<org.gradle.jvm.tasks.Jar>().configureEach {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    isPreserveFileTimestamps = false
+    isReproducibleFileOrder = true
+    from(rootProject.file("LICENSE")) { into("META-INF") }
+    from(rootProject.file("THIRD_PARTY_NOTICES.md")) { into("META-INF") }
+    manifest.attributes(
+        "Implementation-Title" to "Daisy Client",
+        "Implementation-Version" to project.version,
+        "Implementation-Vendor" to "realvoidgojo"
+    )
 }
 
 tasks.withType<JavaCompile>().configureEach {

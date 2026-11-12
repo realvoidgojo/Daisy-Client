@@ -40,6 +40,10 @@ tasks.withType<JavaCompile>().configureEach {
 }
 
 tasks.jar {
+    isPreserveFileTimestamps = false
+    isReproducibleFileOrder = true
+    from(rootProject.file("LICENSE")) { into("META-INF") }
+    from(rootProject.file("THIRD_PARTY_NOTICES.md")) { into("META-INF") }
     archiveBaseName.set("daisy-bootstrap")
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     manifest {

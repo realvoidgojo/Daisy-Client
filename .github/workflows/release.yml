@@ -1,7 +1,6 @@
 name: Release
 on:
   push:
-    branches: [main]
     tags: ['v*']
   workflow_dispatch:
 
@@ -17,8 +16,10 @@ jobs:
       publish: ${{ steps.release.outputs.publish }}
       tag: ${{ steps.version.outputs.tag }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v7
         with:
           python-version: '3.x'
       - id: version
@@ -32,21 +33,16 @@ jobs:
           fi
           echo "tag=v$version" >> "$GITHUB_OUTPUT"
       - id: release
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         env:
           RELEASE_TAG: ${{ steps.version.outputs.tag }}
-          DISTRIBUTION_AUTHORIZED: ${{ vars.DAISY_DISTRIBUTION_AUTHORIZED }}
         with:
           script: |
             core.setOutput('publish', 'false');
-            if (process.env.DISTRIBUTION_AUTHORIZED !== 'true') {
-              await core.summary.addRaw('Build validation runs, but release publication is blocked: document rights-holder authorization before setting DAISY_DISTRIBUTION_AUTHORIZED=true.').write();
-              return;
-            }
             try {
               const { data } = await github.rest.repos.getReleaseByTag({ ...context.repo, tag: process.env.RELEASE_TAG });
               if (data.draft) core.setFailed('A draft already exists for this version. Review it before retrying; existing assets will not be overwritten.');
-              else await core.summary.addRaw('This version is already released. Bump the coordinated Daisy version for the next automatic release.').write();
+              else core.setFailed('This version is already released. Existing releases will not be overwritten.');
             } catch (error) {
               if (error.status !== 404) throw error;
               core.setOutput('publish', 'true');
@@ -61,17 +57,19 @@ jobs:
         os: [windows-latest, ubuntu-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
         with:
           node-version: '24'
           cache: npm
           cache-dependency-path: launcher/package-lock.json
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: fabric-clients
           path: launcher/src/bundled
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: '3.x'
       - name: Validate release tag
@@ -94,7 +92,7 @@ jobs:
       - if: runner.os == 'Linux'
         run: npm run dist:linux
         working-directory: launcher
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: electron-release-${{ runner.os }}
           path: |
@@ -108,15 +106,17 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v7
         with:
           python-version: '3.x'
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: fabric-clients
           path: client-artifacts
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           pattern: electron-release-*
           path: release-artifacts
@@ -143,6 +143,6 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: ${{ needs.prepare.outputs.tag }}
         run: |
-          echo 'Versioned Fabric client JARs and Electron launcher distributions. See README and LICENSE for requirements and terms.' > release-notes.txt
+          cp CHANGELOG.md release-notes.txt
           gh release create "$RELEASE_TAG" release-artifacts/* --target "$GITHUB_SHA" --draft --title "Daisy Client ${RELEASE_TAG#v}" --notes-file release-notes.txt
           gh release edit "$RELEASE_TAG" --draft=false --latest

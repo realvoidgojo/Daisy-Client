@@ -831,7 +831,7 @@ function ensureBundledClientCoreMod(instancePath, mcVersion = instanceMcVersion(
   manifest.mods[targetName] = {
     ...(manifest.mods[targetName] || {}),
     file: targetName,
-    title: "Daisy",
+    title: "Daisy Client",
     name: "Daisy",
     author: "realvoidgojo",
     source: "river",
@@ -1562,7 +1562,7 @@ function createWindow() {
     // Same as --background in the renderer, so opening the window does not flash one
     // colour before the document paints another.
     backgroundColor: "#0b0c10",
-    title: "Daisy",
+    title: "Daisy Launcher",
     icon: currentAppIcon(),
     show: !startedAtLogin,
     titleBarStyle: "hidden",

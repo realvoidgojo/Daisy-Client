@@ -8,6 +8,33 @@ const out = path.join(root, "app");
 
 fs.rmSync(out, { recursive: true, force: true });
 fs.mkdirSync(path.join(out, "renderer"), { recursive: true });
+for (const name of ["LICENSE", "THIRD_PARTY_NOTICES.md"]) {
+  fs.copyFileSync(path.join(root, "..", name), path.join(out, name));
+}
+// npm reports the installed production dependency tree without adding a dependency.
+const npmCli = process.env.npm_execpath;
+const licenses = spawnSync(npmCli ? process.execPath : (process.platform === "win32" ? "npm.cmd" : "npm"),
+  [...(npmCli ? [npmCli] : []), "ls", "--omit=dev", "--all", "--long", "--json"],
+  { cwd: root, encoding: "utf8", shell: !npmCli && process.platform === "win32", maxBuffer: 32 * 1024 * 1024 });
+if (licenses.status !== 0) throw new Error(`Dependency notice inventory failed: ${licenses.error?.message || licenses.stderr}`);
+const dependencyNotices = [];
+const seenDependencyPaths = new Set();
+function collectNotices(node) {
+  if (node.path && node.path !== root && !seenDependencyPaths.has(node.path)) {
+    seenDependencyPaths.add(node.path);
+    const key = `${node.name || path.basename(node.path)}@${node.version || "unknown"}`;
+    const destination = path.join(out, "dependency-notices", key.replace(/[^\w.@-]/g, "_"));
+    const texts = fs.readdirSync(node.path).filter(name => /^(?:licen[cs]e|notice|copying)(?:[.-]|$)/i.test(name)
+      && fs.statSync(path.join(node.path, name)).isFile());
+    if (texts.length) fs.mkdirSync(destination, { recursive: true });
+    for (const name of texts) fs.copyFileSync(path.join(node.path, name), path.join(destination, name));
+    dependencyNotices.push({ name: node.name || path.basename(node.path), version: node.version,
+      license: node.license || "Review upstream terms", notices: texts });
+  }
+  for (const child of Object.values(node.dependencies || {})) collectNotices(child);
+}
+collectNotices(JSON.parse(licenses.stdout));
+fs.writeFileSync(path.join(out, "DEPENDENCY-LICENSES.json"), JSON.stringify(dependencyNotices, null, 2));
 fs.cpSync(path.join(root, "src", "assets"), path.join(out, "assets"), { recursive: true });
 fs.cpSync(path.join(root, "src", "config"), path.join(out, "config"), { recursive: true });
 const packageInfo = JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf8"));

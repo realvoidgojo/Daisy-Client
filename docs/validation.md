@@ -34,7 +34,5 @@ Generated binaries and dependency caches are excluded from the source commit.
 No Minecraft session, installed-launcher runtime, installer execution, Linux build,
 GitHub Actions run or release publication was verified in this pass. Existing
 launcher self-update functions remain disabled. External backend ownership and
-availability remain unverified. Written modification/distribution authorization is
-unresolved; the original source-available terms and release authorization gate
-remain in place. Gradle deprecation and Electron dependency/deprecation warnings
+availability remain unverified. Gradle deprecation and Electron dependency/deprecation warnings
 remain; passing builds do not establish runtime correctness of every module.

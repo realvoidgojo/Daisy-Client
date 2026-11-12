@@ -12,7 +12,7 @@
   "contact": {
     "sources": "https://github.com/realvoidgojo/Daisy-Client"
   },
-  "license": "All-Rights-Reserved",
+  "license": "MIT",
   "environment": "client",
   "entrypoints": {
     "client": [
