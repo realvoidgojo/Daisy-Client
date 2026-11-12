@@ -54,7 +54,7 @@ python scripts/audit-branding.py --show-allowed
 
 The unqualified `build check` selects all configured Stonecutter targets and the existing
 bootstrap component. Client artifacts are
-`versions/<minecraft>/build/libs/daisy-client-0.2.8.1+<minecraft>.jar`.
+`versions/<minecraft>/build/libs/daisy-client-0.2.8.2+<minecraft>.jar`.
 Source JARs are also generated; use the regular versioned JAR as the mod.
 The source-controlled active version remains 1.21.11. No extra client/launcher Gradle
 modules or separate launcher JARs are required.
@@ -115,7 +115,7 @@ Workflow execution on GitHub is separate from local verification.
 `.github/workflows/release.yml` runs for `v*` tags and first reuses CI. Distribution and
 publication are gated by the repository variable `DAISY_DISTRIBUTION_AUTHORIZED=true`;
 set it only after written authorization is documented. The tag must equal
-`v<launcher/package.json daisyVersion>` (currently `v0.2.8.1`). Keep that client version,
+`v<launcher/package.json daisyVersion>` (currently `v0.2.8.2`). Keep that client version,
 the version in `build.gradle.kts`, and `launcher/src/config/build-version.json` consistent when
 preparing the next release. Electron's three-part `package.json version` is separate.
 
