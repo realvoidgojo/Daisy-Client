@@ -1436,7 +1436,7 @@ function getSystemMemoryMb() {
 }
 
 function getMemoryLimitMb(systemMemoryMb = getSystemMemoryMb()) {
-  // Leave headroom for Windows, the GPU ddaisy, and the launcher itself: reserve a quarter
+  // Leave headroom for Windows, the GPU driver, and the launcher itself: reserve a quarter
   // of RAM, at least 4 GB. (Old code reserved a flat 2 GB, which on a 32 GB box offered up
   // to ~30 GB and left almost nothing for the OS.) Rounded down to a 256 MB step.
   const reservedMb = Math.max(4096, Math.round(systemMemoryMb * 0.25));
@@ -11217,10 +11217,10 @@ async function prepareStandaloneMinecraftLaunch(status, auth, authenticated, joi
     // growing the heap in small steps during the first minutes of play.
     `-Xms${Math.min(1024, maxHeapMb)}M`,
     `-Xmx${maxHeapMb}M`,
-    // Intel's graphics ddaisy looks for "minecraft.exe" on the command line to turn on its
+    // Intel's graphics driver looks for "minecraft.exe" on the command line to turn on its
     // Minecraft performance profile. Mojang's launcher and Prism Launcher pass it this way.
     ...(process.platform === "win32"
-      ? ["-XX:HeapDumpPath=MojangTricksIntelDdaisysForPerformance_javaw.exe_minecraft.exe.heapdump"]
+      ? ["-XX:HeapDumpPath=MojangTricksIntelDriversForPerformance_javaw.exe_minecraft.exe.heapdump"]
       : []),
     ...ensureRequiredJvmArgs(parseJvmArgs(status.settings.jvmArgs)),
     ...injectorArgs,

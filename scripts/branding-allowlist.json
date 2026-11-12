@@ -737,15 +737,15 @@
   },
   {
     "path": "scripts/audit-branding.py",
-    "text": "        check = re.sub(r\"\\bddaisys?\\b|IntelDdaisysForPerformance\", \"\", line, flags=re.I)",
+    "text": "        check = re.sub(r\"\\bdrivers?\\b|IntelDriversForPerformance\", \"\", line, flags=re.I)",
     "count": 1,
-    "reason": "Scanner vocabulary and graphics-ddaisy false-positive filter; not application branding."
+    "reason": "Scanner vocabulary and graphics-driver false-positive filter; not application branding."
   },
   {
     "path": "scripts/audit-branding.py",
-    "text": "PATTERN = re.compile(r\"daisy|daisy|wyz\", re.IGNORECASE)",
+    "text": "PATTERN = re.compile(r\"river|riv3r|wyz\", re.IGNORECASE)",
     "count": 1,
-    "reason": "Scanner vocabulary and graphics-ddaisy false-positive filter; not application branding."
+    "reason": "Scanner vocabulary and graphics-driver false-positive filter; not application branding."
   },
   {
     "path": "src/client/java/dev/daisy/clientcore/mixin/DevShotWindowMixin.java",

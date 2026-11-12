@@ -12,7 +12,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 ALLOWLIST = ROOT / "scripts/branding-allowlist.json"
-PATTERN = re.compile(r"daisy|daisy|wyz", re.IGNORECASE)
+PATTERN = re.compile(r"river|riv3r|wyz", re.IGNORECASE)
 IGNORED_DIRS = {".git", ".gradle", ".kotlin", "node_modules", "build", "dist", "app",
                 "out", "run", ".idea", ".vscode", ".wrangler", "__pycache__", "release-artifacts"}
 BINARY_SUFFIXES = {".jar", ".class", ".exe", ".dll", ".so", ".zip", ".gz", ".7z",
@@ -72,8 +72,8 @@ def findings(path, root):
     except UnicodeError:
         return
     for number, line in enumerate(text.splitlines(), 1):
-        # Ordinary graphics ddaisys and random lockfile integrity digests are not names.
-        check = re.sub(r"\bddaisys?\b|IntelDdaisysForPerformance", "", line, flags=re.I)
+        # Ordinary graphics drivers and random lockfile integrity digests are not names.
+        check = re.sub(r"\bdrivers?\b|IntelDriversForPerformance", "", line, flags=re.I)
         if path.name == "package-lock.json" and re.match(r'\s*"integrity":', line):
             continue
         if PATTERN.search(check):

@@ -15,6 +15,26 @@ SPEC.loader.exec_module(audit)
 
 
 class BrandingAuditTests(unittest.TestCase):
+    def test_current_branding_and_graphics_terms_are_accepted(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            path = root / "daisy-client.txt"
+            path.write_text("Daisy Client\ndev.daisy.bootstrap\n"
+                            "graphics driver and drivers\n"
+                            "MojangTricksIntelDriversForPerformance\n")
+            self.assertEqual(list(audit.findings(path, root)), [])
+
+    def test_all_legacy_spellings_are_detected(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            path = root / "client.txt"
+            for name in ["ri" + "ver", "ri" + "v3r", "wy" + "z"]:
+                for spelling in [name, name.upper()]:
+                    with self.subTest(spelling=spelling):
+                        path.write_text(spelling + " Client\n")
+                        self.assertEqual(list(audit.findings(path, root)),
+                                         [("client.txt", 1, spelling + " Client")])
+
     def test_compressed_png_provenance_is_scanned(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "icon.png"
