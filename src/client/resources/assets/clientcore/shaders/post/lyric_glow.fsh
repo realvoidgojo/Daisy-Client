@@ -1,6 +1,6 @@
 #version 330
 
-// Last step of River's lyric glow. From the sharp words and a blurred copy of them it makes a
+// Last step of Daisy's lyric glow. From the sharp words and a blurred copy of them it makes a
 // thin dark outline hugging the letters (crisp at any distance, since it is measured in screen
 // pixels) and a soft light around them in each word's own colour. The letters themselves are
 // left out: the game draws them on top.

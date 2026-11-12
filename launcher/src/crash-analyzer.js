@@ -42,11 +42,11 @@ const PACKAGE_HINTS = [
   ["net.natural.motionblur", "naturalmotionblur"],
   ["dev.zelo.renderscale", "renderscale"],
   ["org.redlance.dima_dencep.mods.rrls", "rrls"],
-  ["dev.wyz.clientcore", "clientcore"]
+  ["dev.daisy.clientcore", "clientcore"]
 ];
 
-/** Mods River ships or depends on; blaming these is almost always wrong. */
-const RIVER_OWNED = new Set(["clientcore", "fabric-api", "fabricloader"]);
+/** Mods Daisy ships or depends on; blaming these is almost always wrong. */
+const DAISY_OWNED = new Set(["clientcore", "fabric-api", "fabricloader"]);
 
 function modIdFromMixinClass(mixinClass) {
   for (const [prefix, id] of PACKAGE_HINTS) {
@@ -98,7 +98,7 @@ function suspectsFromReport(text, outdatedIds = new Set()) {
     for (const entry of entries) {
       if (IGNORED_MIXIN_PREFIXES.some((prefix) => entry.startsWith(prefix))) continue;
       const id = modIdFromMixinClass(entry);
-      if (!id || RIVER_OWNED.has(id)) continue;
+      if (!id || DAISY_OWNED.has(id)) continue;
       const record = hits.get(id) || { classes: new Set(), inThrower: false };
       record.classes.add(classIndex);
       if (classIndex === 0) record.inThrower = true;

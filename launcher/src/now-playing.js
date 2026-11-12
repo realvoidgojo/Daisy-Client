@@ -28,7 +28,7 @@ function bridgeDir() {
     || (process.platform === "linux"
       ? (process.env.XDG_CONFIG_HOME || path.join(os.homedir(), ".config"))
       : path.join(os.homedir(), "AppData", "Roaming"));
-  return path.join(appData, "River Client", "bridge");
+  return path.join(appData, "Daisy Client", "bridge");
 }
 
 // A path inside app.asar exists to fs but cannot be spawned or read by an external

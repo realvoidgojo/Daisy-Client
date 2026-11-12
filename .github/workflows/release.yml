@@ -1,0 +1,85 @@
+name: Release
+on:
+  push:
+    tags: ['v*']
+permissions:
+  contents: read
+jobs:
+  verify:
+    uses: ./.github/workflows/ci.yml
+  package:
+    needs: verify
+    # LICENSE requires written permission for modification and redistribution.
+    # Set this repository variable only after the rights holder's authorization is documented.
+    if: vars.DAISY_DISTRIBUTION_AUTHORIZED == 'true'
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: launcher/package-lock.json
+      - uses: actions/download-artifact@v4
+        with:
+          name: fabric-clients
+          path: launcher/src/bundled
+      - run: node -e "const p=require('./launcher/package.json'); if(process.env.GITHUB_REF_NAME !== 'v'+p.daisyVersion) throw Error('Tag must match daisyVersion')"
+      - run: npm ci
+        working-directory: launcher
+      - run: npm test
+        working-directory: launcher
+      - if: runner.os == 'Windows'
+        run: npm run dist
+        working-directory: launcher
+      - if: runner.os == 'Linux'
+        run: npm run dist:linux
+        working-directory: launcher
+      - uses: actions/upload-artifact@v4
+        with:
+          name: electron-release-${{ runner.os }}
+          path: |
+            launcher/dist/Daisy-Setup.exe
+            launcher/dist/Daisy-Portable.exe
+            launcher/dist/Daisy-Linux.tar.gz
+          if-no-files-found: error
+  publish:
+    needs: package
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - uses: actions/download-artifact@v4
+        with:
+          name: fabric-clients
+          path: client-artifacts
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: electron-release-*
+          path: release-artifacts
+          merge-multiple: true
+      - name: Restore per-target Gradle artifact layout
+        shell: python
+        run: |
+          import runpy, shutil
+          from pathlib import Path
+          module = runpy.run_path('scripts/package-release.py')
+          for mc in module['versions']():
+              source = list(Path('client-artifacts').glob(f'daisy-client-*+{mc}.jar'))
+              if len(source) != 1:
+                  raise ValueError(f'Expected one Fabric client for {mc}')
+              dest = Path(f'versions/{mc}/build/libs')
+              dest.mkdir(parents=True, exist_ok=True)
+              shutil.copy2(source[0], dest / source[0].name)
+      - run: python scripts/package-release.py collect --tag "$GITHUB_REF_NAME"
+      - name: Publish verified artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" release-artifacts/* --verify-tag --title "Daisy Client ${GITHUB_REF_NAME#v}" --notes "Versioned Fabric client JARs and Electron launcher distributions. See README and LICENSE for requirements and terms."

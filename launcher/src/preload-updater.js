@@ -24,4 +24,4 @@ contextBridge.exposeInMainWorld("daisyUpdater", {
   }
 });
 
-try { window.riverUpdater = window.daisyUpdater; } catch (e) {}
+try { window.daisyUpdater = window.daisyUpdater; } catch (e) {}

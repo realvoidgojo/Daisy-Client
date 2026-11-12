@@ -2,18 +2,18 @@
   "schemaVersion": 1,
   "id": "river",
   "version": "${version}",
-  "name": "River Client",
-  "description": "River Client for Minecraft 1.8.9.",
+  "name": "Daisy Client",
+  "description": "Daisy Client for Minecraft 1.8.9.",
   "authors": ["WyZ"],
   "contact": {
-    "homepage": "https://riverclient.xyz",
-    "sources": "https://github.com/WyZEU/RiverClient"
+    "homepage": "https://github.com/realvoidgojo/Daisy-Client",
+    "sources": "https://github.com/realvoidgojo/Daisy-Client"
   },
   "license": "All-Rights-Reserved",
   "icon": "assets/river/icon.png",
   "environment": "client",
   "entrypoints": {
-    "client": ["dev.wyz.river.legacy.RiverLegacy"]
+    "client": ["dev.daisy.legacy.DaisyLegacy"]
   },
   "mixins": ["river.mixins.json"],
   "depends": {

@@ -1,6 +1,6 @@
 /*
-  Blocklist: accounts River refuses to serve (sign-in, friends, tester builds, the in-game
-  roster). Used for hacked accounts and anyone removed from River.
+  Blocklist: accounts Daisy refuses to serve (sign-in, friends, tester builds, the in-game
+  roster). Used for hacked accounts and anyone removed from Daisy.
 
     npm run blocklist                                        list everyone blocked
     npm run blocklist -- add <name> <uuid> [reason...]       block an account
@@ -40,7 +40,7 @@ function normalizeUuid(value) {
 }
 
 function load() {
-  const file = path.join(os.tmpdir(), `river-blocklist-${process.pid}.json`);
+  const file = path.join(os.tmpdir(), `daisy-blocklist-${process.pid}.json`);
   const result = wrangler(["r2", "object", "get", `${bucket}/${key}`, "--file", file, "--remote"]);
   try {
     if (!result.ok) {
@@ -56,7 +56,7 @@ function load() {
 }
 
 function save(list) {
-  const file = path.join(os.tmpdir(), `river-blocklist-${process.pid}.json`);
+  const file = path.join(os.tmpdir(), `daisy-blocklist-${process.pid}.json`);
   fs.writeFileSync(file, `${JSON.stringify(list, null, 2)}\n`);
   try {
     const result = wrangler(["r2", "object", "put", `${bucket}/${key}`, "--file", file, "--content-type", "application/json", "--remote"]);

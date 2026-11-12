@@ -4,7 +4,7 @@
   Direct Minecraft server-list ping, the same status request the game's own
   multiplayer screen sends. The launcher used to ask api.mcsrvstat.us instead, and on
   2026-09-20 that API reported hypixel.net offline ("DNS lookup failed") for everyone,
-  cached for five minutes at a time - so every server in River's list read Offline while
+  cached for five minutes at a time - so every server in Daisy's list read Offline while
   all of them were up. A server's own answer cannot be wrong about whether it is up.
 */
 

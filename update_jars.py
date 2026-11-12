@@ -24,7 +24,7 @@ def update_jar(jar_path):
                         data['name'] = 'Daisy'
                         mod_json = json.dumps(data, indent=2)
                     except Exception as e:
-                        mod_json = raw.replace('"Fabric + Daisy"', '"Daisy"').replace('"River Client"', '"Daisy"')
+                        mod_json = raw.replace('"Fabric + Daisy"', '"Daisy"').replace('"Daisy Client"', '"Daisy"')
                     zout.writestr(item, mod_json.encode('utf-8'))
                 elif item.filename in ['assets/clientcore/icon.png', 'assets/river/icon.png']:
                     zout.writestr(item, daisy_icon_data)

@@ -80,8 +80,8 @@ const nowPlaying = require("./now-playing.js");
 const curseforge = require("./curseforge.js");
 const { migrationPlan, migrationVersion } = require("./migration-plan.js");
 const { planRvrRestore } = require("./rvr-restore.js");
-const { pickRiverModEntry, fileMatchesSha256 } = require("./river-mod-cache.js");
-// Never bundle River's CurseForge credential into a distributed launcher.
+const { pickDaisyModEntry, fileMatchesSha256 } = require("./daisy-mod-cache.js");
+// Never bundle Daisy's CurseForge credential into a distributed launcher.
 function effectiveCurseForgeKey(settings) { return String(settings?.curseForgeApiKey || ""); }
 const { app, BrowserWindow, ipcMain, shell, dialog, screen, nativeImage, globalShortcut, clipboard, Notification } = require("electron");
 const { spawn } = require("node:child_process");
@@ -139,10 +139,10 @@ let updaterRunPromise = null;
 const pendingRvrImports = [];
 const updaterJobPath = findUpdaterJobArgument(process.argv);
 const updateFailureLogPath = findNamedArgument(process.argv, "--daisy-update-failed") || findNamedArgument(process.argv, "--river-update-failed");
-const isUpdaterDemo = process.argv.includes("--river-updater-demo");
+const isUpdaterDemo = process.argv.includes("--daisy-updater-demo") || process.argv.includes("--river-updater-demo");
 const isUpdaterMode = Boolean(updaterJobPath) || (process.argv.includes("--daisy-updater") || process.argv.includes("--river-updater")) || isUpdaterDemo;
 const startupRvrPath = findRvrArgument(process.argv);
-// Windows passes this when it starts River at sign-in (see syncLoginItem): open minimized.
+// Windows passes this when it starts Daisy at sign-in (see syncLoginItem): open minimized.
 const startedAtLogin = (process.argv.includes("--daisy-startup") || process.argv.includes("--river-startup"));
 const singleInstanceLock = isUpdaterMode ? true : app.requestSingleInstanceLock();
 
@@ -177,9 +177,9 @@ function findRvrArgument(argv = []) {
 }
 
 function findUpdaterJobArgument(argv = []) {
-  const prefixed = argv.find((arg) => /^--river-updater-job=/.test(String(arg || "")));
+  const prefixed = argv.find((arg) => /^--(?:daisy|river)-updater-job=/.test(String(arg || "")));
   if (prefixed) return prefixed.split("=").slice(1).join("=").trim();
-  const flagIndex = argv.findIndex((arg) => String(arg || "").trim() === "--river-updater-job");
+  const flagIndex = argv.findIndex((arg) => ["--daisy-updater-job", "--river-updater-job"].includes(String(arg || "").trim()));
   if (flagIndex >= 0 && argv[flagIndex + 1]) return String(argv[flagIndex + 1]).trim();
   return "";
 }
@@ -274,12 +274,12 @@ function launchDedicatedUpdaterProcess(update) {
   // to the new portable download instead.
   if (portableExecutableFile() || !IS_WINDOWS) {
     const target = IS_WINDOWS
-      ? (update?.portableUrl || update?.installerUrl || RIVER_WEBSITE_URL)
-      : (update?.linuxUrl || RIVER_WEBSITE_URL);
+      ? (update?.portableUrl || update?.installerUrl || DAISY_WEBSITE_URL)
+      : (update?.linuxUrl || DAISY_WEBSITE_URL);
     shell.openExternal(target).catch(() => { });
     const message = (IS_WINDOWS
       ? `Daisy ${update?.latestVersion || ""} is ready. The portable build can't update itself, so the download has been opened in your browser - replace your current Daisy.exe with it.`
-      : `Daisy ${update?.latestVersion || ""} is ready. River on Linux can't update itself yet, so the download has been opened in your browser - replace your current copy with it.`
+      : `Daisy ${update?.latestVersion || ""} is ready. Daisy on Linux can't update itself yet, so the download has been opened in your browser - replace your current copy with it.`
     ).replace(/\s+/g, " ").trim();
     emit("launcher:log", `[update] Portable build detected; opened ${target} instead of self-updating.`);
     emitActivity({ title: "Download the new portable", detail: message, current: 1, total: 1, done: true });
@@ -289,7 +289,7 @@ function launchDedicatedUpdaterProcess(update) {
   const jobPath = writeUpdaterJob(update);
   const exePath = app.getPath("exe");
   const installDir = path.dirname(exePath);
-  const args = [`--river-updater-job=${jobPath}`];
+  const args = [`--daisy-updater-job=${jobPath}`];
   const child = spawn(exePath, args, {
     cwd: installDir,
     detached: true,
@@ -345,7 +345,7 @@ function readLauncherPackageVersion() {
     try {
       if (!pkgPath || !fs.existsSync(pkgPath)) continue;
       const pkg = JSON.parse(fs.readFileSync(pkgPath, "utf8"));
-      const v = String(pkg.riverVersion || pkg.version || "").trim();
+      const v = String(pkg.daisyVersion || pkg.version || "").trim();
       if (v) return v;
     } catch { }
   }
@@ -356,7 +356,7 @@ const clientModVersion = readLauncherPackageVersion();
 try {
   app.setVersion(clientModVersion);
 } catch { }
-const clientModJarName = `daisy-client-${clientModVersion}.jar`;
+const clientModJarName = `daisy-client-${clientModVersion}+1.21.11.jar`;
 const launcherUserAgent = `DaisyClientLauncher/${clientModVersion} (realvoidgojo)`;
 
 /*
@@ -369,7 +369,7 @@ const launcherUserAgent = `DaisyClientLauncher/${clientModVersion} (realvoidgojo
   is routine on any ISP that forces a daily reconnect.
 
   This is a random value generated once and kept on disk. It is not derived from the
-  hardware, the account or the address, so it says nothing about who is running River -
+  hardware, the account or the address, so it says nothing about who is running Daisy -
   it is strictly less identifying than the address it replaces, and unlike the address it
   actually stays put. It lives in its own file rather than settings.json so that clearing
   settings does not silently turn one person back into two.
@@ -412,9 +412,9 @@ function metricsHeaders(extra = {}) {
 const AUTH_SESSION_MS = 30 * 24 * 60 * 60 * 1000;
 const AUTH_REFRESH_SKEW_MS = 5 * 60 * 1000;
 const DAISY_WEBSITE_URL = "https://github.com/realvoidgojo/Daisy-Client";
-const RIVER_WEBSITE_URL = DAISY_WEBSITE_URL;
+
 const DAISY_DISCORD_URL = "https://github.com/realvoidgojo/Daisy-Client";
-const RIVER_DISCORD_URL = DAISY_DISCORD_URL;
+
 const DEFAULT_DISCORD_RPC_CLIENT_ID = "1501146934486892554";
 let discordRpcClient = null;
 let discordRpcReady = false;
@@ -430,9 +430,9 @@ let discordRpcState = {
   lastUpdatedAt: 0
 };
 
-/** Minecraft versions River can target. First entry is the default/primary. */
+/** Minecraft versions Daisy can target. First entry is the default/primary. */
 /*
-  Every Minecraft version River ships an in-game build for, newest first. One source
+  Every Minecraft version Daisy ships an in-game build for, newest first. One source
   tree builds all of them through Stonecutter, so adding one means adding a
   versions/<mc>/gradle.properties entry rather than forking the mod.
 
@@ -509,21 +509,21 @@ function findCoreClientJarInMods(instancePath, mcVersion = instanceMcVersion(ins
 
 const CLIENTCORE_MOD_PATTERN = /^(?:daisy-client|clientcore)-[\w.+-]*\.jar(\.disabled)?$/i;
 
-/** Patterns for the removed River in-game Fabric mod artifacts. */
-const RIVER_INGAME_JAR_PATTERNS = [
-  /^river-bootstrap-[\w.+-]*\.jar(\.disabled)?$/i,
+/** Patterns for the removed Daisy in-game Fabric mod artifacts. */
+const DAISY_INGAME_JAR_PATTERNS = [
+  /^(?:daisy|river)-bootstrap-[\w.+-]*\.jar(\.disabled)?$/i,
   /^river-ingame-ui-[\w.+-]*\.jar(\.disabled)?$/i
 ];
 
-/** Delete any leftover River in-game mod jars so Minecraft never loads River as a Fabric mod. */
-function removeRiverInGameJars(modsDir) {
+/** Delete any leftover Daisy in-game mod jars so Minecraft never loads Daisy as a Fabric mod. */
+function removeDaisyInGameJars(modsDir) {
   try {
     if (!modsDir || !fs.existsSync(modsDir)) return;
     for (const file of fs.readdirSync(modsDir)) {
-      if (RIVER_INGAME_JAR_PATTERNS.some((re) => re.test(String(file || "")))) {
+      if (DAISY_INGAME_JAR_PATTERNS.some((re) => re.test(String(file || "")))) {
         try {
           fs.rmSync(path.join(modsDir, file), { force: true });
-          emit("launcher:log", `[launcher] Removed leftover River in-game mod from instance: ${file}`);
+          emit("launcher:log", `[launcher] Removed leftover Daisy in-game mod from instance: ${file}`);
         } catch { }
       }
     }
@@ -550,18 +550,18 @@ function newestJarMatching(dir, re, extraFilter = null) {
 }
 
 /**
- * Resolve the River in-game runtime jars used for agent-based injection (NOT installed as Fabric
+ * Resolve the Daisy in-game runtime jars used for agent-based injection (NOT installed as Fabric
  * mods). Looks in the Gradle build output first (workspace builds) then any bundled location.
  * Returns "" for any jar that is not present.
  */
-function resolveRiverRuntimeJars(mcVersion = DEFAULT_MC_VERSION) {
+function resolveDaisyRuntimeJars(mcVersion = DEFAULT_MC_VERSION) {
   const root = findClientRoot();
   const bundledDirs = [
     process.resourcesPath ? path.join(process.resourcesPath, "bundled") : "",
     path.join(__dirname, "bundled"),
     path.join(app.getAppPath(), "bundled"),
     // Jars fetched from the update server for versions this build does not carry.
-    path.join(app.getPath("userData"), "river-mod-cache")
+    path.join(app.getPath("userData"), "daisy-mod-cache")
     // Jars inside app.asar are virtual paths the JVM cannot open as a -javaagent
     // or add to the classloader, so never resolve to one.
   ].filter(Boolean).filter((dir) => !dir.includes(`app.asar${path.sep}`) && !dir.includes("app.asar/"));
@@ -578,7 +578,7 @@ function resolveRiverRuntimeJars(mcVersion = DEFAULT_MC_VERSION) {
     ...bundledDirs
   ].filter(Boolean);
   const bootstrapLibDirs = [
-    root ? path.join(root, "river-bootstrap", "build", "libs") : "",
+    root ? path.join(root, "daisy-bootstrap", "build", "libs") : "",
     ...bundledDirs
   ].filter(Boolean);
   const findIn = (dirs, re) => {
@@ -596,7 +596,7 @@ function resolveRiverRuntimeJars(mcVersion = DEFAULT_MC_VERSION) {
     return "";
   };
   return {
-    bootstrapJar: findIn(bootstrapLibDirs, /^river-bootstrap-[\w.+-]*\.jar$/i),
+    bootstrapJar: findIn(bootstrapLibDirs, /^daisy-bootstrap-[\w.+-]*\.jar$/i),
     clientJar: findClientIn(clientLibDirs)
   };
 }
@@ -622,7 +622,7 @@ function copyRuntimeJarToInstance(sourceJar, runtimeDir) {
   }
 }
 
-/** True for the loaders River's own client runs on. Blank is Fabric: every instance was, before Forge and vanilla. */
+/** True for the loaders Daisy's own client runs on. Blank is Fabric: every instance was, before Forge and vanilla. */
 /**
  * A real loader name, or "". Some older instance records hold the loader's version number
  * ("0.19.2") where the name belongs; taken as the loader it makes every Modrinth lookup
@@ -638,83 +638,83 @@ function knownLoader(value) {
   return "";
 }
 
-function isRiverLoader(loader) {
+function isDaisyLoader(loader) {
   const value = String(loader || "fabric").toLowerCase();
   return value === "" || value === "fabric";
 }
 
-/** Whether River goes into this instance: Fabric, and not made as a plain Fabric instance. */
-function instanceRunsRiver(instance) {
-  return Boolean(instance) && isRiverLoader(instance.loader) && instance.river !== false;
+/** Whether Daisy goes into this instance: Fabric, and not made as a plain Fabric instance. */
+function instanceRunsDaisy(instance) {
+  return Boolean(instance) && isDaisyLoader(instance.loader) && instance.river !== false;
 }
 
-/** Whether River goes into the instance at `instancePath`. A folder no instance claims does. */
-function instanceRunsRiverAt(instancePath) {
+/** Whether Daisy goes into the instance at `instancePath`. A folder no instance claims does. */
+function instanceRunsDaisyAt(instancePath) {
   const target = path.resolve(String(instancePath || "."));
   try {
     const match = readInstances().find((item) => path.resolve(String(item.path || "")) === target);
-    return match ? instanceRunsRiver(match) : true;
+    return match ? instanceRunsDaisy(match) : true;
   } catch {
     return true;
   }
 }
 
 /**
- * Makes sure River's jar for [mcVersion] is on disk. A build carries only its default version;
+ * Makes sure Daisy's jar for [mcVersion] is on disk. A build carries only its default version;
  * the others come from the update server the first time an instance needs them, are checked
  * against the release manifest's SHA-256, and are kept in the cache folder. Returns false when
- * River cannot be had (offline, or no build for that version): the instance still launches,
- * without River, the same as a version River does not build for.
+ * Daisy cannot be had (offline, or no build for that version): the instance still launches,
+ * without Daisy, the same as a version Daisy does not build for.
  */
-async function prefetchRiverModJar(mcVersion) {
-  const cacheDir = path.join(app.getPath("userData"), "river-mod-cache");
-  const existing = resolveRiverRuntimeJars(mcVersion).clientJar;
+async function prefetchDaisyModJar(mcVersion) {
+  const cacheDir = path.join(app.getPath("userData"), "daisy-mod-cache");
+  const existing = resolveDaisyRuntimeJars(mcVersion).clientJar;
   const haveExisting = isRealRuntimeJar(existing);
   try {
     /*
       A jar shipped with the launcher (or a local dev build) is always the right one. A jar
       in the download cache is only right while it is the release's own: it used to count
-      as "already have River for this version", so a 0.2.7 download stayed in use after
+      as "already have Daisy for this version", so a 0.2.7 download stayed in use after
       0.2.8 came out and only the bundled 1.21.11 ever updated.
     */
     if (haveExisting && path.dirname(existing) !== cacheDir) return true;
     const remote = await fetchRemoteUpdateManifest();
-    const entry = pickRiverModEntry(remote && remote.payload, mcVersion);
-    // Offline or no build for this version: an older cached jar still beats no River.
+    const entry = pickDaisyModEntry(remote && remote.payload, mcVersion);
+    // Offline or no build for this version: an older cached jar still beats no Daisy.
     if (!entry) return haveExisting;
     const target = path.join(cacheDir, entry.name);
     if (await fileMatchesSha256(target, entry.sha256)) {
-      pruneRiverModCache(cacheDir, mcVersion, entry.name);
+      pruneDaisyModCache(cacheDir, mcVersion, entry.name);
       return true;
     }
 
     fs.mkdirSync(cacheDir, { recursive: true });
     const partial = `${target}.partial`;
-    const url = resolveUpdateUrl(entry.url, (remote && remote.url) || "https://updates.riverclient.xyz/");
-    emitActivity({ title: "Downloading River", detail: `River for Minecraft ${mcVersion}...`, current: 0, total: 1 });
+    const url = resolveUpdateUrl(entry.url, (remote && remote.url) || "https://github.com/realvoidgojo/Daisy-Client/releases/latest/download/");
+    emitActivity({ title: "Downloading Daisy", detail: `Daisy for Minecraft ${mcVersion}...`, current: 0, total: 1 });
     await downloadFile(url, partial);
     if (!(await fileMatchesSha256(partial, entry.sha256))) {
       fs.rmSync(partial, { force: true });
-      emit("launcher:log", `[river] The download for Minecraft ${mcVersion} did not match its checksum. Skipped.`);
+      emit("launcher:log", `[daisy] The download for Minecraft ${mcVersion} did not match its checksum. Skipped.`);
       return false;
     }
     fs.renameSync(partial, target);
-    pruneRiverModCache(cacheDir, mcVersion, entry.name);
-    emitActivity({ title: "River ready", detail: `River for Minecraft ${mcVersion} downloaded.`, current: 1, total: 1, done: true });
+    pruneDaisyModCache(cacheDir, mcVersion, entry.name);
+    emitActivity({ title: "Daisy ready", detail: `Daisy for Minecraft ${mcVersion} downloaded.`, current: 1, total: 1, done: true });
     return true;
   } catch (error) {
-    emit("launcher:log", `[river] Could not download River for Minecraft ${mcVersion}: ${error.message}`);
+    emit("launcher:log", `[daisy] Could not download Daisy for Minecraft ${mcVersion}: ${error.message}`);
     return haveExisting;
   }
 }
 
-/** Drops older downloads of River for this Minecraft version, so only the current one can be picked. */
-function pruneRiverModCache(cacheDir, mcVersion, keepName) {
+/** Drops older downloads of Daisy for this Minecraft version, so only the current one can be picked. */
+function pruneDaisyModCache(cacheDir, mcVersion, keepName) {
   try {
     for (const file of fs.readdirSync(cacheDir)) {
       if (file === keepName || !/^(?:daisy-client|clientcore)-[\w.+-]*\.jar$/i.test(file) || !clientcoreJarMatchesMc(file, mcVersion)) continue;
       fs.rmSync(path.join(cacheDir, file), { force: true });
-      emit("launcher:log", `[river] Removed an older download of River: ${file}`);
+      emit("launcher:log", `[daisy] Removed an older download of Daisy: ${file}`);
     }
   } catch { }
 }
@@ -778,14 +778,14 @@ function ensureDaisySkinMod(instancePath, mcVersion, enableSkin = true) {
 function ensureBundledClientCoreMod(instancePath, mcVersion = instanceMcVersion(instancePath)) {
   const root = String(instancePath || "");
   if (!root) return "";
-  // River is a Fabric mod: a Forge or vanilla instance never gets it, whatever calls this.
-  if (!instanceRunsRiverAt(root)) return "";
+  // Daisy is a Fabric mod: a Forge or vanilla instance never gets it, whatever calls this.
+  if (!instanceRunsDaisyAt(root)) return "";
   const modsDir = path.join(root, "mods");
   fs.mkdirSync(modsDir, { recursive: true });
 
   // Safety: never leave a clientcore jar built for a different Minecraft version in this
   // instance. A 1.21.11 build loaded on a 1.21.4 instance (or vice versa) crashes at launch,
-  // so drop any mismatched River jar before deciding what to install.
+  // so drop any mismatched Daisy jar before deciding what to install.
   for (const file of fs.readdirSync(modsDir)) {
     if (!CLIENTCORE_MOD_PATTERN.test(String(file || ""))) continue;
     if (!clientcoreJarMatchesMc(file, mcVersion)) {
@@ -794,11 +794,11 @@ function ensureBundledClientCoreMod(instancePath, mcVersion = instanceMcVersion(
     }
   }
 
-  const resolved = resolveRiverRuntimeJars(mcVersion);
+  const resolved = resolveDaisyRuntimeJars(mcVersion);
   const sourceJar = resolved.clientJar;
   if (!isRealRuntimeJar(sourceJar)) {
-    // No River build for this Minecraft version ships with this launcher yet. The instance
-    // still launches (Fabric + support/optimization mods); River's own mod simply stays out
+    // No Daisy build for this Minecraft version ships with this launcher yet. The instance
+    // still launches (Fabric + support/optimization mods); Daisy's own mod simply stays out
     // until a matching clientcore-<ver>+<mc>.jar is bundled/published.
     return findCoreClientJarInMods(root, mcVersion);
   }
@@ -847,12 +847,12 @@ function ensureBundledClientCoreMod(instancePath, mcVersion = instanceMcVersion(
   return targetPath;
 }
 
-function stageRiverRuntimeForInstance(instancePath, mcVersion = instanceMcVersion(instancePath)) {
-  const resolved = resolveRiverRuntimeJars(mcVersion);
+function stageDaisyRuntimeForInstance(instancePath, mcVersion = instanceMcVersion(instancePath)) {
+  const resolved = resolveDaisyRuntimeJars(mcVersion);
   const root = String(instancePath || "");
   const runtimeDir = path.join(root, "river-runtime");
   const legacyRuntimeDir = path.join(root, ".river-runtime");
-  if (!instancePath || !instanceRunsRiverAt(root)) return resolved;
+  if (!instancePath || !instanceRunsDaisyAt(root)) return resolved;
   if (fs.existsSync(legacyRuntimeDir) && !fs.existsSync(runtimeDir)) {
     try {
       fs.cpSync(legacyRuntimeDir, runtimeDir, { recursive: true, force: true });
@@ -886,7 +886,7 @@ function listManagedContentFiles(instancePath, folder) {
   }
 }
 
-function findCanonicalRiverInstance(version = "1.21.11", loader = "fabric", excludePath = "") {
+function findCanonicalDaisyInstance(version = "1.21.11", loader = "fabric", excludePath = "") {
   const instances = readInstances()
     .filter((instance) => String(instance.version || "") === String(version || "1.21.11"))
     .filter((instance) => String(instance.loader || "fabric").toLowerCase() === String(loader || "fabric").toLowerCase())
@@ -896,11 +896,11 @@ function findCanonicalRiverInstance(version = "1.21.11", loader = "fabric", excl
     .map((instance) => ({
       instance,
       score: listManagedContentFiles(instance.path, "mods").length,
-      riverNamed: /^river\b/i.test(String(instance.name || ""))
+      daisyNamed: /^(?:daisy|river)\b/i.test(String(instance.name || ""))
     }))
     .filter((entry) => entry.score > 0)
     .sort((left, right) => {
-      if (left.riverNamed !== right.riverNamed) return left.riverNamed ? -1 : 1;
+      if (left.daisyNamed !== right.daisyNamed) return left.daisyNamed ? -1 : 1;
       if (left.score !== right.score) return right.score - left.score;
       return String(left.instance.name || "").localeCompare(String(right.instance.name || ""));
     });
@@ -944,9 +944,9 @@ function syncBaselineManifest(sourceInstancePath, targetInstancePath, copiedFile
   return changed;
 }
 
-function ensureRiverBaselineForInstance(instancePath, version = "1.21.11", loader = "fabric") {
-  const source = findCanonicalRiverInstance(version, loader, instancePath);
-  if (!source) return { ok: true, copied: [], message: "No River baseline source instance found." };
+function ensureDaisyBaselineForInstance(instancePath, version = "1.21.11", loader = "fabric") {
+  const source = findCanonicalDaisyInstance(version, loader, instancePath);
+  if (!source) return { ok: true, copied: [], message: "No Daisy baseline source instance found." };
   const copiedPacks = syncBaselineFolder(source.path, instancePath, "resourcepacks");
   const copiedShaders = syncBaselineFolder(source.path, instancePath, "shaderpacks");
   syncBaselineManifest(source.path, instancePath, {
@@ -958,8 +958,8 @@ function ensureRiverBaselineForInstance(instancePath, version = "1.21.11", loade
     ok: true,
     copied,
     message: copied.length
-      ? `Synced ${copied.length} missing shared River file${copied.length === 1 ? "" : "s"} from ${source.name}.`
-      : `Shared River files already matched ${source.name}.`
+      ? `Synced ${copied.length} missing shared Daisy file${copied.length === 1 ? "" : "s"} from ${source.name}.`
+      : `Shared Daisy files already matched ${source.name}.`
   };
 }
 const partnerDataUrl = "https://riverclient.xyz/data/partners.json";
@@ -970,13 +970,13 @@ const partnerSiteBaseUrl = "https://riverclient.xyz/";
  * Gives a new instance an uncapped frame rate, once, and then leaves the game's own
  * video settings alone for good.
  *
- * River used to hold its own frame rate limit (165 by default) and VSync switch and write
- * them into options.txt, which players found as River capping their FPS. A fresh game
+ * Daisy used to hold its own frame rate limit (165 by default) and VSync switch and write
+ * them into options.txt, which players found as Daisy capping their FPS. A fresh game
  * folder also starts at Minecraft's own default of 120 with VSync on. So the launcher now
  * sets Unlimited (260) with VSync off the first time an instance runs - writing a two-line
  * options.txt if the game has not made one yet, which it fills in on start - and an
  * instance the launcher capped before gets the cap lifted once. Anything the player sets
- * in game afterwards is theirs; River never writes these keys again.
+ * in game afterwards is theirs; Daisy never writes these keys again.
  */
 const UNLIMITED_FPS = 260;
 
@@ -1001,11 +1001,11 @@ function applyFrameRateOptions(instancePath) {
 
     const fps = readKey("maxFps");
     const vsync = readKey("enableVsync");
-    // Ours to change: nothing set yet, Minecraft's untouched defaults, or the cap River
+    // Ours to change: nothing set yet, Minecraft's untouched defaults, or the cap Daisy
     // itself wrote earlier. Any other value was chosen by the player and stays.
     const gameDefaults = fps === "120" && vsync === "true";
-    const riverCapped = meta.appliedMaxFps !== undefined && fps === String(meta.appliedMaxFps);
-    if (fps === null || gameDefaults || riverCapped) setKey("maxFps", UNLIMITED_FPS);
+    const daisyCapped = meta.appliedMaxFps !== undefined && fps === String(meta.appliedMaxFps);
+    if (fps === null || gameDefaults || daisyCapped) setKey("maxFps", UNLIMITED_FPS);
     if (vsync === null || gameDefaults || (meta.appliedVsync !== undefined && vsync === String(meta.appliedVsync))) setKey("enableVsync", "false");
 
     if (changed.length) fs.writeFileSync(filePath, lines.join("\n") + (exists ? "" : "\n"));
@@ -1034,7 +1034,7 @@ function parseOptionsTxt(instancePath) {
 /**
  * Reads a gzipped (or already-plain) NBT file and returns its root compound.
  *
- * Longs come back as Numbers - every field River reads from NBT is either a string or a
+ * Longs come back as Numbers - every field Daisy reads from NBT is either a string or a
  * timestamp in ms, both of which sit comfortably inside a double.
  */
 function parseNbtFile(filePath) {
@@ -1292,7 +1292,7 @@ const defaults = {
   closeOnLaunch: false,
   closeToTray: true,
   minimizeToTray: true,
-  // On for a new install, like Discord or Steam: River opens minimized when you sign in to
+  // On for a new install, like Discord or Steam: Daisy opens minimized when you sign in to
   // Windows. Existing installs keep what their settings file already says.
   launchOnStartup: true,
   telemetry: false,
@@ -1324,7 +1324,7 @@ const defaults = {
   dismissedCrashReport: "",
   /** Full paths of dismissed crash reports, one per instance at most, newest last. */
   dismissedCrashReports: [],
-  /** "combined" adds every other Minecraft client's tracked play time to River's; "river" shows River only. */
+  /** "combined" adds every other Minecraft client's tracked play time to Daisy's; "river" shows Daisy only. */
   playtimeDisplayMode: "combined",
   /** First-run guided tour. Set once the user finishes or skips it; replayable from Settings. */
   tutorialCompleted: false,
@@ -1384,7 +1384,7 @@ const IS_WINDOWS = process.platform === "win32";
 const IS_LINUX = process.platform === "linux";
 // An AppImage or an unpacked tar.gz cannot give Chromium's setuid sandbox helper the root
 // ownership it insists on, and without it the launcher does not start at all on many
-// distros. The window only ever loads River's own bundled pages, so run without it.
+// distros. The window only ever loads Daisy's own bundled pages, so run without it.
 if (IS_LINUX) app.commandLine.appendSwitch("no-sandbox");
 const appIcon = process.platform === "win32"
   ? path.join(__dirname, "assets", "icon.ico")
@@ -1402,12 +1402,12 @@ function currentAppIcon(settings) {
 // BrowserWindow icon. Without this the app inherits electron.exe's identity and shows
 // the Electron logo on the taskbar and in notifications, whatever the window icon says.
 if (process.platform === "win32") app.setAppUserModelId("dev.daisy.launcher");
-const updateManifestUrl = String(process.env.RIVER_UPDATE_MANIFEST_URL || "https://updates.riverclient.xyz/latest.json").trim();
+const updateManifestUrl = String(process.env.DAISY_UPDATE_MANIFEST_URL || "https://github.com/realvoidgojo/Daisy-Client/releases/latest/download/latest.json").trim();
 
 /**
- * The build's real River version (e.g. "0.1.5.2.4"), stamped by publish-update.js into a
+ * The build's real Daisy version (e.g. "0.1.5.2.4"), stamped by publish-update.js into a
  * bundled file. electron-builder forces app.getVersion() to package.json's 3-part semver
- * ("0.1.5"), which can never carry River's 4-part scheme - so comparing app.getVersion()
+ * ("0.1.5"), which can never carry Daisy's 4-part scheme - so comparing app.getVersion()
  * against a "0.1.5.2.4" manifest was always "update available", and the version never
  * advanced after installing, which read as "the updater doesn't work". Everything that
  * decides "what version am I / is there a newer one" must use this, not app.getVersion().
@@ -1532,7 +1532,7 @@ function applyUiScale(win = mainWindow, settings = readSettings()) {
 }
 
 /**
- * Dev only, never in a packaged build: RIVER_DEV_SECOND_SCREEN=1 opens the window centred
+ * Dev only, never in a packaged build: DAISY_DEV_SECOND_SCREEN=1 opens the window centred
  * on a monitor other than the main one and shows it without taking focus, so restarting
  * the launcher during development never lands on top of a game on the main screen.
  */
@@ -1626,7 +1626,7 @@ function createWindow() {
     if (updateFailureLogPath) {
       setTimeout(() => emitActivity({
         title: "Update could not be applied",
-        detail: "River restored the previous launcher files. Try the update again or open a support ticket.",
+        detail: "Daisy restored the previous launcher files. Try the update again or open a support ticket.",
         current: 1,
         total: 1,
         done: true,
@@ -2284,7 +2284,7 @@ async function installBundledPublisherCertIfNeeded() {
   if (settings.trustedPublisherCertInstalled) return { ok: true, skipped: true, message: "Publisher certificate already marked as installed." };
 
   const certPath = materializeBundledPublicCert();
-  if (!certPath) return { ok: false, skipped: true, message: "No public River certificate (.cer) was bundled for first-launch install." };
+  if (!certPath) return { ok: false, skipped: true, message: "No public Daisy certificate (.cer) was bundled for first-launch install." };
 
   const escapedPath = escapePowerShellSingleQuoted(certPath);
   const script = [
@@ -2308,10 +2308,10 @@ async function installBundledPublisherCertIfNeeded() {
   try {
     const result = await runHiddenPowerShell(script);
     writeSettings({ ...settings, trustedPublisherCertInstalled: true });
-    emit("launcher:log", `[launcher] Installed River publisher certificate for the current Windows user from ${path.basename(certPath)}.`);
+    emit("launcher:log", `[launcher] Installed Daisy publisher certificate for the current Windows user from ${path.basename(certPath)}.`);
     return { ok: true, skipped: false, certPath, thumbprint: String(result.stdout || "").trim() };
   } catch (error) {
-    emit("launcher:log", `[launcher] River publisher certificate install skipped: ${error.message}`);
+    emit("launcher:log", `[launcher] Daisy publisher certificate install skipped: ${error.message}`);
     return { ok: false, skipped: false, certPath, message: error.message };
   }
 }
@@ -2478,7 +2478,7 @@ function queueDiscordRpcReconnect(delayMs = 4000, reason = "Trying to reconnect 
 }
 
 function describeDiscordRpcError(error) {
-  if (discordRpcLooksLikeClosed(error)) return "Discord closed the connection. River will reconnect automatically.";
+  if (discordRpcLooksLikeClosed(error)) return "Discord closed the connection. Daisy will reconnect automatically.";
   const text = String(error?.message || "").trim();
   return text || "Could not connect to Discord.";
 }
@@ -2512,7 +2512,7 @@ function buildDiscordPresencePayload(status = getStatus()) {
   const settings = status.settings || readSettings();
   const auth = status.auth || {};
   const instance = (status.instances || []).find((item) => item.path === settings.instancePath) || null;
-  const activeName = auth?.profile?.name || settings.offlineName || "River Player";
+  const activeName = auth?.profile?.name || settings.offlineName || "Daisy Player";
   const bridge = status.bridgePresence || null;
   let details = "In launcher";
   let stateText = `${activeName}`;
@@ -2549,8 +2549,8 @@ function buildDiscordPresencePayload(status = getStatus()) {
     state: stateText.slice(0, 128),
     instance: false,
     buttons: [
-      { label: "Download Daisy", url: RIVER_WEBSITE_URL },
-      { label: "Join River Discord", url: RIVER_DISCORD_URL }
+      { label: "Download Daisy", url: DAISY_WEBSITE_URL },
+      { label: "Daisy project", url: DAISY_DISCORD_URL }
     ]
   };
   if (status.running && currentSessionStart) payload.startTimestamp = Math.floor(currentSessionStart / 1000);
@@ -2651,12 +2651,12 @@ function scheduleDiscordPresenceRefresh() {
 }
 scheduleDiscordPresenceRefresh.timer = null;
 
-/** Seasons whose theme can be earned for good. Each is also a cosmetic id on River's server. */
+/** Seasons whose theme can be earned for good. Each is also a cosmetic id on Daisy's server. */
 const KEEPABLE_SEASONS = ["halloween"];
 
 /*
   The Halloween 2026 event is played in the game: ten hours in a world before Halloween
-  is over, and River's server gives the account the Halloween cape for good. The launcher
+  is over, and Daisy's server gives the account the Halloween cape for good. The launcher
   only asks the server which of those this account owns, and keeps its own Halloween theme
   for them too. Nothing is ever taken away here: an account switch keeps what was earned.
 */
@@ -2702,11 +2702,11 @@ function readInstances() {
 
   const normalized = instances.map(normalizeInstance).filter(Boolean);
 
-  // Only auto-create "River Default" if instances.json was completely missing (first run)
+  // Only auto-create "Daisy Default" if instances.json was completely missing (first run)
   if (!fileExisted && normalized.length === 0) {
     normalized.push({
       id: "default",
-      name: "River Default",
+      name: "Daisy Default",
       type: "default",
       version: settings.selectedVersion,
       loader: "fabric",
@@ -2758,13 +2758,13 @@ function normalizeInstance(instance) {
   if (!instance || !instance.path) return null;
   return {
     id: String(instance.id || sanitizeFilename(instance.name || path.basename(instance.path) || `instance-${Date.now()}`)).toLowerCase(),
-    name: String(instance.name || "River Instance"),
+    name: String(instance.name || "Daisy Instance"),
     type: String(instance.type || "custom"),
     version: String(instance.version || "1.21.11"),
     loader: String(instance.loader || "fabric").toLowerCase(),
     // The Forge or Fabric Loader build. Blank means "the recommended one", resolved at launch.
     loaderVersion: String(instance.loaderVersion || ""),
-    // false: a plain Fabric instance, which never gets River in game.
+    // false: a plain Fabric instance, which never gets Daisy in game.
     river: instance.river !== false,
     path: String(instance.path),
     createdAt: String(instance.createdAt || new Date().toISOString()),
@@ -3010,7 +3010,7 @@ async function fetchServerStatus(server) {
       ...base,
       online: Boolean(data.online),
       // True only when the lookup actually succeeded. Without this the UI cannot tell
-      // "this server is down" from "River could not find out", and it showed both as down.
+      // "this server is down" from "Daisy could not find out", and it showed both as down.
       statusKnown: true,
       motd: data.motd?.clean?.join(" ") || server.description || "",
       icon: server.icon || data.icon || null,
@@ -3066,7 +3066,7 @@ function normalizeSkinEntry(entry) {
   if (!entry || !entry.id || !entry.path) return null;
   return {
     id: String(entry.id),
-    name: String(entry.name || "River skin"),
+    name: String(entry.name || "Daisy skin"),
     path: String(entry.path),
     variant: entry.variant === "classic" ? "classic" : "slim",
     equippedAt: String(entry.equippedAt || new Date().toISOString()),
@@ -3235,7 +3235,7 @@ function getStatus() {
   if (settings.instancePath) {
     try {
       ensureBundledClientCoreMod(settings.instancePath);
-      stageRiverRuntimeForInstance(settings.instancePath);
+      stageDaisyRuntimeForInstance(settings.instancePath);
     } catch { }
   }
   scheduleInstalledIconBackfill(settings.instancePath);
@@ -3259,7 +3259,7 @@ function getStatus() {
     setupRunning,
     auth,
     authReady: auth.signedIn,
-    mode: selectedInstance && !instanceRunsRiver(selectedInstance)
+    mode: selectedInstance && !instanceRunsDaisy(selectedInstance)
       ? `${loaderLabel(selectedInstance.loader)} ${selectedInstance.version}`
       : `Fabric ${settings.selectedVersion}`,
     version: readBuildVersion(),
@@ -3317,14 +3317,14 @@ function getVersions(settings) {
     },
     "1.21.4": {
       status: "Supported",
-      description: "Classic combat-era target. Fabric + River's optimization suite; River's own mod arrives with the 1.21.4 build.",
+      description: "Classic combat-era target. Fabric + Daisy's optimization suite; Daisy's own mod arrives with the 1.21.4 build.",
       image: images.mangrove
     }
   };
 
   return SUPPORTED_MC_VERSIONS.map((id) => {
     const cachedEntry = cached.find((version) => String(version.id) === id);
-    const info = meta[id] || { status: "Supported", description: "Supported River target.", image: images.cherry };
+    const info = meta[id] || { status: "Supported", description: "Supported Daisy target.", image: images.cherry };
     return {
       id,
       name: id,
@@ -3352,13 +3352,13 @@ function isCoreClientMod(file) {
   return CLIENTCORE_MOD_PATTERN.test(String(file || ""));
 }
 
-function listRiverRuntimeEntries(instancePath) {
+function listDaisyRuntimeEntries(instancePath) {
   const runtimeDir = path.join(instancePath, "river-runtime");
   if (!fs.existsSync(runtimeDir)) return [];
   const runtimeMeta = [
     { pattern: /^(?:daisy-client|clientcore)-[\w.+-]*\.jar$/i, title: "Daisy", author: "realvoidgojo" },
-    { pattern: /^river-bootstrap-[\w.+-]*\.jar$/i, title: "River Bootstrap", author: "realvoidgojo" },
-    { pattern: /^river-ingame-ui-[\w.+-]*\.jar$/i, title: "River In-Game UI", author: "realvoidgojo" }
+    { pattern: /^daisy-bootstrap-[\w.+-]*\.jar$/i, title: "Daisy Bootstrap", author: "realvoidgojo" },
+    { pattern: /^river-ingame-ui-[\w.+-]*\.jar$/i, title: "Daisy In-Game UI", author: "realvoidgojo" }
   ];
 
   return fs.readdirSync(runtimeDir)
@@ -3979,8 +3979,8 @@ function openLogWindow({ focus = false } = {}) {
   return logWindow;
 }
 
-async function compressPathsToRiverArchive(sourcePaths, destinationRvrPath) {
-  const tempZip = path.join(os.tmpdir(), `river-archive-${Date.now()}.zip`);
+async function compressPathsToDaisyArchive(sourcePaths, destinationRvrPath) {
+  const tempZip = path.join(os.tmpdir(), `daisy-archive-${Date.now()}.zip`);
   try {
     const literalPaths = sourcePaths.map((entry) => `'${escapePowerShell(entry)}'`).join(",");
     await runPowerShell([
@@ -4001,10 +4001,10 @@ async function compressPathsToRiverArchive(sourcePaths, destinationRvrPath) {
   }
 }
 
-async function extractRiverArchive(archivePath, destinationDir) {
+async function extractDaisyArchive(archivePath, destinationDir) {
   const needsTempCopy = archivePath.toLowerCase().endsWith(".rvr");
   const extractSource = needsTempCopy
-    ? path.join(os.tmpdir(), `river-import-${Date.now()}.zip`)
+    ? path.join(os.tmpdir(), `daisy-import-${Date.now()}.zip`)
     : archivePath;
   try {
     if (needsTempCopy) {
@@ -4194,15 +4194,15 @@ function detectExternalMinecraftInstances() {
     const markers = ["mods", "resourcepacks", "shaderpacks", "config", "options.txt"];
     if (!markers.some((entry) => fs.existsSync(path.join(gameDir, entry)))) return;
     const detected = detectInstanceVersionAndLoader(gameDir);
-    const support = riverSupportsInstance(detected.version, detected.loader);
+    const support = daisySupportsInstance(detected.version, detected.loader);
     found.push({
       name: String(name || path.basename(gameDir) || "Minecraft instance"),
       launcher: String(launcher || "Minecraft launcher"),
       gameDir,
       version: detected.version,
       loader: detected.loader,
-      riverSupported: support.supported,
-      riverWarning: support.reason
+      daisySupported: support.supported,
+      daisyWarning: support.reason
     });
   }
 
@@ -4236,7 +4236,7 @@ function detectExternalMinecraftInstances() {
 
   Prism, MultiMC and PolyMC all let you move the instance folder, and people with a lot
   of instances usually have - onto a second drive, most often. The default paths above
-  then find nothing at all, and River reports no instances for someone who has twenty.
+  then find nothing at all, and Daisy reports no instances for someone who has twenty.
   The launcher records the real location in its own config, so read it.
 */
 function multiMcConfiguredInstanceDirs() {
@@ -4269,8 +4269,8 @@ function multiMcConfiguredInstanceDirs() {
 }
 
 /**
- * Sums "time played" across every OTHER Minecraft installation this machine has, so River
- * can show a total across every client the user has played on, not just River. There is no
+ * Sums "time played" across every OTHER Minecraft installation this machine has, so Daisy
+ * can show a total across every client the user has played on, not just Daisy. There is no
  * shared launcher API for this - Lunar, Feather, Prism, CurseForge etc. all keep their own
  * private formats - but the GAME ITSELF writes a universal per-world stats file no matter
  * which launcher started it (saves/<world>/stats/<uuid>.json, minecraft:play_time in ticks,
@@ -4278,7 +4278,7 @@ function multiMcConfiguredInstanceDirs() {
  * across every world, in every external launcher's game directory, is the one signal that
  * actually works the same way for all of them.
  *
- * River's own playtime is tracked separately and more precisely (a wall-clock timer around
+ * Daisy's own playtime is tracked separately and more precisely (a wall-clock timer around
  * the actual launched process, see recordSessionStart/recordSessionEnd), so this function is
  * only ever used for the "other clients" half of the total.
  */
@@ -4376,7 +4376,7 @@ async function copyExistingFolderContents(source, target, onProgress, strict = f
  * present rather than assuming. gameDir may be either the instance root or its nested
  * .minecraft, so both that folder and its parent are checked. Returns empty strings when
  * nothing conclusive is found - a wrong guess here is worse than "unknown", because the
- * caller uses this to decide whether River can run on the instance at all.
+ * caller uses this to decide whether Daisy can run on the instance at all.
  */
 function detectInstanceVersionAndLoader(gameDir) {
   const roots = [gameDir, path.dirname(String(gameDir || ""))].filter(Boolean);
@@ -4471,7 +4471,7 @@ function detectInstanceVersionAndLoader(gameDir) {
     } catch { }
   }
 
-  // River's own exported/previously-imported instances carry their own descriptor.
+  // Daisy's own exported/previously-imported instances carry their own descriptor.
   const river = readJson("riv3r-instance.json");
   if (river && isVersion(river.version)) {
     return { version: String(river.version), loader: normalizeLoader(river.loader) || "fabric", source: "riv3r-instance.json" };
@@ -4521,16 +4521,16 @@ function detectInstanceVersionAndLoader(gameDir) {
 }
 
 /**
- * Whether River in-game can actually load on an instance. River ships clientcore builds
+ * Whether Daisy in-game can actually load on an instance. Daisy ships clientcore builds
  * only for SUPPORTED_MC_VERSIONS, and only for Fabric - anything else still launches as
- * plain Minecraft, just without River in game.
+ * plain Minecraft, just without Daisy in game.
  */
-function riverSupportsInstance(version, loader) {
+function daisySupportsInstance(version, loader) {
   const v = String(version || "");
   const l = String(loader || "").toLowerCase();
-  if (!v) return { supported: false, reason: "River could not tell which Minecraft version this instance uses, so River will not load in game here." };
-  if (l && l !== "fabric") return { supported: false, reason: "This instance uses " + l + ". River in game only works on Fabric, so it will not load here." };
-  if (!SUPPORTED_MC_VERSIONS.includes(v)) return { supported: false, reason: "River has no in-game build for Minecraft " + v + " (supported: " + SUPPORTED_MC_VERSIONS.join(", ") + "), so River will not load in game here." };
+  if (!v) return { supported: false, reason: "Daisy could not tell which Minecraft version this instance uses, so Daisy will not load in game here." };
+  if (l && l !== "fabric") return { supported: false, reason: "This instance uses " + l + ". Daisy in game only works on Fabric, so it will not load here." };
+  if (!SUPPORTED_MC_VERSIONS.includes(v)) return { supported: false, reason: "Daisy has no in-game build for Minecraft " + v + " (supported: " + SUPPORTED_MC_VERSIONS.join(", ") + "), so Daisy will not load in game here." };
   return { supported: true, reason: "" };
 }
 
@@ -4544,7 +4544,7 @@ async function importExternalMinecraftInstance(entry = {}) {
     ? migrationVersion(detected.version, selectedVersion, SUPPORTED_MC_VERSIONS)
     : selectedVersion;
   if (migration && !SUPPORTED_MC_VERSIONS.includes(targetVersion)) {
-    return { ok: false, message: "Choose a supported River version first." };
+    return { ok: false, message: "Choose a supported Daisy version first." };
   }
   const plan = migration ? migrationPlan(detected.version, detected.loader, targetVersion, entry.launcher) : null;
   const now = new Date().toISOString();
@@ -4581,12 +4581,12 @@ async function importExternalMinecraftInstance(entry = {}) {
   // runtime and the wrong clientcore jar for them.
   const version = migration ? targetVersion : String(entry.version || detected.version || "");
   const loader = migration ? "fabric" : String(entry.loader || detected.loader || "");
-  const support = riverSupportsInstance(version, loader);
+  const support = daisySupportsInstance(version, loader);
 
-  // Only stage River where it can actually load; dropping a clientcore jar into a forge or
+  // Only stage Daisy where it can actually load; dropping a clientcore jar into a forge or
   // unsupported-version instance would just crash it on launch.
   if (support.supported) {
-    await prefetchRiverModJar(version);
+    await prefetchDaisyModJar(version);
     ensureBundledClientCoreMod(targetPath, version);
   }
   writeModManifest(targetPath, { mods: {}, resourcepacks: {}, shaders: {}, updates: {}, checkedAt: "" });
@@ -4598,7 +4598,7 @@ async function importExternalMinecraftInstance(entry = {}) {
     source: entry.launcher || "external"
   }, null, 2));
   const instances = readInstances();
-  const instance = { id, name, type: "imported", version, loader, path: targetPath, createdAt: now, updatedAt: now, riverSupported: support.supported };
+  const instance = { id, name, type: "imported", version, loader, path: targetPath, createdAt: now, updatedAt: now, daisySupported: support.supported };
   instances.push(instance);
   writeInstances(instances);
   if (migration) {
@@ -4617,7 +4617,7 @@ async function importExternalMinecraftInstance(entry = {}) {
     message: migration ? "Ready to play: " + name + " (Fabric " + version + ")." : "Imported " + name + " (" + label + ").",
     version,
     loader,
-    riverSupported: support.supported,
+    daisySupported: support.supported,
     warning: migration && !plan.compatible
       ? "Mods, mod configs and controls were left behind to avoid a version or client conflict. Your worlds and packs were copied; check pack and world compatibility before opening them in this version."
       : support.supported ? "" : support.reason
@@ -4646,7 +4646,7 @@ ipcMain.handle("launcher:import-external-instance", async (_event, entry) => {
 
 ipcMain.handle("launcher:migrate-folder", async (_event, targetVersion) => {
   const selected = await dialog.showOpenDialog(mainWindow, {
-    title: "Choose a Minecraft game folder to bring to River",
+    title: "Choose a Minecraft game folder to bring to Daisy",
     properties: ["openDirectory"]
   });
   if (selected.canceled || !selected.filePaths?.[0]) return { cancelled: true };
@@ -4658,7 +4658,7 @@ ipcMain.handle("launcher:migrate-folder", async (_event, targetVersion) => {
   try {
     return await importExternalMinecraftInstance({ gameDir, name: path.basename(gameDir), launcher: "Other launcher", migrateToRiver: true, preferSourceVersion: true, targetVersion });
   } catch (error) {
-    return { ok: false, message: error.message || "Could not bring that folder to River." };
+    return { ok: false, message: error.message || "Could not bring that folder to Daisy." };
   }
 });
 
@@ -4726,7 +4726,7 @@ ipcMain.handle("launcher:select-instance", (_event, instanceId) => {
 /**
  * Copies the user-facing settings (not content) from one instance into another:
  * options.txt (video/controls/keybinds), servers.dat (server list) and config/ (every
- * mod's settings, which is where River's own HUD layout and module config live).
+ * mod's settings, which is where Daisy's own HUD layout and module config live).
  * Never overwrites anything already present in the target.
  */
 function inheritInstanceSettings(sourcePath, targetPath) {
@@ -4782,7 +4782,7 @@ function createInstance(request, options = {}) {
   if (loader !== "vanilla") fs.mkdirSync(path.join(instancePath, "shaderpacks"), { recursive: true });
   // Carry the user's settings over from the instance they are currently on, so a new
   // instance does not start from vanilla defaults with every keybind, video setting,
-  // server and mod config (River's own HUD layout included) reset. Content is
+  // server and mod config (Daisy's own HUD layout included) reset. Content is
   // deliberately NOT copied - a new instance starts with a clean mods/worlds set.
   // A modpack brings its own settings, so it starts from those instead.
   const inherited = options.inherit === false ? [] : inheritInstanceSettings(readSettings().instancePath, instancePath);
@@ -4816,7 +4816,7 @@ function createInstance(request, options = {}) {
 
 ipcMain.handle("launcher:create-instance", (_event, request) => {
   const result = createInstance(request);
-  // New River instances start with the performance mods. They install in the background so
+  // New Daisy instances start with the performance mods. They install in the background so
   // the new instance shows up straight away.
   if (result.ok && result.instance?.river) {
     installPerformanceMods(result.instance).catch((error) => emit("launcher:log", `[optimize] ${error.message}`));
@@ -4826,11 +4826,11 @@ ipcMain.handle("launcher:create-instance", (_event, request) => {
 
 /**
  * The performance mods (optimizationSuiteMods) for one Fabric instance: from the instance
- * page, and once for every new River instance. A mod the player turned off stays off.
+ * page, and once for every new Daisy instance. A mod the player turned off stays off.
  */
 async function installPerformanceMods(instance) {
   const version = instance.version || readSettings().selectedVersion || DEFAULT_MC_VERSION;
-  const result = await ensureOptimizationSuite(instance.path, version, "fabric", "river-optimization-preset-explicit");
+  const result = await ensureOptimizationSuite(instance.path, version, "fabric", "daisy-optimization-preset-explicit");
   const count = (result.installed || []).length;
   const message = count
     ? `Installed ${count} performance mod file${count === 1 ? "" : "s"} in ${instance.name}.`
@@ -4890,10 +4890,10 @@ ipcMain.handle("launcher:create-preset-instance", async (_event, request) => {
   const presetId = String(request && request.presetId || "pvp");
   const version = String(request && request.version || readSettings().selectedVersion || "1.21.11");
   if (presetId !== "pvp") return { ok: false, message: "Unknown preset." };
-  emitActivity({ title: "Creating River PvP", detail: `Preparing Fabric ${version} preset...`, current: 0, total: pvpPresetMods.length });
+  emitActivity({ title: "Creating Daisy PvP", detail: `Preparing Fabric ${version} preset...`, current: 0, total: pvpPresetMods.length });
   try {
     const result = await createPvpInstance(version);
-    emitActivity({ title: result.ok ? "River PvP ready" : "PvP setup failed", detail: result.message, current: pvpPresetMods.length, total: pvpPresetMods.length, done: true, error: !result.ok });
+    emitActivity({ title: result.ok ? "Daisy PvP ready" : "PvP setup failed", detail: result.message, current: pvpPresetMods.length, total: pvpPresetMods.length, done: true, error: !result.ok });
     emitStatus();
     return result;
   } catch (error) {
@@ -4934,15 +4934,15 @@ ipcMain.handle("launcher:delete-instance", async (_event, request) => {
 
   /*
     The instance leaves the list either way. Its folder is only deleted when it lives inside
-    River's own instances folder: anything else (an instance used in place from another
-    launcher, say) is not River's to delete, so it is left where it is and the message says so.
+    Daisy's own instances folder: anything else (an instance used in place from another
+    launcher, say) is not Daisy's to delete, so it is left where it is and the message says so.
   */
   let fileMessage = "Files were kept on disk.";
   if (deleteFiles) {
     const root = path.resolve(instancesRootPath());
     const target = path.resolve(instance.path);
     if (!target.startsWith(root + path.sep)) {
-      fileMessage = "Its folder is outside River's instances folder, so the files were left where they are.";
+      fileMessage = "Its folder is outside Daisy's instances folder, so the files were left where they are.";
     } else {
       // The list already shows the instance gone. Removing a big folder (thousands of mods,
       // worlds and logs) takes seconds on Windows, and doing it synchronously held the whole
@@ -4973,8 +4973,8 @@ ipcMain.handle("launcher:repair-instance", async (_event, request) => {
     ? instances.find((item) => item.id === instanceId)
     : instances.find((item) => item.path && selectedPath && path.resolve(item.path) === path.resolve(selectedPath));
   if (!instance) return { ok: false, message: "Instance was not found." };
-  if (!instanceRunsRiver(instance)) {
-    // Forge, vanilla or plain Fabric: none of River's own files, support mods or Fabric mod checks apply,
+  if (!instanceRunsDaisy(instance)) {
+    // Forge, vanilla or plain Fabric: none of Daisy's own files, support mods or Fabric mod checks apply,
     // so repairing is just making sure the folders it needs are there.
     if (instance.loader !== "vanilla") fs.mkdirSync(path.join(instance.path, "mods"), { recursive: true });
     fs.mkdirSync(path.join(instance.path, "resourcepacks"), { recursive: true });
@@ -5004,17 +5004,17 @@ ipcMain.handle("launcher:repair-instance", async (_event, request) => {
 
   quarantineProblemMods(instance.path);
   quarantineProblemResourcePacks(instance.path);
-  removeRiverInGameJars(path.join(instance.path, "mods"));
-  await prefetchRiverModJar(instanceMcVersion(instance.path));
+  removeDaisyInGameJars(path.join(instance.path, "mods"));
+  await prefetchDaisyModJar(instanceMcVersion(instance.path));
   ensureBundledClientCoreMod(instance.path);
 
   const supportInstall = await ensureRequiredSupportMods(
     instance.path,
     instance.version || readSettings().selectedVersion || "1.21.11",
     instance.loader || "fabric",
-    "river-support-repair"
+    "daisy-support-repair"
   );
-  const optimization = await ensureOptimizationSuite(instance.path, instance.version || readSettings().selectedVersion || "1.21.11", instance.loader || "fabric", "river-optimization-repair");
+  const optimization = await ensureOptimizationSuite(instance.path, instance.version || readSettings().selectedVersion || "1.21.11", instance.loader || "fabric", "daisy-optimization-repair");
   if (optimization.ok || (optimization.installed || []).length) {
     writeInstanceMeta(instance.path, { optimizationAppliedAt: new Date().toISOString() });
   }
@@ -5063,7 +5063,7 @@ ipcMain.handle("launcher:repair-instance", async (_event, request) => {
 });
 
 /**
- * The "Fix" button: one pass over every known way a River launch can break.
+ * The "Fix" button: one pass over every known way a Daisy launch can break.
  * Safe to run at any time and safe to run twice - every step is idempotent and
  * failures are collected instead of aborting the run, so one broken step can't
  * stop the rest from healing the install.
@@ -5182,15 +5182,15 @@ async function runFullRepair() {
     return `Reset ${Object.keys(patch).join(", ")}`;
   });
 
-  // 4. River's own jars (agent + clientcore) - stale/duplicate copies crash on load.
-  progress("Reinstalling River client...");
-  await step("River client", async () => {
+  // 4. Daisy's own jars (agent + clientcore) - stale/duplicate copies crash on load.
+  progress("Reinstalling Daisy client...");
+  await step("Daisy client", async () => {
     if (!instancePath) throw new Error("No instance selected.");
-    removeRiverInGameJars(path.join(instancePath, "mods"));
-    await prefetchRiverModJar(instanceMcVersion(instancePath));
+    removeDaisyInGameJars(path.join(instancePath, "mods"));
+    await prefetchDaisyModJar(instanceMcVersion(instancePath));
     const result = ensureBundledClientCoreMod(instancePath);
     if (result && result.ok === false) throw new Error(result.message || "clientcore install failed.");
-    return "Reinstalled River clientcore";
+    return "Reinstalled Daisy clientcore";
   });
 
   // 5. Known-bad and duplicate mods / resource packs.
@@ -5251,8 +5251,8 @@ async function runFullRepair() {
   progress("Checking required mods...");
   await step("Support mods", async () => {
     if (!instancePath) throw new Error("No instance selected.");
-    const support = await ensureRequiredSupportMods(instancePath, version, loader, "river-fix");
-    const optimization = await ensureOptimizationSuite(instancePath, version, loader, "river-fix");
+    const support = await ensureRequiredSupportMods(instancePath, version, loader, "daisy-fix");
+    const optimization = await ensureOptimizationSuite(instancePath, version, loader, "daisy-fix");
     const n = (support.installed || []).length + (optimization.installed || []).length;
     return n ? `Installed ${n} required mod file(s)` : "Required mods present";
   });
@@ -5526,7 +5526,7 @@ ipcMain.handle("launcher:export-skin", async (_event, skinId) => {
   if (!entry || !fs.existsSync(entry.path)) return { ok: false, message: "That skin file is not available anymore." };
   const { filePath } = await dialog.showSaveDialog(mainWindow, {
     title: "Export Minecraft skin",
-    defaultPath: `${sanitizeFilename(entry.name || "river-skin")}.png`,
+    defaultPath: `${sanitizeFilename(entry.name || "daisy-skin")}.png`,
     filters: [{ name: "PNG image", extensions: ["png"] }]
   });
   if (!filePath) return { ok: false, message: "Cancelled." };
@@ -5587,16 +5587,16 @@ ipcMain.handle("launcher:get-session-history", () => {
 });
 
 /**
- * River's own playtime is cheap (one number already in status), but scanning every other
+ * Daisy's own playtime is cheap (one number already in status), but scanning every other
  * launcher's save folders on disk is comparatively slow, so it lives behind its own
  * on-demand call instead of being folded into the frequently-polled getStatus() payload.
  */
 ipcMain.handle("launcher:get-playtime-summary", async () => {
-  const riverMs = readTotalPlaytimeMs();
+  const daisyMs = readTotalPlaytimeMs();
   const externalMs = await new Promise((resolve) => {
     setImmediate(() => resolve(getExternalPlaytimeMs()));
   });
-  return { riverMs, externalMs, combinedMs: riverMs + externalMs };
+  return { daisyMs, riverMs: daisyMs, externalMs, combinedMs: daisyMs + externalMs };
 });
 
 /**
@@ -5805,7 +5805,7 @@ async function buildUpdateStuckReport() {
   const now = Date.now();
   const activity = lastUpdateActivity;
 
-  add(`RIVER UPDATER REPORT - "Downloading stuck?"`);
+  add(`DAISY UPDATER REPORT - "Downloading stuck?"`);
   add(`Sent:             ${new Date(now).toISOString()}`);
   add(`Updater running:  ${Math.round((now - updaterStartedAt) / 1000)} s (updater mode: ${isUpdaterMode})`);
   add(`Launcher:         ${clientModVersion} (packaged: ${app.isPackaged}, exe: ${process.execPath})`);
@@ -5829,7 +5829,7 @@ async function buildUpdateStuckReport() {
   listDirForReport(path.join(os.tmpdir(), "river-client-updates")).forEach((line) => add(line));
   add();
   add("== Update server, right now ==");
-  add(await probeForReport("https://updates.riverclient.xyz/latest.json"));
+  add(await probeForReport(updateManifestUrl));
   const manifestUrl = update.appFileManifestUrl || update.fileManifestUrl;
   if (manifestUrl) add(await probeForReport(manifestUrl));
   add();
@@ -6011,7 +6011,7 @@ ipcMain.handle("launcher:launch-client", async (_event, opts = {}) => {
     lastLaunchFailure = {
       message: String(message || "Minecraft could not start."),
       at: new Date().toISOString(),
-      supportUrl: "https://discord.riverclient.xyz",
+      supportUrl: "https://github.com/realvoidgojo/Daisy-Client/issues",
       ...extra
     };
     setLaunchState("idle");
@@ -6050,10 +6050,10 @@ ipcMain.handle("launcher:launch-client", async (_event, opts = {}) => {
     const launchInstance = status.selectedInstance || null;
     const launchLoader = String(launchInstance?.loader || "fabric").toLowerCase() || "fabric";
     if (!LAUNCHABLE_LOADERS.includes(launchLoader)) {
-      return failLaunch(`${launchInstance?.name || "This instance"} uses ${loaderLabel(launchLoader)}. River cannot launch that loader.`);
+      return failLaunch(`${launchInstance?.name || "This instance"} uses ${loaderLabel(launchLoader)}. Daisy cannot launch that loader.`);
     }
-    if (!instanceRunsRiver(launchInstance)) {
-      // Forge, vanilla and plain Fabric: no River. River's jars, support mods, optimization suite
+    if (!instanceRunsDaisy(launchInstance)) {
+      // Forge, vanilla and plain Fabric: no Daisy. Daisy's jars, support mods, optimization suite
       // and Fabric mod checks all stay out of it.
       emitActivity({ title: `Launching ${loaderLabel(launchLoader)}`, detail: "Starting Minecraft...", current: 2, total: 2 });
       writeInstanceMeta(status.instancePath, {
@@ -6075,22 +6075,22 @@ ipcMain.handle("launcher:launch-client", async (_event, opts = {}) => {
 
     emitActivity({ title: "Launching Daisy", detail: "Syncing Daisy files...", current: 3, total: 6 });
     const modsDir = path.join(status.instancePath, "mods");
-    removeRiverInGameJars(modsDir);
-    await prefetchRiverModJar(status.settings.selectedVersion || DEFAULT_MC_VERSION);
+    removeDaisyInGameJars(modsDir);
+    await prefetchDaisyModJar(status.settings.selectedVersion || DEFAULT_MC_VERSION);
     ensureBundledClientCoreMod(status.instancePath, status.settings.selectedVersion || DEFAULT_MC_VERSION);
-    const baselineSync = ensureRiverBaselineForInstance(status.instancePath, status.settings.selectedVersion || "1.21.11", "fabric");
+    const baselineSync = ensureDaisyBaselineForInstance(status.instancePath, status.settings.selectedVersion || "1.21.11", "fabric");
     emit("launcher:log", `[launcher] ${baselineSync.message}`);
 
     emitActivity({ title: "Launching Daisy", detail: "Checking required dependencies...", current: 4, total: 6 });
-    const supportInstall = await ensureRequiredSupportMods(status.instancePath, status.settings.selectedVersion || "1.21.11", "fabric", "river-support-launch");
+    const supportInstall = await ensureRequiredSupportMods(status.instancePath, status.settings.selectedVersion || "1.21.11", "fabric", "daisy-support-launch");
     if (!supportInstall.ok && !(supportInstall.installed || []).length) {
-      return failLaunch(`River could not prepare required support mods. ${supportInstall.message}`);
+      return failLaunch(`Daisy could not prepare required support mods. ${supportInstall.message}`);
     }
 
     if (shouldRunOptimizationSuite(status.instancePath)) {
-      const optimization = await ensureOptimizationSuite(status.instancePath, status.settings.selectedVersion || "1.21.11", "fabric", "river-optimization-launch");
+      const optimization = await ensureOptimizationSuite(status.instancePath, status.settings.selectedVersion || "1.21.11", "fabric", "daisy-optimization-launch");
       if (!optimization.ok && !(optimization.installed || []).length) {
-        return failLaunch(`River could not prepare the optimization suite. ${optimization.message}`);
+        return failLaunch(`Daisy could not prepare the optimization suite. ${optimization.message}`);
       }
       writeInstanceMeta(status.instancePath, { optimizationAppliedAt: new Date().toISOString() });
     }
@@ -6161,8 +6161,8 @@ async function launchStandaloneMinecraft(status, joinAddress = "", plainInstance
     if (install.ok && install.javaPath) {
       javaPath = install.javaPath;
     } else {
-      const msg = `River needs Java ${javaMajor} and it could not be installed automatically. Use Fix, or install Java ${javaMajor} (Adoptium Temurin) and launch again.`;
-      lastLaunchFailure = { message: msg, at: new Date().toISOString(), fixable: true, supportUrl: "https://discord.riverclient.xyz" };
+      const msg = `Daisy needs Java ${javaMajor} and it could not be installed automatically. Use Fix, or install Java ${javaMajor} (Adoptium Temurin) and launch again.`;
+      lastLaunchFailure = { message: msg, at: new Date().toISOString(), fixable: true, supportUrl: "https://github.com/realvoidgojo/Daisy-Client/issues" };
       emitActivity({ title: "Cannot launch", detail: msg, done: true, error: true });
       emit("launcher:log", `[launcher] Java install failed: ${install.message || "unknown"}`);
       emitStatus();
@@ -6170,7 +6170,7 @@ async function launchStandaloneMinecraft(status, joinAddress = "", plainInstance
     }
   }
   // Remember it so the next launch skips the probing entirely (Fabric only: an old
-  // instance's Java 8 must not become the one River's own instances start with).
+  // instance's Java 8 must not become the one Daisy's own instances start with).
   if (!plainInstance && status.settings.javaPath !== javaPath) {
     writeSettings({ ...readSettings(), javaPath });
     status.settings.javaPath = javaPath;
@@ -6202,7 +6202,7 @@ async function launchStandaloneMinecraft(status, joinAddress = "", plainInstance
     });
   } catch (spawnError) {
     const msg = `Could not start Java: ${spawnError.message}`;
-    lastLaunchFailure = { message: msg, at: new Date().toISOString(), fixable: true, supportUrl: "https://discord.riverclient.xyz" };
+    lastLaunchFailure = { message: msg, at: new Date().toISOString(), fixable: true, supportUrl: "https://github.com/realvoidgojo/Daisy-Client/issues" };
     emitActivity({ title: "Cannot launch", detail: msg, done: true, error: true });
     emit("launcher:log", `[launcher] ${msg}`);
     setLaunchState("idle");
@@ -6223,7 +6223,7 @@ async function launchStandaloneMinecraft(status, joinAddress = "", plainInstance
   setLaunchStep(5, "Starting Minecraft");
   emitActivity({ title: "Starting Minecraft", detail: "Waiting for the game window..." });
   emit("launcher:log", plainInstance
-    ? `[launcher] Starting ${loaderLabel(plainInstance.loader)} ${mcVersion} (without River)...`
+    ? `[launcher] Starting ${loaderLabel(plainInstance.loader)} ${mcVersion} (without Daisy)...`
     : `[launcher] Starting standalone Fabric ${status.settings.selectedVersion}...`);
   emit("launcher:log", `[launcher] Game directory: ${status.instancePath}`);
   emit("launcher:log", `[launcher] Memory target: ${status.settings.memoryMb} MB`);
@@ -6261,7 +6261,7 @@ function attachLaunchProcess(status) {
         : `Minecraft could not start: ${error.message}`,
       at: new Date().toISOString(),
       fixable: true,
-      supportUrl: "https://discord.riverclient.xyz"
+      supportUrl: "https://github.com/realvoidgojo/Daisy-Client/issues"
     };
     emitActivity({ title: "Launch failed", detail: lastLaunchFailure.message, current: 1, total: 1, done: true, error: true });
     launchProcess = null;
@@ -6277,7 +6277,7 @@ function attachLaunchProcess(status) {
         message: `Minecraft exited with code ${code}. ${crash.summary || "Check Logs for the crash details."}`.trim(),
         at: new Date().toISOString(),
         fixable: true,
-        supportUrl: "https://discord.riverclient.xyz"
+        supportUrl: "https://github.com/realvoidgojo/Daisy-Client/issues"
       };
       emitActivity({ title: "Minecraft closed with an error", detail: lastLaunchFailure.message, current: 1, total: 1, done: true, error: true });
     }
@@ -6310,7 +6310,7 @@ ipcMain.handle("launcher:search-mods", async (_event, request) => {
   writeSettings({ ...settings, modFilters: filters });
 
   if (filters.source === "curseforge") {
-    // No key of their own means River's server, which holds River's (see curseforge.js).
+    // No key of their own means Daisy's server, which holds Daisy's (see curseforge.js).
     return searchCurseForge(filters, effectiveCurseForgeKey(settings), settings.instancePath);
   }
 
@@ -6419,7 +6419,7 @@ ipcMain.handle("launcher:download-mod", async (_event, mod) => {
     return result;
   } catch (error) {
     const message = error?.code === "EPERM"
-      ? "River could not replace that file because Windows is still using it. Close Minecraft and anything else touching this instance, then try again."
+      ? "Daisy could not replace that file because Windows is still using it. Close Minecraft and anything else touching this instance, then try again."
       : (error?.message || "Mod download failed.");
     emit("launcher:log", `[mods] Download failed: ${message}`);
     emitActivity({
@@ -6556,12 +6556,12 @@ async function importModrinthProfileFromFilePicker() {
     if (targetVersion && targetVersion !== settings.selectedVersion) {
       const response = await dialog.showMessageBox(mainWindow, {
         type: "question",
-        buttons: ["Update River version", "Keep current version"],
+        buttons: ["Update Daisy version", "Keep current version"],
         defaultId: 0,
         cancelId: 1,
         title: "Update Minecraft version?",
-        message: `${profile.name} targets Minecraft ${targetVersion}. River is currently set to ${settings.selectedVersion}.`,
-        detail: "Some imported mods may be incompatible with the current version. Update River to the profile version before importing?"
+        message: `${profile.name} targets Minecraft ${targetVersion}. Daisy is currently set to ${settings.selectedVersion}.`,
+        detail: "Some imported mods may be incompatible with the current version. Update Daisy to the profile version before importing?"
       });
 
       if (response.response === 0) {
@@ -6591,7 +6591,7 @@ async function importModrinthProfileFromFilePicker() {
     return {
       ...result,
       updatedClientVersion,
-      message: `${result.message}${updatedClientVersion ? ` River was updated to ${installVersion}.` : ""}`
+      message: `${result.message}${updatedClientVersion ? ` Daisy was updated to ${installVersion}.` : ""}`
     };
   } catch (error) {
     emitActivity({ title: "Import failed", detail: error.message, done: true, error: true });
@@ -6603,7 +6603,7 @@ async function importModrinthProfileFromFilePicker() {
 ipcMain.handle("launcher:import-modrinth-profile", importModrinthProfileFromFilePicker);
 /*
   Modpacks: a Modrinth .mrpack or a CurseForge .zip becomes a new instance on the pack's own
-  Minecraft version and loader (Forge, NeoForge, Fabric, Quilt), without River in game, since
+  Minecraft version and loader (Forge, NeoForge, Fabric, Quilt), without Daisy in game, since
   a pack is built and tested as it ships. Its files are downloaded and its overrides (configs,
   options, resource packs) unpacked into the instance folder.
 */
@@ -6738,7 +6738,7 @@ async function runPool(items, limit, worker) {
 async function importModpackArchive(filePath) {
   const pack = readModpackArchive(filePath);
   if (!pack.version) throw new Error("That modpack does not say which Minecraft version it is for.");
-  if (!LAUNCHABLE_LOADERS.includes(pack.loader)) throw new Error(`That modpack uses ${loaderLabel(pack.loader)}, which River cannot launch.`);
+  if (!LAUNCHABLE_LOADERS.includes(pack.loader)) throw new Error(`That modpack uses ${loaderLabel(pack.loader)}, which Daisy cannot launch.`);
 
   const created = createInstance({
     name: pack.name,
@@ -6827,11 +6827,11 @@ ipcMain.handle("launcher:import-modpack-file", importModpackFromFilePicker);
 
 /*
   Copying mods between instances. A jar built for one Minecraft version or loader rarely
-  loads on another, so each mod is looked up on Modrinth (by the project River recorded
+  loads on another, so each mod is looked up on Modrinth (by the project Daisy recorded
   when it installed it, otherwise by the jar's hash) and the build made for the target
   instance's version and loader is installed instead, dependencies included. A mod Modrinth
   does not know is copied as it is only when both instances run the same version and loader.
-  River's own jars and support mods are left alone: every River instance gets those anyway.
+  Daisy's own jars and support mods are left alone: every Daisy instance gets those anyway.
 */
 /** A jar's own mod id and name, from whichever loader's metadata it carries. */
 function jarModIdentity(jarPath) {
@@ -7223,13 +7223,13 @@ function buildCompactContentIndex(instancePath, manifest, known = new Map(), bun
  * an export has to bring the instance back whole, not just the part that is easy to fetch.
  */
 async function buildRvrStagingDir(instance, progress = () => { }) {
-  const stagingDir = path.join(os.tmpdir(), `river-export-${instance.id}-${Date.now()}`);
+  const stagingDir = path.join(os.tmpdir(), `daisy-export-${instance.id}-${Date.now()}`);
   fs.mkdirSync(stagingDir, { recursive: true });
 
   const manifest = readModManifest(instance.path);
   const files = listRvrContentFiles(instance.path);
 
-  // River's own jar is put into every instance by the launcher, so it is never exported.
+  // Daisy's own jar is put into every instance by the launcher, so it is never exported.
   const isOwn = (entry) => isCoreClientMod(entry.file) || manifestSection(manifest, entry.contentType)[entry.file]?.source === "river";
   const fromModrinthAlready = (entry) => {
     const meta = manifestSection(manifest, entry.contentType)[entry.file];
@@ -7301,7 +7301,7 @@ async function buildRvrStagingDir(instance, progress = () => { }) {
   }
   fs.writeFileSync(path.join(stagingDir, "instance-settings.json"), JSON.stringify(lightweightSettings, null, 2));
 
-  const riverManifest = {
+  const daisyManifest = {
     format: RVR_FORMAT_ID,
     version: RVR_FORMAT_VERSION,
     exportedAt: new Date().toISOString(),
@@ -7314,8 +7314,8 @@ async function buildRvrStagingDir(instance, progress = () => { }) {
     bundled: bundledCount,
     contents: contentIndex.totals
   };
-  fs.writeFileSync(path.join(stagingDir, "river-manifest.json"), JSON.stringify(riverManifest, null, 2));
-  return { stagingDir, riverManifest };
+  fs.writeFileSync(path.join(stagingDir, "river-manifest.json"), JSON.stringify(daisyManifest, null, 2));
+  return { stagingDir, daisyManifest };
 }
 
 function readRvrManifest(rootPath) {
@@ -7353,7 +7353,7 @@ function importRvrArchive(rootPath, manifest, fallbackName) {
     } catch { }
   }
 
-  const baseName = sanitizeFilename(instanceMeta.name || fallbackName || "Imported River");
+  const baseName = sanitizeFilename(instanceMeta.name || fallbackName || "Imported Daisy");
   const destId = `imported-${baseName.toLowerCase().replace(/\s+/g, "-")}-${Date.now()}`;
   const destPath = path.join(instancesRootPath(), destId);
   fs.mkdirSync(destPath, { recursive: true });
@@ -7416,9 +7416,9 @@ function importRvrArchive(rootPath, manifest, fallbackName) {
       }
     } catch { }
   }
-  // .rvr archives are River exports, so fabric/1.21.11 is a safe fallback for older files
+  // .rvr archives are Daisy exports, so fabric/1.21.11 is a safe fallback for older files
   // written before instances carried a version - but flag support the same way external
-  // imports do, so an archive from a version River no longer ships is still called out.
+  // imports do, so an archive from a version Daisy no longer ships is still called out.
   const rvrVersion = instanceMeta.version || manifest?.instance?.version || "1.21.11";
   const rvrLoader = importedLoader;
   return {
@@ -7428,7 +7428,7 @@ function importRvrArchive(rootPath, manifest, fallbackName) {
       type: "imported",
       version: rvrVersion,
       loader: rvrLoader,
-      riverSupported: riverSupportsInstance(rvrVersion, rvrLoader).supported,
+      daisySupported: daisySupportsInstance(rvrVersion, rvrLoader).supported,
       path: destPath
     },
     restore: plan.restore,
@@ -7587,7 +7587,7 @@ ipcMain.handle("launcher:get-instance-details", (_event, request) => {
   if (!instance) return { ok: false, message: "Instance was not found." };
   if (!fs.existsSync(instance.path)) return { ok: false, message: "That instance folder no longer exists." };
 
-  const support = riverSupportsInstance(instance.version, instance.loader);
+  const support = daisySupportsInstance(instance.version, instance.loader);
   const countFiles = (folder) => {
     try { return fs.readdirSync(path.join(instance.path, folder)).length; } catch { return 0; }
   };
@@ -7595,8 +7595,8 @@ ipcMain.handle("launcher:get-instance-details", (_event, request) => {
     ok: true,
     instance: {
       ...instance,
-      riverSupported: instance.riverSupported !== false && support.supported,
-      riverWarning: support.reason,
+      daisySupported: instance.daisySupported !== false && support.supported,
+      daisyWarning: support.reason,
       lastPlayedAt: lastPlayedByInstance()[instance.id] || 0
     },
     mods: getInstalledMods(instance.path),
@@ -7614,7 +7614,7 @@ ipcMain.handle("launcher:get-instance-details", (_event, request) => {
 /*
   Pictures and counts for the Modern layout's instance cards. An instance shows the newest
   screenshot taken in it; one without screenshots falls back to the icon of its most recently
-  played world (drawn pixelated by the renderer); one with neither gets River's own art.
+  played world (drawn pixelated by the renderer); one with neither gets Daisy's own art.
 
   Screenshots are shrunk to a 640px JPEG before they cross IPC (a 1080p PNG takes ~40ms) and
   cached by path and modification time, so each screenshot is decoded once, not on every visit.
@@ -7736,7 +7736,7 @@ async function planInstanceVersionChange(instancePath, targetVersion, loader = "
     for (const file of files) {
       const lower = file.toLowerCase();
       if (!info.extensions.some((ext) => lower.endsWith(ext))) continue;
-      // Already off, or River's own jar (the launcher swaps that per version itself).
+      // Already off, or Daisy's own jar (the launcher swaps that per version itself).
       if (lower.endsWith(".disabled") || isCoreClientMod(file)) continue;
       const item = section[file];
       if (!item || item.source !== "modrinth" || !item.projectId) {
@@ -7795,7 +7795,7 @@ ipcMain.handle("launcher:preview-version-change", async (_event, request) => {
   const version = String((request && request.version) || "");
   const instance = readInstances().find((item) => item.id === instanceId);
   if (!instance) return { ok: false, message: "Instance was not found." };
-  if (!SUPPORTED_MC_VERSIONS.includes(version)) return { ok: false, message: "River does not support Minecraft " + version + "." };
+  if (!SUPPORTED_MC_VERSIONS.includes(version)) return { ok: false, message: "Daisy does not support Minecraft " + version + "." };
   if (version === instance.version) return { ok: false, message: "That instance is already on " + version + "." };
 
   emitActivity({ title: "Checking mods", detail: "Looking for " + version + " builds...", current: 0, total: 1 });
@@ -7806,7 +7806,7 @@ ipcMain.handle("launcher:preview-version-change", async (_event, request) => {
 
 /**
  * Applies a version change: updates every mod that has a build for the new version,
- * disables (never deletes) the ones that do not, and swaps River's own jar to the
+ * disables (never deletes) the ones that do not, and swaps Daisy's own jar to the
  * matching build.
  */
 ipcMain.handle("launcher:change-instance-version", async (_event, request) => {
@@ -7817,7 +7817,7 @@ ipcMain.handle("launcher:change-instance-version", async (_event, request) => {
   const instances = readInstances();
   const index = instances.findIndex((item) => item.id === instanceId);
   if (index < 0) return { ok: false, message: "Instance was not found." };
-  if (!SUPPORTED_MC_VERSIONS.includes(version)) return { ok: false, message: "River does not support Minecraft " + version + "." };
+  if (!SUPPORTED_MC_VERSIONS.includes(version)) return { ok: false, message: "Daisy does not support Minecraft " + version + "." };
   const instance = instances[index];
   const loader = instance.loader || "fabric";
 
@@ -7840,7 +7840,7 @@ ipcMain.handle("launcher:change-instance-version", async (_event, request) => {
         gameVersion: version,
         loader: entry.loader,
         instancePath: instance.path,
-        reason: "river-version-change",
+        reason: "daisy-version-change",
         visited: new Set(),
         contentType: entry.contentType
       });
@@ -7866,7 +7866,7 @@ ipcMain.handle("launcher:change-instance-version", async (_event, request) => {
     done++;
   }
 
-  // Point the instance at the new version before staging River's jar, so the per-version
+  // Point the instance at the new version before staging Daisy's jar, so the per-version
   // resolver picks the right clientcore build (and strips the old one).
   instances[index] = { ...instance, version, updatedAt: new Date().toISOString() };
   writeInstances(instances);
@@ -7879,7 +7879,7 @@ ipcMain.handle("launcher:change-instance-version", async (_event, request) => {
       modFilters: { ...settings.modFilters, version }
     });
   }
-  await prefetchRiverModJar(version);
+  await prefetchDaisyModJar(version);
   ensureBundledClientCoreMod(instance.path, version);
 
   emitActivity({ title: "Switched to " + version, detail: "Done.", current: 1, total: 1, done: true });
@@ -7909,9 +7909,9 @@ ipcMain.handle("launcher:export-instance", async (_event, instanceId) => {
   if (!fs.existsSync(instance.path)) return { ok: false, message: "Instance folder does not exist." };
 
   const { filePath } = await dialog.showSaveDialog(mainWindow, {
-    title: "Export River instance",
+    title: "Export Daisy instance",
     defaultPath: `${sanitizeFilename(instance.name)}.rvr`,
-    filters: [{ name: "River Instance", extensions: ["rvr"] }]
+    filters: [{ name: "Daisy Instance", extensions: ["rvr"] }]
   });
   if (!filePath) return { ok: false, message: "Cancelled." };
 
@@ -7924,15 +7924,15 @@ ipcMain.handle("launcher:export-instance", async (_event, instanceId) => {
     emitActivity({ title: "Exporting instance", detail: "Writing compact manifest...", current: 1, total: 4 });
     const archiveContents = fs.readdirSync(stagingDir).map((entry) => path.join(stagingDir, entry));
     emitActivity({ title: "Exporting instance", detail: "Compressing archive...", current: 2, total: 4 });
-    await compressPathsToRiverArchive(archiveContents, exportPath);
-    const totalFiles = Object.values(staged.riverManifest.contents).reduce((sum, count) => sum + Number(count || 0), 0);
+    await compressPathsToDaisyArchive(archiveContents, exportPath);
+    const totalFiles = Object.values(staged.daisyManifest.contents).reduce((sum, count) => sum + Number(count || 0), 0);
     emitActivity({ title: "Exporting instance", detail: "Finalizing compact export...", current: 3, total: 4 });
     const exportSizeKb = Math.max(1, Math.round(fs.statSync(exportPath).size / 1024));
     emitActivity({ title: "Exporting instance", detail: "Done.", current: 4, total: 4, done: true, percent: 100 });
     return {
       ok: true,
       message: `Exported ${totalFiles} mod${totalFiles === 1 ? "" : "s"} and pack${totalFiles === 1 ? "" : "s"} to ${path.basename(exportPath)} (${exportSizeKb >= 1024 ? `${(exportSizeKb / 1024).toFixed(1)} MB` : `${exportSizeKb} KB`}).` +
-        (staged.riverManifest.bundled ? ` ${staged.riverManifest.bundled} of them are not on Modrinth, so they are inside the file.` : "")
+        (staged.daisyManifest.bundled ? ` ${staged.daisyManifest.bundled} of them are not on Modrinth, so they are inside the file.` : "")
     };
   } catch (error) {
     return { ok: false, message: `Export failed: ${error.message}` };
@@ -7945,19 +7945,19 @@ ipcMain.handle("launcher:export-instance", async (_event, instanceId) => {
 
 async function importRvrArchiveFromFile(archivePath) {
   if (!isRvrPath(archivePath) || !fs.existsSync(archivePath)) {
-    return { ok: false, message: "That file is not a valid River .rvr export." };
+    return { ok: false, message: "That file is not a valid Daisy .rvr export." };
   }
   const baseName = path.basename(archivePath, path.extname(archivePath));
-  const extractRoot = path.join(os.tmpdir(), `river-import-${Date.now()}`);
+  const extractRoot = path.join(os.tmpdir(), `daisy-import-${Date.now()}`);
 
   fs.mkdirSync(extractRoot, { recursive: true });
-  emitActivity({ title: "Importing instance", detail: "Unpacking River archive...", current: 0, total: 1 });
+  emitActivity({ title: "Importing instance", detail: "Unpacking Daisy archive...", current: 0, total: 1 });
   try {
-    await extractRiverArchive(archivePath, extractRoot);
+    await extractDaisyArchive(archivePath, extractRoot);
 
     const resolved = resolveRvrRootPath(extractRoot);
     if (!resolved.manifest) {
-      return { ok: false, message: "That file is not a valid River .rvr export." };
+      return { ok: false, message: "That file is not a valid Daisy .rvr export." };
     }
 
     const imported = importRvrArchive(resolved.rootPath, resolved.manifest, baseName);
@@ -7966,7 +7966,7 @@ async function importRvrArchiveFromFile(archivePath) {
       const offline = await offlineResult("Importing this instance");
       if (offline) {
         try { fs.rmSync(imported.instance.path, { recursive: true, force: true }); } catch { }
-        return { ok: false, message: "No network connection. This file only lists the mods, so River has to download them. Connect and try again." };
+        return { ok: false, message: "No network connection. This file only lists the mods, so Daisy has to download them. Connect and try again." };
       }
     }
     const failed = await restoreRvrContent(imported.instance, imported.restore);
@@ -7979,12 +7979,12 @@ async function importRvrArchiveFromFile(archivePath) {
     const instances = readInstances();
     instances.push(instance);
     writeInstances(instances);
-    // After the instance is registered, so a Forge or plain-Fabric import does not get River's jar.
+    // After the instance is registered, so a Forge or plain-Fabric import does not get Daisy's jar.
     try {
-      await prefetchRiverModJar(instance.version);
+      await prefetchDaisyModJar(instance.version);
       ensureBundledClientCoreMod(instance.path, instance.version);
     } catch (error) {
-      emit("launcher:log", `[import] Could not stage River's mod: ${error.message}`);
+      emit("launcher:log", `[import] Could not stage Daisy's mod: ${error.message}`);
     }
     emitStatus();
     emitActivity({ title: "Importing instance", detail: "Done.", current: 1, total: 1, done: true });
@@ -8008,8 +8008,8 @@ async function importRvrArchiveFromFile(archivePath) {
 
 ipcMain.handle("launcher:import-instance", async () => {
   const { filePaths } = await dialog.showOpenDialog(mainWindow, {
-    title: "Import River instance",
-    filters: [{ name: "River Instance", extensions: ["rvr"] }],
+    title: "Import Daisy instance",
+    filters: [{ name: "Daisy Instance", extensions: ["rvr"] }],
     properties: ["openFile"]
   });
   if (!filePaths?.length) return { ok: false, message: "Cancelled." };
@@ -8141,7 +8141,7 @@ async function installJavaRuntime(majorVersion = 21, options = {}) {
   let timeout = setTimeout(() => controller.abort(), 8000);
   let meta;
   try {
-    const res = await fetch(apiUrl, { signal: controller.signal, headers: { "User-Agent": `RiverClientLauncher/${app.getVersion()}` } });
+    const res = await fetch(apiUrl, { signal: controller.signal, headers: { "User-Agent": `DaisyClientLauncher/${app.getVersion()}` } });
     clearTimeout(timeout);
     if (!res.ok) throw new Error(`Adoptium API returned ${res.status}`);
     const list = await res.json();
@@ -8160,7 +8160,7 @@ async function installJavaRuntime(majorVersion = 21, options = {}) {
   const downloadPath = path.join(javaDir, fileName);
 
   emitActivity({ title: "Installing Java", detail: `Downloading ${fileName}...`, current: 1, total: 4 });
-  const dlRes = await fetch(downloadUrl, { headers: { "User-Agent": `RiverClientLauncher/${app.getVersion()}` } });
+  const dlRes = await fetch(downloadUrl, { headers: { "User-Agent": `DaisyClientLauncher/${app.getVersion()}` } });
   if (!dlRes.ok || !dlRes.body) return { ok: false, message: `Java download failed with ${dlRes.status}.` };
 
   const totalBytes = Number(dlRes.headers.get("content-length") || 0);
@@ -8339,70 +8339,70 @@ const presenceRosterUrl = String(
  * Live presence for the friends list.
  *
  * Returns the friends array with a real `status` rather than the stored placeholder.
- * "Online" here means River-active - the in-game client posts presence while you play,
+ * "Online" here means Daisy-active - the in-game client posts presence while you play,
  * so a friend sitting in the launcher is correctly not online. Failures degrade to
  * "unknown" rather than lying that everyone is offline.
  */
-const riverSocialBase = String(process.env.RIVER_SOCIAL_URL || "https://updates.riverclient.xyz/social");
-let riverSessionCache = { token: "", expiresAt: 0 };
+const daisySocialBase = String(process.env.RIVER_SOCIAL_URL || "https://updates.riverclient.xyz/social");
+let daisySessionCache = { token: "", expiresAt: 0 };
 /*
-  Why the friends list could say "River unreachable" for good. Signing in asks Mojang for
+  Why the friends list could say "Daisy unreachable" for good. Signing in asks Mojang for
   a certificate, Mojang rate limits that call, and the panel polls every 15 seconds - so
   one refusal made every later poll ask again, which kept the limit from ever lifting. And
   the session lived only in memory, so each launcher restart (an update, a test) was one
   more call. Now the session is kept on disk until it expires, and after a failed sign-in
-  River waits, doubling up to five minutes, before asking Mojang again.
+  Daisy waits, doubling up to five minutes, before asking Mojang again.
 */
-let riverSignInError = "";
-let riverSignInRetryAt = 0;
-let riverSignInBackoffMs = 0;
-function riverSessionFile() { return path.join(app.getPath("userData"), "river-session.json"); }
-function readStoredRiverSession(uuid) {
+let daisySignInError = "";
+let daisySignInRetryAt = 0;
+let daisySignInBackoffMs = 0;
+function daisySessionFile() { return path.join(app.getPath("userData"), "river-session.json"); }
+function readStoredDaisySession(uuid) {
   try {
-    const stored = JSON.parse(fs.readFileSync(riverSessionFile(), "utf8"));
+    const stored = JSON.parse(fs.readFileSync(daisySessionFile(), "utf8"));
     if (stored.uuid === uuid && stored.token && Number(stored.expiresAt) > Date.now() + 60_000) {
       return { token: String(stored.token), expiresAt: Number(stored.expiresAt) };
     }
   } catch { }
   return null;
 }
-function storeRiverSession(uuid, session) {
-  try { fs.writeFileSync(riverSessionFile(), JSON.stringify({ uuid, token: session.token, expiresAt: session.expiresAt })); } catch { }
+function storeDaisySession(uuid, session) {
+  try { fs.writeFileSync(daisySessionFile(), JSON.stringify({ uuid, token: session.token, expiresAt: session.expiresAt })); } catch { }
 }
-function forgetRiverSession() {
-  riverSessionCache = { token: "", expiresAt: 0 };
-  try { fs.rmSync(riverSessionFile(), { force: true }); } catch { }
+function forgetDaisySession() {
+  daisySessionCache = { token: "", expiresAt: 0 };
+  try { fs.rmSync(daisySessionFile(), { force: true }); } catch { }
 }
-function failRiverSignIn(message) {
-  riverSignInError = message;
-  riverSignInBackoffMs = Math.min(Math.max(30_000, riverSignInBackoffMs * 2), 300_000);
-  riverSignInRetryAt = Date.now() + riverSignInBackoffMs;
+function failDaisySignIn(message) {
+  daisySignInError = message;
+  daisySignInBackoffMs = Math.min(Math.max(30_000, daisySignInBackoffMs * 2), 300_000);
+  daisySignInRetryAt = Date.now() + daisySignInBackoffMs;
   return "";
 }
 
 /**
- * Signs the launcher in to River using this account's Mojang-signed certificate.
+ * Signs the launcher in to Daisy using this account's Mojang-signed certificate.
  *
- * Same proof the in-game client uses: River verifies Mojang's signature offline (it cannot
+ * Same proof the in-game client uses: Daisy verifies Mojang's signature offline (it cannot
  * call Mojang - Cloudflare's egress is blocked) and we prove possession by signing a
  * one-time nonce. Used here to prove tester status when fetching beta builds.
  */
-async function riverSignIn() {
-  if (riverSessionCache.token && riverSessionCache.expiresAt > Date.now() + 60_000) {
-    return riverSessionCache.token;
+async function daisySignIn() {
+  if (daisySessionCache.token && daisySessionCache.expiresAt > Date.now() + 60_000) {
+    return daisySessionCache.token;
   }
   const known = readAuth();
   if (known?.profile?.id) {
-    const stored = readStoredRiverSession(known.profile.id);
+    const stored = readStoredDaisySession(known.profile.id);
     if (stored) {
-      riverSessionCache = stored;
+      daisySessionCache = stored;
       return stored.token;
     }
   }
-  if (Date.now() < riverSignInRetryAt) return "";
+  if (Date.now() < daisySignInRetryAt) return "";
   const auth = await ensureFreshAuth();
   if (!auth?.minecraftAccessToken || !auth?.profile?.id) {
-    riverSignInError = "Sign in to your Minecraft account first.";
+    daisySignInError = "Sign in to your Minecraft account first.";
     return "";
   }
 
@@ -8413,16 +8413,16 @@ async function riverSignIn() {
       headers: { Authorization: `Bearer ${auth.minecraftAccessToken}` }
     });
     if (!certRes.ok) {
-      return failRiverSignIn(certRes.status === 429
-        ? "Mojang is limiting account checks right now. River will try again in a few minutes."
-        : `Mojang's account check failed (${certRes.status}). River will try again shortly.`);
+      return failDaisySignIn(certRes.status === 429
+        ? "Mojang is limiting account checks right now. Daisy will try again in a few minutes."
+        : `Mojang's account check failed (${certRes.status}). Daisy will try again shortly.`);
     }
     const cert = await certRes.json();
 
-    const begin = await (await fetch(`${riverSocialBase}/auth/begin`, {
+    const begin = await (await fetch(`${daisySocialBase}/auth/begin`, {
       method: "POST", headers: { "Content-Type": "application/json" }, body: "{}"
     })).json();
-    if (!begin?.nonce) return failRiverSignIn("River did not answer the sign-in request.");
+    if (!begin?.nonce) return failDaisySignIn("Daisy did not answer the sign-in request.");
 
     const privateKey = crypto.createPrivateKey({
       key: stripPem(cert.keyPair.privateKey), format: "der", type: "pkcs8"
@@ -8431,7 +8431,7 @@ async function riverSignIn() {
       .sign("sha256", Buffer.from(begin.nonce, "utf8"), privateKey)
       .toString("base64");
 
-    const complete = await (await fetch(`${riverSocialBase}/auth/complete`, {
+    const complete = await (await fetch(`${daisySocialBase}/auth/complete`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -8445,26 +8445,26 @@ async function riverSignIn() {
       })
     })).json();
 
-    if (!complete?.ok || !complete.token) return failRiverSignIn(String(complete?.message || "River refused the sign-in."));
-    riverSessionCache = { token: complete.token, expiresAt: Number(complete.expiresAt) || 0 };
-    riverSignInError = "";
-    riverSignInBackoffMs = 0;
-    riverSignInRetryAt = 0;
-    storeRiverSession(auth.profile.id, riverSessionCache);
+    if (!complete?.ok || !complete.token) return failDaisySignIn(String(complete?.message || "Daisy refused the sign-in."));
+    daisySessionCache = { token: complete.token, expiresAt: Number(complete.expiresAt) || 0 };
+    daisySignInError = "";
+    daisySignInBackoffMs = 0;
+    daisySignInRetryAt = 0;
+    storeDaisySession(auth.profile.id, daisySessionCache);
     return complete.token;
   } catch {
-    return failRiverSignIn("Could not reach Mojang or River.");
+    return failDaisySignIn("Could not reach Mojang or Daisy.");
   }
 }
 
-/** One authenticated call to the River social backend. */
-async function riverSocialCall(route, body = {}, retried = false) {
-  const token = await riverSignIn();
-  if (!token) return { ok: false, message: riverSignInError || "Could not verify your Minecraft account." };
+/** One authenticated call to the Daisy social backend. */
+async function daisySocialCall(route, body = {}, retried = false) {
+  const token = await daisySignIn();
+  if (!token) return { ok: false, message: daisySignInError || "Could not verify your Minecraft account." };
   try {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 8000);
-    const response = await fetch(`${riverSocialBase}${route}`, {
+    const response = await fetch(`${daisySocialBase}${route}`, {
       method: "POST",
       signal: controller.signal,
       headers: {
@@ -8476,15 +8476,15 @@ async function riverSocialCall(route, body = {}, retried = false) {
     });
     clearTimeout(timer);
     const result = await response.json();
-    // A session River no longer knows (it was revoked, or the account changed): sign in once more.
+    // A session Daisy no longer knows (it was revoked, or the account changed): sign in once more.
     if (result && result.ok === false && !retried && /sign in again/i.test(String(result.message || ""))) {
-      forgetRiverSession();
-      riverSignInRetryAt = 0;
-      return riverSocialCall(route, body, true);
+      forgetDaisySession();
+      daisySignInRetryAt = 0;
+      return daisySocialCall(route, body, true);
     }
     return result;
   } catch {
-    return { ok: false, message: "River is unreachable." };
+    return { ok: false, message: "Daisy is unreachable." };
   }
 }
 
@@ -8493,15 +8493,14 @@ async function riverSocialCall(route, body = {}, retried = false) {
  * the in-game client uses - so both surfaces show one friends list rather than the local
  * settings.friends list this panel used to keep to itself.
  */
-ipcMain.handle("launcher:daisy-social", (event, arg) => handleDaisySocial(event, arg));
-ipcMain.handle("launcher:river-social", async (_event, request = {}) => {
+async function handleDaisySocial(_event, request = {}) {
   const action = String(request.action || "");
   const payload = request.payload || {};
 
   switch (action) {
     case "roster": {
       const settings = readSettings();
-      return riverSocialCall("/presence", {
+      return daisySocialCall("/presence", {
         status: settings.socialStatus || "online",
         shareServer: false
       });
@@ -8509,24 +8508,26 @@ ipcMain.handle("launcher:river-social", async (_event, request = {}) => {
     case "add": {
       // Mojang cannot be reached from the worker, but it can from here - so resolve the
       // name locally and file the request by UUID. That also lets you add someone who has
-      // never installed River; it simply waits for their first sign-in.
+      // never installed Daisy; it simply waits for their first sign-in.
       const name = String(payload.name || "").trim();
       if (!name) return { ok: false, message: "Enter a username." };
       const skin = await resolveMojangProfile(name);
       if (!skin) return { ok: false, message: `No Minecraft account called "${name}".` };
-      return riverSocialCall("/friends/request", { name: skin.name, uuid: skin.id });
+      return daisySocialCall("/friends/request", { name: skin.name, uuid: skin.id });
     }
-    case "accept": return riverSocialCall("/friends/accept", { uuid: payload.uuid });
-    case "decline": return riverSocialCall("/friends/decline", { uuid: payload.uuid });
-    case "remove": return riverSocialCall("/friends/remove", { uuid: payload.uuid });
-    case "block": return riverSocialCall("/block", { uuid: payload.uuid });
-    case "unblock": return riverSocialCall("/unblock", { uuid: payload.uuid });
-    case "blocked": return riverSocialCall("/blocked", {});
-    case "history": return riverSocialCall("/dm/history", { uuid: payload.uuid, limit: payload.limit });
-    case "send": return riverSocialCall("/dm/send", { uuid: payload.uuid, text: payload.text });
+    case "accept": return daisySocialCall("/friends/accept", { uuid: payload.uuid });
+    case "decline": return daisySocialCall("/friends/decline", { uuid: payload.uuid });
+    case "remove": return daisySocialCall("/friends/remove", { uuid: payload.uuid });
+    case "block": return daisySocialCall("/block", { uuid: payload.uuid });
+    case "unblock": return daisySocialCall("/unblock", { uuid: payload.uuid });
+    case "blocked": return daisySocialCall("/blocked", {});
+    case "history": return daisySocialCall("/dm/history", { uuid: payload.uuid, limit: payload.limit });
+    case "send": return daisySocialCall("/dm/send", { uuid: payload.uuid, text: payload.text });
     default: return { ok: false, message: `Unknown social action: ${action}` };
   }
-});
+}
+ipcMain.handle("launcher:daisy-social", handleDaisySocial);
+ipcMain.handle("launcher:river-social", handleDaisySocial);
 
 /** Username to {id, name} via Mojang. Cached alongside skins; reachable from the user's PC. */
 async function resolveMojangProfile(name) {
@@ -8583,7 +8584,7 @@ async function announceSocialStatus(settings = readSettings()) {
     clearTimeout(timer);
     return { ok: true, status };
   } catch {
-    return { ok: false, message: "Could not reach River presence." };
+    return { ok: false, message: "Could not reach Daisy presence." };
   }
 }
 
@@ -8591,9 +8592,9 @@ async function announceSocialStatus(settings = readSettings()) {
   Presence is a held socket rather than an announcement every 20 seconds.
 
   That interval was about 4,300 requests a day per person and, once the update poll
-  became a push socket, easily the largest polling loop River had left. It also only ever
+  became a push socket, easily the largest polling loop Daisy had left. It also only ever
   approximated the thing it was measuring: the server had to assume somebody was gone if
-  nothing arrived for 30 seconds, so closing River left a ghost in the roster for up to
+  nothing arrived for 30 seconds, so closing Daisy left a ghost in the roster for up to
   half a minute. A socket closing is the actual event, observed rather than inferred.
 
   The old POST is kept for two things it is still better at - a one-off status change,
@@ -8709,12 +8710,12 @@ function schedulePresenceReconnect() {
 /*
   Direct messages reach the launcher, not just the game.
 
-  Someone messaging you while River is open but Minecraft is not had no way of reaching
-  you at all: the in-game client is the only thing that ever held a River social session,
+  Someone messaging you while Daisy is open but Minecraft is not had no way of reaching
+  you at all: the in-game client is the only thing that ever held a Daisy social session,
   so the launcher did not know your friends existed.
 
   It signs in the same way the game does - the Mojang-signed player certificate, a
-  one-time nonce from River, and a signature proving we hold the certificate's key. The
+  one-time nonce from Daisy, and a signature proving we hold the certificate's key. The
   launcher already stores the Minecraft access token that the certificate is fetched with,
   so this needs nothing new from the player.
 */
@@ -8773,7 +8774,7 @@ async function fetchPlayerCertificate(accessToken) {
   }
 }
 
-/** Signs River's one-time challenge, proving we hold the certificate's private key. */
+/** Signs Daisy's one-time challenge, proving we hold the certificate's private key. */
 function signNonce(nonce, privateKeyBase64) {
   const key = crypto.createPrivateKey({
     key: Buffer.from(privateKeyBase64, "base64"),
@@ -8906,7 +8907,7 @@ function notifyDirectMessage(message) {
   const settings = readSettings();
   if (settings.dmNotifications === false) return;
   /*
-    Nothing from the launcher while the game is running. River is already showing the
+    Nothing from the launcher while the game is running. Daisy is already showing the
     message in there, with its own ding and an on-screen popup, and a desktop notification
     on top of that is two alerts for one message - worse than either alone, and it steals
     focus from a game you are playing.
@@ -9102,13 +9103,13 @@ async function autoSetupOnBoot() {
     await refreshMojangVersions();
 
     const bootSettings = readSettings();
-    removeRiverInGameJars(path.join(bootSettings.instancePath, "mods"));
+    removeDaisyInGameJars(path.join(bootSettings.instancePath, "mods"));
     emitBoot("Installing support mods", "Making sure Fabric API and Fabric Language Kotlin are present...");
     const supportInstall = await ensureRequiredSupportMods(
       bootSettings.instancePath,
       bootSettings.selectedVersion || "1.21.11",
       bootSettings.modFilters?.loader || "fabric",
-      "river-support-boot"
+      "daisy-support-boot"
     );
     if (!supportInstall.ok && !(supportInstall.installed || []).length) {
       emitBoot("Support mod install failed", supportInstall.message, true, true);
@@ -9116,12 +9117,12 @@ async function autoSetupOnBoot() {
     }
 
     if (shouldRunOptimizationSuite(bootSettings.instancePath)) {
-      emitBoot("Optimizing instance", "Installing River performance mods for this instance...");
+      emitBoot("Optimizing instance", "Installing Daisy performance mods for this instance...");
       const optimization = await ensureOptimizationSuite(
         bootSettings.instancePath,
         bootSettings.selectedVersion || "1.21.11",
         bootSettings.modFilters?.loader || "fabric",
-        "river-optimization-boot"
+        "daisy-optimization-boot"
       );
       if (!optimization.ok && !(optimization.installed || []).length) {
         emitBoot("Optimization failed", optimization.message, true, true);
@@ -9129,7 +9130,7 @@ async function autoSetupOnBoot() {
       }
       writeInstanceMeta(bootSettings.instancePath, { optimizationAppliedAt: new Date().toISOString() });
     } else {
-      emitBoot("Optimization already applied", "River already optimized this instance once. Skipping.");
+      emitBoot("Optimization already applied", "Daisy already optimized this instance once. Skipping.");
     }
 
     // Mod-update availability is informational and never launch-critical, so it must not
@@ -9403,7 +9404,7 @@ function getLauncherUpdateState() {
 }
 
 /*
-  River is told about a release instead of asking for one.
+  Daisy is told about a release instead of asking for one.
 
   Suggested by Jack (BGRD), who pointed out that a socket is the right shape for this and
   can carry everything else later. It is: an update now lands the moment it is published
@@ -9588,7 +9589,7 @@ function selectLauncherUpdateManifest(currentVersion, bundledManifest, remoteMan
  */
 async function fetchTesterUpdateManifest() {
   if (readSettings().updateChannel !== "beta") return null;
-  const token = await riverSignIn();
+  const token = await daisySignIn();
   if (!token) return null;
 
   const url = updateManifestUrl.replace(/\/latest\.json$/, "/beta.json");
@@ -9605,7 +9606,7 @@ async function fetchTesterUpdateManifest() {
       }
     });
     if (!response.ok) {
-      if (response.status === 403) emit("launcher:log", "[update] This account is not on the River tester list.");
+      if (response.status === 403) emit("launcher:log", "[update] This account is not on the Daisy tester list.");
       return null;
     }
     return { url, payload: await response.json() };
@@ -9624,9 +9625,7 @@ async function fetchRemoteUpdateManifest() {
 
   const candidates = [
     updateManifestUrl,
-    "https://updates.riverclient.xyz/latest.json",
-    "https://riverclient.xyz/releases/latest.json",
-    "https://riverclient.xyz/version.json"
+    "https://github.com/realvoidgojo/Daisy-Client/releases/latest/download/latest.json"
   ].filter((value, index, self) => value && self.indexOf(value) === index);
 
   for (const url of candidates) {
@@ -9721,7 +9720,7 @@ async function prepareUpdateStagingDir(preferredDir) {
   }
 
   const detail = lastError?.code === "EPERM" || lastError?.code === "EACCES"
-    ? "Windows blocked River from preparing the update folder. This is usually antivirus or Controlled Folder Access holding the folder open. Close Daisy, then try again."
+    ? "Windows blocked Daisy from preparing the update folder. This is usually antivirus or Controlled Folder Access holding the folder open. Close Daisy, then try again."
     : (lastError?.message || "Could not prepare the update folder.");
   throw new Error(detail);
 }
@@ -9817,13 +9816,13 @@ async function runUpdaterModeOnce() {
 function describeUpdateError(error) {
   const code = String(error?.code || "");
   if (code === "EPERM" || code === "EACCES") {
-    return "Windows blocked River from writing the update files. Close Daisy and Minecraft, then click Retry. If it keeps failing, allow Daisy through your antivirus or Controlled Folder Access.";
+    return "Windows blocked Daisy from writing the update files. Close Daisy and Minecraft, then click Retry. If it keeps failing, allow Daisy through your antivirus or Controlled Folder Access.";
   }
   if (code === "EBUSY") {
     return "The update files are still in use. Close Daisy and Minecraft, then click Retry.";
   }
   if (code === "ENOSPC") return "There is not enough disk space to install the update.";
-  if (code === "ENOTEMPTY") return "River could not clear the old update files. Click Retry.";
+  if (code === "ENOTEMPTY") return "Daisy could not clear the old update files. Click Retry.";
   const raw = String(error?.message || "Updater failed before install could start.");
   // Strip the Windows extended-length prefix and any duplicated quoted path.
   return raw.replace(/\\\\\?\\/g, "").replace(/\s*'[^']*'\s*$/, "").trim() || "Updater failed before install could start.";
@@ -9881,7 +9880,7 @@ function listRelativeFiles(root) {
  *
  * The alternative is `createHash("sha256").update(ofs.readFileSync(p))`, which loads the
  * whole file into memory before hashing any of it. That is a 213 MB allocation for
- * RiverClient.exe alone, and being synchronous it happens on the main process, where
+ * Daisy.exe alone, and being synchronous it happens on the main process, where
  * nothing else - no window, no input, no IPC - runs until it finishes.
  */
 function hashFileStreaming(filePath) {
@@ -9957,7 +9956,7 @@ async function buildDifferentialUpdatePlan(fileManifest, installDir) {
   actually differ.
 
   File level diffing already skips anything unchanged, which covers the Electron DLLs.
-  It does nothing for the two files that change on every single build - RiverClient.exe,
+  It does nothing for the two files that change on every single build - Daisy.exe,
   because the ASAR integrity hash and the signature are written into it, and app.asar,
   because it holds our own JavaScript. Those two are 321MB together and almost none of
   either is different, so every update re-downloaded a third of a gigabyte to change a
@@ -10375,7 +10374,7 @@ function buildApplyUpdateScript({ pid, sourceDir, installDir, relaunchExe, relau
     "Start-Sleep -Seconds 2",
     `Wait-Process -Id ${Number(pid)} -ErrorAction SilentlyContinue`,
     "$deadline = (Get-Date).AddSeconds(30)",
-    "while ((Get-Process -Name 'RiverClient' -ErrorAction SilentlyContinue) -and (Get-Date) -lt $deadline) { Start-Sleep -Milliseconds 500 }",
+    "while ((Get-Process -Name 'Daisy' -ErrorAction SilentlyContinue) -and (Get-Date) -lt $deadline) { Start-Sleep -Milliseconds 500 }",
     "Start-Sleep -Seconds 1",
     `$source = '${escapePowerShell(sourceDir)}'`,
     `$target = '${escapePowerShell(installDir)}'`,
@@ -10480,7 +10479,7 @@ function buildApplyUpdateScript({ pid, sourceDir, installDir, relaunchExe, relau
     "    Add-Content -Path $log -Value 'Previous launcher files restored.'",
     "  }",
     "  $restart = if (Test-Path -LiteralPath $primary) { $primary } else { $fallback }",
-    "  if (Test-Path -LiteralPath $restart) { Start-Process -FilePath $restart -ArgumentList @('--river-update-failed=' + $log) -WorkingDirectory $target -WindowStyle Normal }",
+    "  if (Test-Path -LiteralPath $restart) { Start-Process -FilePath $restart -ArgumentList @('--daisy-update-failed=' + $log) -WorkingDirectory $target -WindowStyle Normal }",
     "  exit 1",
     "}",
     "$start = if (Test-Path -LiteralPath $primary) { $primary } elseif (Test-Path -LiteralPath $fallback) { $fallback } else { throw \"No executable found after update. Expected $primary or $fallback.\" }",
@@ -10544,7 +10543,7 @@ function escapePowerShell(value) {
 
 /** Probes for write access by creating and removing a throwaway file, without touching real install files. */
 function canWriteToInstallDir(installDir) {
-  const probe = path.join(installDir, `.river-write-check-${process.pid}-${Date.now()}.tmp`);
+  const probe = path.join(installDir, `.daisy-write-check-${process.pid}-${Date.now()}.tmp`);
   try {
     fs.writeFileSync(probe, "ok");
     fs.rmSync(probe, { force: true });
@@ -10568,7 +10567,7 @@ async function relaunchUpdaterElevated(jobPath) {
     total: 1
   });
   const exePath = app.getPath("exe");
-  const args = [`--river-updater-job=${jobPath}`];
+  const args = [`--daisy-updater-job=${jobPath}`];
   const argList = args.map((arg) => `'${escapePowerShell(arg)}'`).join(",");
   await runPowerShell([
     "-NoProfile",
@@ -10724,11 +10723,11 @@ async function clearActiveMinecraftCape(accessToken) {
 /*
   Forge and vanilla instances.
 
-  River's own client is a Fabric mod, so a Forge or vanilla instance is plain Minecraft as far
-  as River is concerned: none of River's jars, support mods, optimization suite or Fabric mod
+  Daisy's own client is a Fabric mod, so a Forge or vanilla instance is plain Minecraft as far
+  as Daisy is concerned: none of Daisy's jars, support mods, optimization suite or Fabric mod
   checks go near it. It is launched the way Mojang's launcher launches a version - the version
   JSON's own JVM and game arguments, its own Java major, Forge's own installer - rather than
-  through the Fabric path, which hard-codes most of those for River's targets.
+  through the Fabric path, which hard-codes most of those for Daisy's targets.
 */
 const LAUNCHABLE_LOADERS = ["fabric", "forge", "neoforge", "quilt", "vanilla"];
 const OLDEST_PLAIN_VERSION = "1.8";
@@ -10965,7 +10964,7 @@ function mergeVersionProfiles(parent, child) {
 }
 
 /**
- * Forge for one Minecraft version, installed into River's shared runtime folder.
+ * Forge for one Minecraft version, installed into Daisy's shared runtime folder.
  *
  * Up to 1.12 the installer jar simply carries the version JSON and the Forge jar. From 1.13
  * Forge patches the game with a chain of processors, so the official installer is run
@@ -11323,7 +11322,7 @@ async function prepareStandaloneMinecraftLaunch(status, auth, authenticated, joi
   };
   const replacements = {
     auth_player_name: profile.name,
-    version_name: `River-${versionId}`,
+    version_name: `Daisy-${versionId}`,
     game_directory: status.instancePath,
     assets_root: assetsDir,
     assets_index_name: vanilla.assets || versionId,
@@ -11350,19 +11349,19 @@ async function prepareStandaloneMinecraftLaunch(status, auth, authenticated, joi
     gameArgs.push("--quickPlayMultiplayer", join);
   }
 
-  await prefetchRiverModJar(versionId);
+  await prefetchDaisyModJar(versionId);
   const installedClientMod = ensureBundledClientCoreMod(status.instancePath, versionId);
-  const river = stageRiverRuntimeForInstance(status.instancePath, versionId);
+  const runtime = stageDaisyRuntimeForInstance(status.instancePath, versionId);
   // A -javaagent / classloader jar must be a real file the spawned JVM can open. Paths inside
   // app.asar are virtual (readable only through Electron's fs shim) and make the JVM die with
   // "agent library failed Agent_OnLoad: instrument / Error opening zip file or JAR manifest missing".
-  const riverInjection = !fs.existsSync(installedClientMod) && isRealRuntimeJar(river.bootstrapJar) && isRealRuntimeJar(river.clientJar);
+  const daisyInjection = !fs.existsSync(installedClientMod) && isRealRuntimeJar(runtime.bootstrapJar) && isRealRuntimeJar(runtime.clientJar);
   if (fs.existsSync(installedClientMod)) {
     emit("launcher:log", `[launcher] Daisy will load from the instance mods folder (${path.basename(installedClientMod)}).`);
-  } else if (riverInjection) {
-    emit("launcher:log", `[launcher] River in-game injection enabled (agent: ${path.basename(river.bootstrapJar)}, client: ${path.basename(river.clientJar)}).`);
+  } else if (daisyInjection) {
+    emit("launcher:log", `[launcher] Daisy in-game injection enabled (agent: ${path.basename(runtime.bootstrapJar)}, client: ${path.basename(runtime.clientJar)}).`);
   } else {
-    emit("launcher:log", "[launcher] River in-game jars not found — launching plain Fabric. Run `gradlew build` to produce the agent + client jars.");
+    emit("launcher:log", "[launcher] Daisy in-game jars not found — launching plain Fabric. Run `gradlew build` to produce the agent + client jars.");
   }
   const runtimeClasspath = replacements.classpath;
 
@@ -11397,9 +11396,9 @@ async function prepareStandaloneMinecraftLaunch(status, auth, authenticated, joi
     ...ensureRequiredJvmArgs(parseJvmArgs(status.settings.jvmArgs)),
     ...injectorArgs,
     `-Djava.library.path=${nativesDir}`,
-    "-Dminecraft.launcher.brand=daisy",
+    "-Dminecraft.launcher.brand=daisy-client",
     `-Dminecraft.launcher.version=${app.getVersion()}`,
-    ...(riverInjection ? [`-javaagent:${river.bootstrapJar}`, `-Driver.client.jar=${river.clientJar}`] : []),
+    ...(daisyInjection ? [`-javaagent:${runtime.bootstrapJar}`, `-Driver.client.jar=${runtime.clientJar}`] : []),
     "-cp",
     runtimeClasspath,
     mainClass,
@@ -11957,7 +11956,7 @@ const optimizationSuiteMods = [
   { name: "Noisium", query: "Noisium", slug: "noisium", optional: false },
   { name: "FastQuit", query: "FastQuit", slug: "fastquit", optional: false },
   { name: "Entity Culling", query: "Entity Culling", slug: "entityculling", optional: false },
-  // Culls and batches particles; builds for every version River ships.
+  // Culls and batches particles; builds for every version Daisy ships.
   { name: "Particle Core", query: "Particle Core", slug: "particle-core", optional: false },
   // Draws chests as static block models instead of block entities. No 26.x build yet,
   // so on those versions it is skipped.
@@ -11970,7 +11969,7 @@ const incompatibleManagedMods = [
   {
     title: "Krypton",
     pattern: /^krypton-[\w.+-]+\.jar$/i,
-    reason: "It crashes River 1.21.11 with Controlify on startup."
+    reason: "It crashes Daisy 1.21.11 with Controlify on startup."
   }
 ];
 
@@ -12493,13 +12492,13 @@ function quarantineProblemResourcePacks(instancePath) {
   return { changed, disabled };
 }
 
-async function ensureOptimizationSuite(instancePath, gameVersion, loader = "fabric", reason = "river-optimization") {
-  // River auto-installs ONLY clientcore (that is what makes it River). Silently
+async function ensureOptimizationSuite(instancePath, gameVersion, loader = "fabric", reason = "daisy-optimization") {
+  // Daisy auto-installs ONLY clientcore (that is what makes it Daisy). Silently
   // pulling in Sodium and a suite of other mods on launch/boot/repair annoyed people
   // and made instances feel hijacked - so the suite is now opt-in through the mod
   // browser instead. The list and installer below are kept for a future explicit
   // "install performance pack" button, but nothing calls into them automatically.
-  if (reason !== "river-optimization-preset-explicit") {
+  if (reason !== "daisy-optimization-preset-explicit") {
     return { ok: true, installed: [], skipped: [], message: "Optimization suite is opt-in." };
   }
   const installed = [];
@@ -12551,14 +12550,14 @@ async function ensureOptimizationSuite(instancePath, gameVersion, loader = "fabr
   };
 }
 
-async function ensureRequiredSupportMods(instancePath, gameVersion, loader = "fabric", reason = "river-support") {
+async function ensureRequiredSupportMods(instancePath, gameVersion, loader = "fabric", reason = "daisy-support") {
   const installed = [];
   const skipped = [];
   const visited = new Set();
   for (let index = 0; index < requiredSupportMods.length; index += 1) {
     const mod = requiredSupportMods[index];
     emitActivity({
-      title: "Preparing River support mods",
+      title: "Preparing Daisy support mods",
       detail: `Installing ${mod.name}...`,
       current: index + 1,
       total: requiredSupportMods.length
@@ -12602,7 +12601,7 @@ async function createPvpInstance(gameVersion) {
   const now = new Date().toISOString();
   const instance = {
     id,
-    name: `River PvP ${gameVersion}`,
+    name: `Daisy PvP ${gameVersion}`,
     type: "pvp",
     version: gameVersion,
     loader: "fabric",
@@ -12628,7 +12627,7 @@ async function createPvpInstance(gameVersion) {
   fs.mkdirSync(path.join(instancePath, "resourcepacks"), { recursive: true });
   fs.mkdirSync(path.join(instancePath, "shaderpacks"), { recursive: true });
 
-  const optimization = await ensureOptimizationSuite(instancePath, gameVersion, "fabric", "river-optimization-preset-explicit");
+  const optimization = await ensureOptimizationSuite(instancePath, gameVersion, "fabric", "daisy-optimization-preset-explicit");
   if (optimization.ok || (optimization.installed || []).length) {
     writeInstanceMeta(instancePath, { optimizationAppliedAt: new Date().toISOString() });
   }
@@ -12639,7 +12638,7 @@ async function createPvpInstance(gameVersion) {
   const visited = new Set();
   for (let index = 0; index < pvpPresetMods.length; index += 1) {
     const mod = pvpPresetMods[index];
-    emitActivity({ title: "Creating River PvP", detail: `Installing ${mod.name}${mod.optional ? " (optional)" : ""}...`, current: index + 1, total: pvpPresetMods.length });
+    emitActivity({ title: "Creating Daisy PvP", detail: `Installing ${mod.name}${mod.optional ? " (optional)" : ""}...`, current: index + 1, total: pvpPresetMods.length });
     emit("launcher:log", `[preset] Installing ${mod.name}${mod.optional ? " (optional)" : ""}...`);
     const projectIdOrSlug = await resolveModrinthProjectId(mod.slug, mod.query);
     if (!projectIdOrSlug) {
@@ -13263,7 +13262,7 @@ async function installCurseForgeMod({ mod, instancePath, apiKey, visited = new S
     visited.add(String(depId));
     const dep = await curseforge.getMod({ modId: depId, apiKey });
     if (!dep) continue;
-    // Already there from either source (Fabric API from Modrinth, say), or as a jar River put
+    // Already there from either source (Fabric API from Modrinth, say), or as a jar Daisy put
     // in: a second copy of the same mod stops the game from starting.
     const slug = String(dep.slug || "").toLowerCase();
     const name = String(dep.name || "").toLowerCase();
@@ -13354,7 +13353,7 @@ async function downloadFile(url, target, options = {}) {
       await finalizeDownloadedTempFile(temp, target);
     } catch (error) {
       if (error?.code === "EPERM") {
-        throw new Error(`River could not replace ${path.basename(target)} because Windows is still using it.`);
+        throw new Error(`Daisy could not replace ${path.basename(target)} because Windows is still using it.`);
       }
       throw error;
     }

@@ -1,7 +1,7 @@
 {
   "name": "daisy-launcher",
   "version": "0.1.7",
-  "riverVersion": "0.2.8.1",
+  "daisyVersion": "0.2.8.1",
   "description": "Daisy Minecraft Launcher",
   "author": "Daisy",
   "main": "app/main.js",
@@ -18,7 +18,9 @@
     "publish:update": "node scripts/publish-update.js",
     "publish:update:fast": "node scripts/publish-update.js --fast",
     "testers": "node scripts/testers.js",
-    "blocklist": "node scripts/blocklist.js"
+    "blocklist": "node scripts/blocklist.js",
+    "test": "node --test tests/*.test.js",
+    "test:artifacts": "node --test tests/daisy-skin-artifacts.test.js"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.15",
@@ -54,7 +56,7 @@
   },
   "build": {
     "appId": "dev.daisy.launcher",
-    "productName": "Daisy",
+    "productName": "Daisy Client",
     "artifactName": "Daisy-${version}-${arch}.${ext}",
     "copyright": "Copyright 2026 Daisy",
     "directories": {
@@ -69,7 +71,7 @@
         "ext": "rvr",
         "name": "Daisy Instance",
         "description": "Daisy instance export",
-        "icon": "build/icon.ico",
+        "icon": "packaging/icon.ico",
         "role": "Editor"
       }
     ],
@@ -81,7 +83,7 @@
       }
     ],
     "win": {
-      "icon": "build/icon.ico",
+      "icon": "packaging/icon.ico",
       "signAndEditExecutable": false,
       "requestedExecutionLevel": "asInvoker",
       "executableName": "Daisy",
@@ -102,7 +104,7 @@
       ]
     },
     "linux": {
-      "icon": "build/icon.png",
+      "icon": "packaging/icon.png",
       "category": "Game",
       "executableName": "daisy",
       "synopsis": "Minecraft launcher",
@@ -116,8 +118,8 @@
       ]
     },
     "nsis": {
-      "installerIcon": "build/icon.ico",
-      "uninstallerIcon": "build/icon.ico",
+      "installerIcon": "packaging/icon.ico",
+      "uninstallerIcon": "packaging/icon.ico",
       "artifactName": "Daisy-Setup.${ext}",
       "oneClick": false,
       "perMachine": false,
@@ -125,7 +127,7 @@
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
       "shortcutName": "Daisy",
-      "include": "build/installer.nsh"
+      "include": "packaging/installer.nsh"
     },
     "portable": {
       "artifactName": "Daisy-Portable.${ext}",

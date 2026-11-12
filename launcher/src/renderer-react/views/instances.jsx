@@ -611,7 +611,7 @@ function InstanceRow({ instance, selected, onSelect, onAction, busyId, onOpen })
             <span>{[instance.loader, instance.version].filter(Boolean).join(" ") || t("unknown version")}</span>
             {/* Only ever set explicitly on import - existing Daisy instances leave it
                 undefined, so they are not mislabelled as unsupported. */}
-            {instance.riverSupported === false ? (
+            {instance.daisySupported === false ? (
               <span className="flex items-center gap-1 text-warning">
                 <TriangleAlert className="size-3" />
                 {t("Daisy not available in game")}

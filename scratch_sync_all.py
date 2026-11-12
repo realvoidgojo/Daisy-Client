@@ -78,8 +78,8 @@ for v in VERSIONS:
 appdata = os.environ.get("APPDATA", "")
 if appdata:
     for cache_dir in [
-        os.path.join(appdata, "daisy-launcher", "river-mod-cache"),
-        os.path.join(appdata, "Daisy", "river-mod-cache"),
+        os.path.join(appdata, "daisy-launcher", "daisy-mod-cache"),
+        os.path.join(appdata, "Daisy", "daisy-mod-cache"),
     ]:
         if os.path.exists(cache_dir):
             try:

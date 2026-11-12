@@ -67,7 +67,7 @@ export function ModernInstanceCard({ instance, card, selected, busy, disabled, o
         <button type="button" onClick={onOpen} className="min-w-0 text-left" tabIndex={-1}>
           <div className="truncate text-[15px] font-bold leading-snug text-foreground">{instance.name}</div>
           <div className="mt-0.5 truncate text-xs text-muted-foreground">{meta || " "}</div>
-          {instance.riverSupported === false && !isPlainInstance(instance) ? (
+          {instance.daisySupported === false && !isPlainInstance(instance) ? (
             <div className="mt-1 flex items-center gap-1 text-[11px] text-warning font-medium">
               <TriangleAlert className="size-3 shrink-0" />
               <span className="truncate">{t("Daisy not available in game")}</span>

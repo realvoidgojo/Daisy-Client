@@ -9,12 +9,12 @@
  * installs work in-app the same way Modrinth ones do.
  *
  * CurseForge's API needs a key. Someone who set their own in settings talks to CurseForge
- * directly with it; everyone else goes through River's server, which adds River's key
+ * directly with it; everyone else goes through Daisy's server, which adds Daisy's key
  * there (cloudflare-updates/src/curseforge-proxy.js) so it is never inside the launcher.
  */
 
 const API = "https://api.curseforge.com/v1";
-const RIVER_PROXY = "https://updates.riverclient.xyz/cf/v1";
+const DAISY_PROXY = "https://updates.riverclient.xyz/cf/v1";
 
 /** CurseForge groups content by classId under game 432 (Minecraft). */
 const CLASS_IDS = {
@@ -23,7 +23,7 @@ const CLASS_IDS = {
   shader: 6552
 };
 
-/** CurseForge's numeric loader ids; only the ones River can run matter. */
+/** CurseForge's numeric loader ids; only the ones Daisy can run matter. */
 const LOADER_IDS = {
   fabric: 4,
   quilt: 5,
@@ -36,7 +36,7 @@ function classIdFor(contentType) {
 }
 
 function base(apiKey) {
-  return apiKey ? API : RIVER_PROXY;
+  return apiKey ? API : DAISY_PROXY;
 }
 
 function headers(apiKey) {

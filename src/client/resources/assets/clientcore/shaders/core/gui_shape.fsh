@@ -1,6 +1,6 @@
 #version 330
 
-// Cuts River's GUI quads to shape: a rounded rectangle, its outline, or a soft shadow / glow
+// Cuts Daisy's GUI quads to shape: a rounded rectangle, its outline, or a soft shadow / glow
 // around it. Edges are smoothed over one screen pixel (fwidth), so corners stay crisp at any
 // GUI scale instead of stepping in whole GUI pixels.
 

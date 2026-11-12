@@ -24,7 +24,7 @@ const launcherRoot = path.resolve(__dirname, "..");
 const draftFile = path.join(launcherRoot, "release-draft.json");
 const packageJson = JSON.parse(fs.readFileSync(path.join(launcherRoot, "package.json"), "utf8"));
 
-const requestedVersion = process.argv[2] || packageJson.riverVersion || packageJson.version;
+const requestedVersion = process.argv[2] || packageJson.daisyVersion || packageJson.version;
 const force = process.argv.includes("--force");
 
 if (fs.existsSync(draftFile) && !force) {
@@ -58,16 +58,16 @@ if (!items.length) {
 const draft = {
   version: requestedVersion,
   approved: false,
-  title: `River Client ${requestedVersion}`,
+  title: `Daisy Client ${requestedVersion}`,
   summary: items[0] || "Write the one-line summary here.",
   items: items.length ? items : ["Write the first finished change here."],
   discord: {
     announcement: {
-      title: `River Client ${requestedVersion} is available`,
+      title: `Daisy Client ${requestedVersion} is available`,
       message: discordMessage(requestedVersion, notes)
     },
     release: {
-      title: `River Client ${requestedVersion}`,
+      title: `Daisy Client ${requestedVersion}`,
       message: discordMessage(requestedVersion, notes)
     }
   }

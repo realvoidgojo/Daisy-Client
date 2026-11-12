@@ -27,10 +27,9 @@
  * 1.21.6, 1.21.7 and 1.21.8 are the same generation, so they cost nothing extra -
  * a change that compiles on one compiles on all three. Only two blocks needed a
  * genuine third branch (//?} elif >=1.21.6 {): the disconnect call in
- * QuickDisconnectModule and the entity preview in RiverCosmeticsScreen.
+ * QuickDisconnectModule and the entity preview in DaisyCosmeticsScreen.
  *
- * Adding 1.21.5, or 1.21.9/1.21.10, would each mean a fourth and fifth generation
- * to keep in step on every future edit, which is why they are not in the list.
+ * The authoritative supported target list is in settings.gradle.kts.
  */
 plugins {
     id("dev.kikugie.stonecutter")

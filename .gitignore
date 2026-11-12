@@ -1,6 +1,7 @@
 # Build output
 .gradle/
 .kotlin/
+__pycache__/
 .wrangler/
 build/
 out/
@@ -8,6 +9,7 @@ run/
 dist/
 dist-api/
 dist-fresh/
+release-artifacts/
 *.iml
 .idea/
 .vscode/

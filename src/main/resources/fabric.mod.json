@@ -2,20 +2,23 @@
   "schemaVersion": 1,
   "id": "clientcore",
   "version": "${version}",
-  "name": "Daisy",
+  "name": "Daisy Client",
   "icon": "assets/clientcore/icon.png",
   "description": "A Fabric ${minecraft_version} PvP-friendly client by realvoidgojo.",
   "authors": [
-    "realvoidgojo"
+    "WyZ_EU (original client)",
+    "realvoidgojo (Daisy branding)"
   ],
-  "contact": {},
+  "contact": {
+    "sources": "https://github.com/realvoidgojo/Daisy-Client"
+  },
   "license": "All-Rights-Reserved",
   "environment": "client",
   "entrypoints": {
     "client": [
       {
         "adapter": "kotlin",
-        "value": "dev.wyz.clientcore.ClientCore"
+        "value": "dev.daisy.clientcore.ClientCore"
       }
     ]
   },

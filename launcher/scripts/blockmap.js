@@ -4,11 +4,9 @@
  * Content-defined chunking, so an update can fetch the parts of a file that changed
  * instead of the whole thing.
  *
- * River ships about 515MB of files per release. File level diffing already skips
- * everything that did not change, which covers the Electron DLLs, but two files change on
- * every single build and account for 321MB of that: RiverClient.exe, because the ASAR
- * integrity hash and the signature are patched into it, and resources/app.asar, because
- * it holds our own JavaScript. Almost none of either file is actually different.
+ * File level diffing skips files that did not change, including Electron DLLs.
+ * The executable's ASAR integrity hash and resources/app.asar can change on each build;
+ * content-defined chunks let the external updater reuse their unchanged regions.
  *
  * Fixed size blocks would solve the exe and fail the asar. The exe keeps its layout - the
  * same Electron binary with a few bytes rewritten in place - but an asar is a header

@@ -31,7 +31,7 @@ function fromModrinth(entry) {
  * @param manifest     the archive's riv3r-mods.json
  * @param contentIndex the archive's content-index.json
  * @param hasFile      (contentType, file) => whether the imported instance already has the file
- * @param isCore       file => whether River stages the file itself
+ * @param isCore       file => whether Daisy stages the file itself
  * @returns {{ keep: object, restore: object[], local: object[] }}
  *   keep: manifest entries for files already present, by section;
  *   restore: what to download, one per Modrinth project;

@@ -52,12 +52,12 @@ test("Modrinth project ids are told from CurseForge ids", () => {
   assert.equal(isModrinthProjectId(undefined), false);
 });
 
-test("hand-added files are reported, and River's own jar is not", () => {
+test("hand-added files are reported, and Daisy's own jar is not", () => {
   const index = {
     mods: [
       { file: "sodium-0.6.jar", projectId: "AANobbMI" },
       { file: "my-custom-mod.jar", title: "Custom", projectId: "" },
-      { file: "clientcore-0.2.6+1.21.11.jar", title: "River Client", projectId: "" }
+      { file: "clientcore-0.2.6+1.21.11.jar", title: "Daisy Client", projectId: "" }
     ],
     resourcepacks: [],
     shaders: []

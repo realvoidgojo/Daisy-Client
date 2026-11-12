@@ -1,6 +1,6 @@
 #version 330
 
-// River's GUI shapes (RiverShapes): rounded rectangles, outlines and soft shadows drawn as one
+// Daisy's GUI shapes (DaisyShapes): rounded rectangles, outlines and soft shadows drawn as one
 // quad each and cut to shape per pixel in gui_shape.fsh. The shape travels in spare vertex
 // attributes: UV0 is the position relative to the shape's centre, UV1 its half size, UV2 its
 // corner radius and outline width (both in 1/16 px), Normal.x the shadow softness (/64 px),

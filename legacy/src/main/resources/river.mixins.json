@@ -1,7 +1,7 @@
 {
   "required": true,
   "minVersion": "0.8",
-  "package": "dev.wyz.river.legacy.mixin",
+  "package": "dev.daisy.legacy.mixin",
   "compatibilityLevel": "JAVA_8",
   "client": [],
   "injectors": {

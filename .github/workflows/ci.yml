@@ -1,0 +1,54 @@
+name: CI
+on:
+  push:
+  pull_request:
+  workflow_call:
+permissions:
+  contents: read
+jobs:
+  client:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - run: python scripts/audit-branding.py
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: gradle/actions/setup-gradle@v4
+      - run: bash gradlew build check --console=plain "-Porg.gradle.java.installations.paths=$JAVA_HOME_21_X64,$JAVA_HOME_25_X64"
+      - run: python scripts/package-release.py stage-client
+      - uses: actions/upload-artifact@v4
+        with:
+          name: fabric-clients
+          path: launcher/src/bundled/*.jar
+          if-no-files-found: error
+  launcher:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: launcher/package-lock.json
+      - run: npm ci
+        working-directory: launcher
+      - run: npm test
+        working-directory: launcher
+      - run: npm run build:app
+        working-directory: launcher
+      - run: npm run dist:dir
+        working-directory: launcher
+      - uses: actions/upload-artifact@v4
+        with:
+          name: electron-unpacked-windows
+          path: launcher/dist/win-unpacked
+          if-no-files-found: error

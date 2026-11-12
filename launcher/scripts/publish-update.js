@@ -6,17 +6,17 @@ const path = require("node:path");
 
 const launcherRoot = path.resolve(__dirname, "..");
 const repoRoot = path.resolve(launcherRoot, "..");
-const siteRoot = path.join(repoRoot, "riv3r-site");
-const nextSiteRoot = path.join(repoRoot, "riv3r-next");
+const siteRoot = path.join(repoRoot, "daisy-site");
+const nextSiteRoot = path.join(repoRoot, "daisy-next");
 const nextPublicRoot = path.join(nextSiteRoot, "public");
 const nextOutRoot = path.join(nextSiteRoot, "out");
-const liveSiteBase = "https://riverclient.xyz";
-const publicUpdateBase = "https://updates.riverclient.xyz";
+const liveSiteBase = process.env.DAISY_SITE_BASE_URL || "";
+const publicUpdateBase = process.env.DAISY_UPDATE_BASE_URL || "";
 const workerRoot = path.join(repoRoot, "cloudflare-updates");
-const bucket = "river-client-updates";
+const bucket = process.env.DAISY_UPDATE_BUCKET || "";
 const packageJson = JSON.parse(fs.readFileSync(path.join(launcherRoot, "package.json"), "utf8"));
-const appVersion = packageJson.riverVersion || packageJson.version;
-const version = process.env.RIVER_PUBLISH_VERSION || appVersion;
+const appVersion = packageJson.daisyVersion || packageJson.version;
+const version = process.env.DAISY_PUBLISH_VERSION || appVersion;
 
 /*
   One instant for the whole publish, so the manifest and the Discord post cannot disagree
@@ -33,9 +33,9 @@ const releaseDraft = readReleaseDraft();
 const changelog = flags.beta
   ? {
     version,
-    title: `River Client ${version} (tester build)`,
+    title: `Daisy Client ${version} (tester build)`,
     summary: "Tester build. Not a public release - expect rough edges and please report anything broken.",
-    items: ["Tester build for the River beta channel."]
+    items: ["Tester build for the Daisy beta channel."]
   }
   : (releaseDraft ? releaseDraftChangelog(releaseDraft) : readChangelog());
 
@@ -44,18 +44,18 @@ loadCloudflareToken();
 function parseFlags() {
   const argv = process.argv.slice(2);
   const has = (name) => argv.includes(name);
-  const fast = has("--fast") || process.env.RIVER_PUBLISH_FAST === "1";
+  const fast = has("--fast") || process.env.DAISY_PUBLISH_FAST === "1";
   return {
-    skipBuild: has("--skip-build") || process.env.RIVER_PUBLISH_SKIP_BUILD === "1" || fast,
-    skipPages: has("--skip-pages") || process.env.RIVER_PUBLISH_SKIP_PAGES === "1" || fast,
-    forceBuild: has("--force-build") || process.env.RIVER_PUBLISH_FORCE_BUILD === "1",
+    skipBuild: has("--skip-build") || process.env.DAISY_PUBLISH_SKIP_BUILD === "1" || fast,
+    skipPages: has("--skip-pages") || process.env.DAISY_PUBLISH_SKIP_PAGES === "1" || fast,
+    forceBuild: has("--force-build") || process.env.DAISY_PUBLISH_FORCE_BUILD === "1",
     // The experimental Linux package is built and published with every release unless told not to.
-    skipLinux: has("--skip-linux") || process.env.RIVER_PUBLISH_SKIP_LINUX === "1",
+    skipLinux: has("--skip-linux") || process.env.DAISY_PUBLISH_SKIP_LINUX === "1",
     // Tester release: the manifest lands at beta.json (which the worker only serves to
     // allow-listed accounts) and the public installer at the bucket root is left alone,
     // so nobody on the stable channel is dragged onto a test build.
-    beta: has("--beta") || has("--channel=beta") || process.env.RIVER_PUBLISH_BETA === "1",
-    uploadConcurrency: Math.max(1, Number(process.env.RIVER_PUBLISH_UPLOAD_CONCURRENCY || 4))
+    beta: has("--beta") || has("--channel=beta") || process.env.DAISY_PUBLISH_BETA === "1",
+    uploadConcurrency: Math.max(1, Number(process.env.DAISY_PUBLISH_UPLOAD_CONCURRENCY || 4))
   };
 }
 
@@ -220,7 +220,7 @@ async function runCloudflarePool(tasks, concurrency) {
 }
 
 /**
- * Orders River's four-part versions, so 0.1.8.10 sorts after 0.1.8.9 rather than before it.
+ * Orders Daisy's four-part versions, so 0.1.8.10 sorts after 0.1.8.9 rather than before it.
  * Returns a negative number when [left] is older.
  */
 function compareReleaseVersions(left, right) {
@@ -242,7 +242,7 @@ function releaseModJars(version) {
   // src/bundled is packaged into the app; release-mods holds the rest, which the launcher
   // downloads from the update server when an instance needs that Minecraft version.
   const dirs = [path.join(launcherRoot, "src", "bundled"), path.join(launcherRoot, "release-mods")];
-  const prefix = `clientcore-${version}+`;
+  const prefix = `daisy-client-${version}+`;
   const found = new Map();
   for (const dir of dirs) {
     let names = [];
@@ -373,18 +373,18 @@ function newestMtimeInDir(dir) {
 }
 
 // electron-builder names local dist files from package.json's own frozen semver "version"
-// field (it has no idea about appVersion/riverVersion, which carry the real 4-part River
+// field (it has no idea about appVersion/daisyVersion, which carry the real 4-part Daisy
 // version for beta/hotfix builds). Local artifact names must never embed that version -
-// the installer already avoided this (River-Client-Setup.exe, no version in the name);
+// the installer already avoided this (Daisy-Setup.exe, no version in the name);
 // the portable target's artifactName in package.json matches that same version-less
 // pattern. The real version only enters via the R2 upload key/path below (releaseKey).
 function artifactPaths() {
   return {
-    installer: path.join(launcherRoot, "dist", "River-Client-Setup.exe"),
-    portable: path.join(launcherRoot, "dist", "River-Client-Portable.exe"),
-    linux: path.join(launcherRoot, "dist", "River-Client-Linux.tar.gz"),
+    installer: path.join(launcherRoot, "dist", "Daisy-Setup.exe"),
+    portable: path.join(launcherRoot, "dist", "Daisy-Portable.exe"),
+    linux: path.join(launcherRoot, "dist", "Daisy-Linux.tar.gz"),
     unpacked: path.join(launcherRoot, "dist", "win-unpacked"),
-    appPackage: path.join(launcherRoot, "dist", `River-Client-App-${version}.zip`)
+    appPackage: path.join(launcherRoot, "dist", `Daisy-App-${version}.zip`)
   };
 }
 
@@ -507,18 +507,18 @@ function copyIfExists(source, destination) {
 }
 
 function syncSiteAssets() {
-  // Screenshots are no longer synced from the legacy riv3r-site folder - riv3r-next owns
-  // its own screenshot set directly (see riv3r-next/src/lib/data.ts) and this used to
-  // silently overwrite current screenshots with riv3r-site's stale ones on every publish.
+  // Screenshots are no longer synced from the legacy daisy-site folder - daisy-next owns
+  // its own screenshot set directly (see daisy-next/src/lib/data.ts) and this used to
+  // silently overwrite current screenshots with daisy-site's stale ones on every publish.
   /*
-    partners.json is no longer synced from riv3r-site either, for exactly the reason the
+    partners.json is no longer synced from daisy-site either, for exactly the reason the
     screenshots were removed above: the legacy copy is stale and this quietly overwrote the
-    current one on every publish. A partner was removed from riv3r-next, committed, and
+    current one on every publish. A partner was removed from daisy-next, committed, and
     deployed - and then reappeared on the site twice, because each release copied the dead
-    folder's version back over the top. riv3r-next owns the partner list.
+    folder's version back over the top. daisy-next owns the partner list.
   */
   const assetTargets = [
-    ["assets/riv3r-client.png", "assets/riv3r-client.png"]
+    ["assets/daisy-client.png", "assets/daisy-client.png"]
   ];
   const done = logStep("sync site assets");
   for (const [remotePath, localPath] of assetTargets) {
@@ -526,7 +526,7 @@ function syncSiteAssets() {
     const legacyTarget = path.join(siteRoot, localPath);
     const localSource = path.join(siteRoot, localPath);
     if (copyIfExists(localSource, nextTarget)) {
-      console.log(`[publish] copied ${localPath} from riv3r-site`);
+      console.log(`[publish] copied ${localPath} from daisy-site`);
       continue;
     }
     try {
@@ -547,7 +547,7 @@ function syncSiteAssets() {
 
 function writeSiteManifests(manifest) {
   const versionPayload = {
-    name: "River Client",
+    name: "Daisy Client",
     version,
     url: manifest.installerUrl,
     notes: manifest.notes
@@ -564,11 +564,11 @@ function writeSiteManifests(manifest) {
 }
 
 function buildNextSite() {
-  const done = logStep("build riv3r-next site");
+  const done = logStep("build daisy-next site");
   run("npm", ["install"], { cwd: nextSiteRoot });
   run("npm", ["run", "build"], { cwd: nextSiteRoot });
   if (!fs.existsSync(path.join(nextOutRoot, "index.html"))) {
-    throw new Error(`riv3r-next build missing output at ${nextOutRoot}`);
+    throw new Error(`daisy-next build missing output at ${nextOutRoot}`);
   }
   done();
 }
@@ -643,7 +643,7 @@ function writeReleaseMessages(draft) {
   const text = sections
     .map(([label, message]) => `${label}\n${message.title}\n${stamp}\n\n${message.message}`)
     .join("\n\n----------------------------------------\n\n");
-  const output = path.join(launcherRoot, "dist", `River-Client-${version}-Discord-Messages.txt`);
+  const output = path.join(launcherRoot, "dist", `Daisy-${version}-Discord-Messages.txt`);
   ensureDir(path.dirname(output));
   fs.writeFileSync(output, `${text}\n`, "utf8");
 }
@@ -681,7 +681,7 @@ function syncWorkerFallback(manifest) {
 }
 
 /**
- * Clears the Cloudflare edge cache for riverclient.xyz.
+ * Clears the Cloudflare edge cache for the configured site.
  *
  * Without this a Pages deploy succeeds and the live site still serves the
  * previous build, which reads as "the deploy did nothing" and sends you looking
@@ -732,8 +732,8 @@ async function announceRelease({ workerUrl, minimumVersion, beta }) {
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${key}`,
-        "Origin": "https://river-stats.pages.dev",
-        "User-Agent": "river-publish"
+        "Origin": "https://github.com/realvoidgojo/Daisy-Client",
+        "User-Agent": "daisy-publish"
       },
       body: JSON.stringify({ version, minimumVersion, publishedAt })
     });
@@ -749,13 +749,13 @@ async function announceRelease({ workerUrl, minimumVersion, beta }) {
   done();
 }
 
-async function purgeSiteCache(zoneName = "riverclient.xyz") {
+async function purgeSiteCache(zoneName = new URL(liveSiteBase).hostname) {
   const done = logStep(`purge Cloudflare cache for ${zoneName}`);
   try {
     const token = process.env.CLOUDFLARE_API_TOKEN;
     const key = process.env.CLOUDFLARE_API_KEY;
     const email = process.env.CLOUDFLARE_EMAIL;
-    const headers = { "Content-Type": "application/json", "User-Agent": "river-publish" };
+    const headers = { "Content-Type": "application/json", "User-Agent": "daisy-publish" };
     if (token) headers.Authorization = `Bearer ${token}`;
     else if (key && email) { headers["X-Auth-Key"] = key; headers["X-Auth-Email"] = email; }
     else { console.warn("[publish] no Cloudflare auth for cache purge, skipping"); done(); return; }
@@ -801,6 +801,8 @@ function writeJson(file, payload) {
 }
 
 async function main() {
+  if (process.env.DAISY_DISTRIBUTION_AUTHORIZED !== "true") throw new Error("Written distribution authorization is required by LICENSE.");
+  if (!liveSiteBase || !publicUpdateBase || !bucket) throw new Error("Configure DAISY_SITE_BASE_URL, DAISY_UPDATE_BASE_URL and DAISY_UPDATE_BUCKET for your external infrastructure, or use the GitHub release workflow.");
   // The release draft is the gate for a PUBLIC launch: an approved changelog plus the
   // Discord announcement, release and dev-log posts. A tester build is announced to
   // nobody, so demanding all that for every beta would just push people into approving
@@ -820,7 +822,7 @@ async function main() {
   const paths = artifactPaths();
   const ready = artifactsReady(paths);
   const current = ready && artifactsCurrent(paths);
-  // Bake the real 4-part River version into the build. electron-builder forces app version
+  // Bake the real 4-part Daisy version into the build. electron-builder forces app version
   // to package.json's semver ("0.1.5"), so app.getVersion() can never carry "0.1.5.2.4" -
   // which made the launcher compare a frozen 0.1.5 against every manifest and perpetually
   // "need an update" that never advanced. The app reads its own version from this file
@@ -863,11 +865,11 @@ async function main() {
   if (!hasLinux) console.log("[publish] no Linux package found, publishing without one (run npm run dist:linux to build it)");
 
   runCloudflare(["r2", "bucket", "create", bucket], { allowFailure: true, quiet: true });
-  const workerUrl = process.env.RIVER_UPDATE_BASE_URL || publicUpdateBase;
+  const workerUrl = process.env.DAISY_UPDATE_BASE_URL || publicUpdateBase;
 
   const releaseKey = `releases/${version}`;
   const fileManifest = buildReleaseFileManifest(paths.unpacked, workerUrl, releaseKey);
-  const fileManifestPath = path.join(launcherRoot, "dist", `River-Client-Files-${version}.json`);
+  const fileManifestPath = path.join(launcherRoot, "dist", `Daisy-Files-${version}.json`);
   writeJson(fileManifestPath, fileManifest);
   const fileManifestSha256 = crypto.createHash("sha256").update(JSON.stringify(fileManifest)).digest("hex");
 
@@ -875,40 +877,40 @@ async function main() {
   const modJars = releaseModJars(version);
   if (!modJars.length) console.log("[publish] no clientcore jars in src/bundled, publishing without standalone mod downloads");
   const uploadTasks = [
-    // The River mod on its own, one jar per Minecraft version, for people who would rather
+    // The Daisy mod on its own, one jar per Minecraft version, for people who would rather
     // drop it into their own Fabric setup than use the launcher. The website lists them.
     ...modJars.map((jar) => ({
       label: `mod ${jar.minecraft}`,
       args: ["r2", "object", "put", `${bucket}/${releaseKey}/mod/${jar.name}`, "--file", jar.path, "--content-type", "application/java-archive", "--remote"]
     })),
-    { label: "installer", args: ["r2", "object", "put", `${bucket}/${releaseKey}/River-Client-Setup.exe`, "--file", paths.installer, "--content-type", "application/vnd.microsoft.portable-executable", "--remote"] },
-    { label: "portable", args: ["r2", "object", "put", `${bucket}/${releaseKey}/River-Client-Portable-${version}.exe`, "--file", paths.portable, "--content-type", "application/vnd.microsoft.portable-executable", "--remote"] },
+    { label: "installer", args: ["r2", "object", "put", `${bucket}/${releaseKey}/Daisy-Setup.exe`, "--file", paths.installer, "--content-type", "application/vnd.microsoft.portable-executable", "--remote"] },
+    { label: "portable", args: ["r2", "object", "put", `${bucket}/${releaseKey}/Daisy-Portable-${version}.exe`, "--file", paths.portable, "--content-type", "application/vnd.microsoft.portable-executable", "--remote"] },
     ...(packageParts.length
       ? packageParts.map((part) => ({ label: `app package ${part.name}`, args: ["r2", "object", "put", `${bucket}/${releaseKey}/${part.name}`, "--file", part.path, "--content-type", "application/octet-stream", "--remote"] }))
-      : [{ label: "app package", args: ["r2", "object", "put", `${bucket}/${releaseKey}/River-Client-App-${version}.zip`, "--file", appPackage, "--content-type", "application/zip", "--remote"] }]),
+      : [{ label: "app package", args: ["r2", "object", "put", `${bucket}/${releaseKey}/Daisy-App-${version}.zip`, "--file", appPackage, "--content-type", "application/zip", "--remote"] }]),
     { label: "file manifest", args: ["r2", "object", "put", `${bucket}/${releaseKey}/file-manifest.json`, "--file", fileManifestPath, "--content-type", "application/json", "--remote"] }
   ];
 
   if (hasLinux) {
     uploadTasks.push({
       label: "linux package",
-      args: ["r2", "object", "put", `${bucket}/${releaseKey}/River-Client-Linux-${version}.tar.gz`, "--file", paths.linux, "--content-type", "application/gzip", "--remote"]
+      args: ["r2", "object", "put", `${bucket}/${releaseKey}/Daisy-Linux-${version}.tar.gz`, "--file", paths.linux, "--content-type", "application/gzip", "--remote"]
     });
     if (!flags.beta) {
       uploadTasks.push({
         label: "latest linux package",
-        args: ["r2", "object", "put", `${bucket}/River-Client-Linux.tar.gz`, "--file", paths.linux, "--content-type", "application/gzip", "--remote"]
+        args: ["r2", "object", "put", `${bucket}/Daisy-Linux.tar.gz`, "--file", paths.linux, "--content-type", "application/gzip", "--remote"]
       });
     }
   }
 
-  // River-Client-Setup.exe at the bucket root is what the website hands to the public, so
+  // Daisy-Setup.exe at the bucket root is what the website hands to the public, so
   // a tester build must never replace it. Versioned files above are safe: they live under
   // their own release key and are only reachable from a manifest.
   if (!flags.beta) {
     uploadTasks.push({
       label: "latest installer",
-      args: ["r2", "object", "put", `${bucket}/River-Client-Setup.exe`, "--file", paths.installer, "--content-type", "application/vnd.microsoft.portable-executable", "--remote"]
+      args: ["r2", "object", "put", `${bucket}/Daisy-Setup.exe`, "--file", paths.installer, "--content-type", "application/vnd.microsoft.portable-executable", "--remote"]
     });
   }
 
@@ -947,39 +949,39 @@ async function main() {
     cannot keep going, because its files have been deleted from the bucket and there is
     nothing left to run or repair from.
 
-    Raise RIVER_MINIMUM_VERSION when release files are actually deleted, not when a new
+    Raise DAISY_MINIMUM_VERSION when release files are actually deleted, not when a new
     release goes out.
   */
-  const minimumVersion = String(process.env.RIVER_MINIMUM_VERSION || "0.1.7").trim();
+  const minimumVersion = String(process.env.DAISY_MINIMUM_VERSION || "0.1.7").trim();
   if (compareReleaseVersions(minimumVersion, version) > 0) {
-    throw new Error(`RIVER_MINIMUM_VERSION (${minimumVersion}) is newer than the version being published (${version}).`);
+    throw new Error(`DAISY_MINIMUM_VERSION (${minimumVersion}) is newer than the version being published (${version}).`);
   }
 
   const manifest = {
-    name: "River Client",
+    name: "Daisy Client",
     version,
     minimumVersion,
     required: false,
     publishedAt,
-    pageUrl: "https://riverclient.xyz/",
+    pageUrl: liveSiteBase,
     // Stable points at the rolling root installer; beta must point at its own versioned
     // copy, because a beta publish deliberately never overwrites that root file - so
     // leaving this as-is would hand testers the last STABLE installer instead.
     installerUrl: flags.beta
-      ? `${publicUpdateBase}/downloads/${releaseKey}/River-Client-Setup.exe`
-      : `${publicUpdateBase}/downloads/River-Client-Setup.exe`,
-    portableUrl: `${publicUpdateBase}/downloads/${releaseKey}/River-Client-Portable-${version}.exe`,
+      ? `${publicUpdateBase}/downloads/${releaseKey}/Daisy-Setup.exe`
+      : `${publicUpdateBase}/downloads/Daisy-Setup.exe`,
+    portableUrl: `${publicUpdateBase}/downloads/${releaseKey}/Daisy-Portable-${version}.exe`,
     // Linux cannot update itself, so its launcher just opens this. Same rule as the
     // installer: beta gets its own versioned copy, stable the rolling root file.
     linuxUrl: hasLinux
       ? (flags.beta
-        ? `${publicUpdateBase}/downloads/${releaseKey}/River-Client-Linux-${version}.tar.gz`
-        : `${publicUpdateBase}/downloads/River-Client-Linux.tar.gz`)
+        ? `${publicUpdateBase}/downloads/${releaseKey}/Daisy-Linux-${version}.tar.gz`
+        : `${publicUpdateBase}/downloads/Daisy-Linux.tar.gz`)
       : "",
     // Launchers before the split only know packageUrl. When the zip went up in parts the
     // worker serves this same URL by streaming the parts back to back, so those launchers
     // still get the whole package; newer ones fetch the parts themselves.
-    packageUrl: `${publicUpdateBase}/downloads/${releaseKey}/River-Client-App-${version}.zip`,
+    packageUrl: `${publicUpdateBase}/downloads/${releaseKey}/Daisy-App-${version}.zip`,
     packageParts: packageParts.map((part) => ({
       url: `${publicUpdateBase}/downloads/${releaseKey}/${part.name}`,
       size: part.size,
@@ -991,22 +993,22 @@ async function main() {
     fileCount: fileManifest.files.length,
     files: {
       installer: {
-        name: "River-Client-Setup.exe",
+        name: "Daisy-Setup.exe",
         size: fileSize(paths.installer),
         sha256: sha256(paths.installer)
       },
       portable: {
-        name: `River-Client-Portable-${version}.exe`,
+        name: `Daisy-Portable-${version}.exe`,
         size: fileSize(paths.portable),
         sha256: sha256(paths.portable)
       },
       linux: hasLinux ? {
-        name: `River-Client-Linux-${version}.tar.gz`,
+        name: `Daisy-Linux-${version}.tar.gz`,
         size: fileSize(paths.linux),
         sha256: sha256(paths.linux)
       } : undefined,
       package: {
-        name: `River-Client-App-${version}.zip`,
+        name: `Daisy-App-${version}.zip`,
         size: fileSize(appPackage),
         sha256: sha256(appPackage)
       },
@@ -1026,7 +1028,7 @@ async function main() {
       sha256: sha256(jar.path)
     })),
     changelog,
-    notes: changelog ? changelog.summary : "Latest required River Client launcher build."
+    notes: changelog ? changelog.summary : "Latest required Daisy Client launcher build."
   };
 
   writeSiteManifests(manifest);
@@ -1054,10 +1056,10 @@ async function main() {
     console.log("[publish] beta channel: skipping the public website deploy");
   } else if (!flags.skipPages) {
     buildNextSite();
-    const donePages = logStep("deploy riv3r-next site to Cloudflare Pages");
-    runCloudflare(["pages", "deploy", nextOutRoot, "--project-name=riverclient", "--branch=main", "--commit-dirty=true"], { allowFailure: true });
+    const donePages = logStep("deploy daisy-next site to Cloudflare Pages");
+    runCloudflare(["pages", "deploy", nextOutRoot, `--project-name=${process.env.DAISY_PAGES_PROJECT || "daisy-client"}`, "--branch=main", "--commit-dirty=true"], { allowFailure: true });
     donePages();
-    // Pages deploys fine but riverclient.xyz keeps serving the old HTML from
+    // Pages deploys fine but the configured site keeps serving the old HTML from
     // Cloudflare's edge cache, so a publish looks like it did nothing. This has
     // caught me twice now - once with screenshots, once with the whole homepage.
     await purgeSiteCache();
@@ -1067,10 +1069,10 @@ async function main() {
 
   await announceRelease({ workerUrl, minimumVersion, beta: flags.beta });
 
-  console.log(`\nPublished River Client ${version}${flags.beta ? " (testers only)" : ""}`);
+  console.log(`\nPublished Daisy Client ${version}${flags.beta ? " (testers only)" : ""}`);
   console.log(`Manifest: ${workerUrl.replace(/\/$/, "")}/${manifestKey}`);
   if (flags.beta) {
-    console.log("Only accounts in RIVER_TESTER_UUIDS can download this. Stable users are unaffected.");
+    console.log("Only accounts in DAISY_TESTER_UUIDS can download this. Stable users are unaffected.");
   }
   console.log("Tips: use npm run publish:update:fast after a normal dist build, or pass --skip-build / --skip-pages.");
 }

@@ -6,7 +6,7 @@
  *
  * Tokens mirror the in-game client's ClientUi palette so the launcher and the
  * Right Shift menu read as one product. Keep them in sync with
- * src/client/kotlin/dev/wyz/clientcore/ui/ClientUi.kt - the surfaces step in
+ * src/client/kotlin/dev/daisy/clientcore/ui/ClientUi.kt - the surfaces step in
  * brightness (background -> card -> popover), not in blue tint, and there is
  * exactly one accent. If a second accent seems necessary it is a semantic
  * colour, not decoration.
@@ -219,11 +219,11 @@
    * competing with the UI. Collapses under prefers-reduced-motion with everything else.
    */
   .hero-drift {
-    animation: river-drift 44s ease-in-out infinite alternate;
+    animation: daisy-drift 44s ease-in-out infinite alternate;
     transform-origin: 50% 60%;
     will-change: transform;
   }
-  @keyframes river-drift {
+  @keyframes daisy-drift {
     from { transform: scale(1.08) translate3d(-1.2%, 0.6%, 0); }
     to   { transform: scale(1.16) translate3d(1.2%, -1.2%, 0); }
   }
@@ -231,9 +231,9 @@
   /* Launch button gets a soft accent glow that breathes while idle. */
   .glow-accent {
     box-shadow: 0 0 0 0 color-mix(in srgb, var(--primary) 55%, transparent);
-    animation: river-pulse 2.8s ease-in-out infinite;
+    animation: daisy-pulse 2.8s ease-in-out infinite;
   }
-  @keyframes river-pulse {
+  @keyframes daisy-pulse {
     0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--primary) 45%, transparent); }
     50% { box-shadow: 0 0 14px 1px color-mix(in srgb, var(--primary) 30%, transparent); }
   }
@@ -262,13 +262,13 @@
    *
    * Applied on top of .lift, so the row still rises and the rotation is the only addition.
    */
-  @keyframes river-lean {
+  @keyframes daisy-lean {
     0% { transform: translateY(-1px) rotate(0deg); }
     60% { transform: translateY(-1px) rotate(0.22deg) scale(1.004); }
     100% { transform: translateY(-1px) rotate(0.12deg) scale(1.004); }
   }
   .lean:hover {
-    animation: river-lean 620ms cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+    animation: daisy-lean 620ms cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
   }
   .lean:active {
     animation: none;
@@ -281,9 +281,9 @@
    * percentage that would sit still and look frozen.
    */
   .launch-sweep {
-    animation: river-sweep 1.15s ease-in-out infinite;
+    animation: daisy-sweep 1.15s ease-in-out infinite;
   }
-  @keyframes river-sweep {
+  @keyframes daisy-sweep {
     0% { transform: translateX(-110%); }
     100% { transform: translateX(320%); }
   }

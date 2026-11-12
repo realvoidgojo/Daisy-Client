@@ -52,7 +52,7 @@ export function PlaytimeStat({ settings, notify, className }) {
 
   if (!summary) return null;
 
-  const shownMs = mode === "river" ? summary.riverMs : summary.combinedMs;
+  const shownMs = mode === "river" ? summary.daisyMs : summary.combinedMs;
   const toggle = async () => {
     try { await api()?.updateSettings({ playtimeDisplayMode: mode === "river" ? "combined" : "river" }); }
     catch (e) { notify?.(String(e?.message || e), "error"); }

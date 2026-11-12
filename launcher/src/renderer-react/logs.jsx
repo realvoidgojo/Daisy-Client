@@ -5,7 +5,7 @@ import { translate } from "./i18n/translate.js";
 
 // Everything this window can reach is declared in preload-logs.js. It has no Node
 // access of its own.
-const bridge = window.daisyLogs || window.riverLogs;
+const bridge = window.daisyLogs || window.daisyLogs;
 const windowAction = (action) => bridge.window(action);
 
 /**
@@ -28,7 +28,7 @@ const LEVEL_LABEL = { error: "ERROR", warn: "WARN", info: "INFO", debug: "DEBUG"
 const MC_LEVEL = /\[[^\]]*\/(INFO|WARN|WARNING|ERROR|SEVERE|FATAL|DEBUG|TRACE)\]/i;
 const BARE_LEVEL = /^\s*(?:\[[^\]]*\]\s*)*(INFO|WARN|WARNING|ERROR|FATAL|DEBUG)\b/i;
 const STACK_FRAME = /^\s+(at\s|\.{3}\s\d+\smore|Caused by:|Suppressed:)/;
-const EXCEPTION_LINE = /(^|\s)(java|javax|kotlin|net\.minecraft|dev\.wyz)[\w.$]*(Exception|Error)\b|^\s*Exception in thread/;
+const EXCEPTION_LINE = /(^|\s)(java|javax|kotlin|net\.minecraft|dev\.(?:daisy|wyz))[\w.$]*(Exception|Error)\b|^\s*Exception in thread/;
 
 function normalizeLevel(raw) {
   const value = String(raw || "").toLowerCase();

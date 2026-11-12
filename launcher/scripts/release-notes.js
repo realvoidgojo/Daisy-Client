@@ -28,7 +28,7 @@ const USER_FACING_PATHS = [
   "launcher/src",
   "src",
   "clientcore-1.21.4/src",
-  "river-bootstrap/src",
+  "daisy-bootstrap/src",
   "cloudflare-updates/src"
 ];
 
@@ -159,7 +159,7 @@ function lower(text) {
  */
 function discordMessage(version, notes, { date = new Date(), lead = "" } = {}) {
   const stamp = date.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
-  const out = [`# River ${version}`, `\`${stamp}\``, ""];
+  const out = [`# Daisy ${version}`, `\`${stamp}\``, ""];
 
   if (lead) out.push(lead.trim(), "");
 
@@ -176,7 +176,7 @@ function discordMessage(version, notes, { date = new Date(), lead = "" } = {}) {
   section("Fixed", notes.fixed);
   section("Smaller stuff", notes.changed);
 
-  out.push("Source: <https://github.com/WyZEU/RiverClient> · Problems → 🎟│tickets");
+  out.push("Source: <https://github.com/realvoidgojo/Daisy-Client> · Problems → 🎟│tickets");
   return out.join("\n");
 }
 

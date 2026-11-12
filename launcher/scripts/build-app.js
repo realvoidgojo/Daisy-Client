@@ -10,6 +10,8 @@ fs.rmSync(out, { recursive: true, force: true });
 fs.mkdirSync(path.join(out, "renderer"), { recursive: true });
 fs.cpSync(path.join(root, "src", "assets"), path.join(out, "assets"), { recursive: true });
 fs.cpSync(path.join(root, "src", "config"), path.join(out, "config"), { recursive: true });
+const packageInfo = JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf8"));
+fs.writeFileSync(path.join(out, "config", "build-version.json"), JSON.stringify({ version: packageInfo.daisyVersion, channel: "stable" }, null, 2));
 fs.cpSync(path.join(root, "src", "bundled"), path.join(out, "bundled"), { recursive: true });
 if (fs.existsSync(path.join(root, "src", "authlib"))) {
   fs.cpSync(path.join(root, "src", "authlib"), path.join(out, "authlib"), { recursive: true });
@@ -188,8 +190,8 @@ async function bundle() {
     + "<span style=\"font-size:11px;color:#9297a2\">" + label + "</span>"
     + "<div style=\"width:150px;height:3px;border-radius:999px;background:#23262e;overflow:hidden\">"
     + "<div style=\"width:40%;height:100%;border-radius:inherit;background:#ffc72c;"
-    + "animation:river-splash 1.15s ease-in-out infinite\"></div></div>"
-    + "<style>@keyframes river-splash{0%{transform:translateX(-100%)}100%{transform:translateX(325%)}}</style>"
+    + "animation:daisy-splash 1.15s ease-in-out infinite\"></div></div>"
+    + "<style>@keyframes daisy-splash{0%{transform:translateX(-100%)}100%{transform:translateX(325%)}}</style>"
     + "</div>";
   const shell = (title, name, splashLabel) =>
     "<!doctype html><html lang=\"en\"><head><meta charset=\"UTF-8\" />"

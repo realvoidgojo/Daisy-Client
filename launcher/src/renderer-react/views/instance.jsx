@@ -533,12 +533,10 @@ export function InstanceView({ instanceId, status, refresh, notify, onBack }) {
                   {instanceVersionLabel(instance) || t("unknown version")}
                   {plainInstance ? null : <RefreshCw className="size-3" />}
                 </button>
-                {plainInstance ? (
-                  <p className="mt-2 text-[11px] text-muted-foreground">{t("Without Daisy in game")}</p>
-                ) : instance.riverSupported === false ? (
+                {instance.daisySupported === false && !plainInstance ? (
                   <div className="mt-2 flex items-start gap-1.5 text-[11px] leading-relaxed text-warning">
                     <TriangleAlert className="mt-px size-3 shrink-0" />
-                    <span>{instance.riverWarning || t("Daisy will not load in game on this instance.")}</span>
+                    <span>{instance.daisyWarning || t("Daisy will not load in game on this instance.")}</span>
                   </div>
                 ) : null}
               </div>
@@ -568,7 +566,7 @@ export function InstanceView({ instanceId, status, refresh, notify, onBack }) {
                   }
                 }}
               >
-                <Download className="size-4" />{t("Install / Update Game Files")}
+                <Download className="size-4" />{t("Update Game Files")}
               </Button>
               <div className="grid grid-cols-2 gap-2">
                 <Button variant="outline" onClick={() => setAddOpen(true)}>
@@ -579,7 +577,7 @@ export function InstanceView({ instanceId, status, refresh, notify, onBack }) {
                 </Button>
                 {instance.loader !== "vanilla" ? (
                   <Button variant="outline" className="col-span-2" disabled={busy} onClick={() => setCopyOpen(true)}>
-                    <Copy className="size-4" />{t("Copy mods to another instance")}
+                    <Copy className="size-4" />{t("Copy mods")}
                   </Button>
                 ) : null}
               </div>
@@ -751,10 +749,10 @@ export function InstanceView({ instanceId, status, refresh, notify, onBack }) {
             </div>
             {plainInstance ? (
               <p className="mt-1.5 text-[11px] text-muted-foreground">{t("Without Daisy in game")}</p>
-            ) : instance.riverSupported === false ? (
+            ) : instance.daisySupported === false ? (
               <div className="mt-1.5 flex items-start gap-1.5 text-[11px] leading-relaxed text-warning">
                 <TriangleAlert className="mt-px size-3 shrink-0" />
-                <span>{instance.riverWarning || t("Daisy will not load in game on this instance.")}</span>
+                <span>{instance.daisyWarning || t("Daisy will not load in game on this instance.")}</span>
               </div>
             ) : null}
           </div>

@@ -28,4 +28,4 @@ contextBridge.exposeInMainWorld("daisyLogs", {
   }
 });
 
-try { window.riverLogs = window.daisyLogs; } catch (e) {}
+try { window.daisyLogs = window.daisyLogs; } catch (e) {}

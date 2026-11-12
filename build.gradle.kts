@@ -36,7 +36,7 @@ apply(plugin = if (unobfuscated) "net.fabricmc.fabric-loom" else "net.fabricmc.f
 val loom = extensions.getByType<net.fabricmc.loom.api.LoomGradleExtensionAPI>()
 
 version = "0.2.8.1+$minecraftVersion"
-group = "dev.wyz"
+group = "dev.daisy"
 
 base {
     archivesName.set("daisy-client")
@@ -57,7 +57,7 @@ val packFormat = property("pack_format") as String
 /*
   From pack format 65 the game refuses a pack that declares only `pack_format`:
   "Pack declares support for version newer than 64, but is missing mandatory fields
-  min_format and max_format". River was declaring just the one field on every target,
+  min_format and max_format". Daisy was declaring just the one field on every target,
   so on 1.21.11 and both 26.x builds its own assets were being rejected outright.
   Each target builds for exactly one game version, so the range is that version alone.
 */

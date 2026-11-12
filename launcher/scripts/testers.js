@@ -6,7 +6,7 @@
     npm run testers -- remove <name or uuid>  take someone off
 
   The list is config/testers.json in the updates bucket, which the worker reads on top of
-  the older RIVER_TESTER_UUIDS secret. Changes apply on their next update check, nothing
+  the older tester UUID environment secret. Changes apply on their next update check, nothing
   has to be republished. People who are only in the secret are not shown here: Cloudflare
   never lets a secret be read back.
 */
@@ -40,7 +40,7 @@ function normalizeUuid(value) {
 }
 
 function load() {
-  const file = path.join(os.tmpdir(), `river-testers-${process.pid}.json`);
+  const file = path.join(os.tmpdir(), `daisy-testers-${process.pid}.json`);
   const result = wrangler(["r2", "object", "get", `${bucket}/${key}`, "--file", file, "--remote"]);
   try {
     if (!result.ok) {
@@ -56,7 +56,7 @@ function load() {
 }
 
 function save(list) {
-  const file = path.join(os.tmpdir(), `river-testers-${process.pid}.json`);
+  const file = path.join(os.tmpdir(), `daisy-testers-${process.pid}.json`);
   fs.writeFileSync(file, `${JSON.stringify(list, null, 2)}\n`);
   try {
     const result = wrangler(["r2", "object", "put", `${bucket}/${key}`, "--file", file, "--content-type", "application/json", "--remote"]);

@@ -1,10 +1,10 @@
 "use strict";
 
 /**
- * Packs dist/linux-unpacked into dist/River-Client-Linux.tar.gz.
+ * Packs dist/linux-unpacked into dist/Daisy-Linux.tar.gz.
  *
  * electron-builder's own tar.gz target, run on Windows, stores every file as 0644, so the
- * launcher binary comes out of the archive without its executable bit and "./river-client"
+ * launcher binary comes out of the archive without its executable bit and "./daisy"
  * says "permission denied". Windows has no executable bit to read, and the tar library
  * takes each mode straight from the file system, so the archive is written here by hand:
  * the binaries, helpers and shared libraries 0755, everything else 0644, folders 0755.
@@ -19,42 +19,42 @@ const zlib = require("node:zlib");
 
 const distDir = path.resolve(__dirname, "..", "dist");
 const unpacked = path.join(distDir, "linux-unpacked");
-const output = path.join(distDir, "River-Client-Linux.tar.gz");
-const folderName = "River-Client-Linux";
+const output = path.join(distDir, "Daisy-Linux.tar.gz");
+const folderName = "Daisy-Linux";
 
-const EXECUTABLES = new Set(["river-client", "river-client-bin", "chrome-sandbox", "chrome_crashpad_handler"]);
+const EXECUTABLES = new Set(["daisy", "daisy-bin", "chrome-sandbox", "chrome_crashpad_handler"]);
 
 /*
-  "./river-client" is a small script that starts the real binary (river-client-bin) with
+  "./daisy" is a small script that starts the real binary (daisy-bin) with
   --no-sandbox. Chromium's sandbox needs either chrome-sandbox owned by root with the setuid
   bit - which a tar extracted by a normal user can never have - or unprivileged user
   namespaces, which Ubuntu 24.04+ blocks through AppArmor. Without one of them Electron
-  aborts before a single line of River runs, so the switch in main.js comes too late; it
+  aborts before a single line of Daisy runs, so the switch in main.js comes too late; it
   has to be on the command line.
 */
 const START_SCRIPT = `#!/bin/sh
 HERE="$(dirname "$(readlink -f "$0")")"
-exec "$HERE/river-client-bin" --no-sandbox "$@"
+exec "$HERE/daisy-bin" --no-sandbox "$@"
 `;
 
-const README = `River Client for Linux (experimental)
+const README = `Daisy Client for Linux (experimental)
 =====================================
 
 Run it:
 
-    tar -xzf River-Client-Linux.tar.gz
-    cd River-Client-Linux
-    ./river-client
+    tar -xzf Daisy-Linux.tar.gz
+    cd Daisy-Linux
+    ./daisy
 
 If it will not start, run it from a terminal and send us what it prints. It is usually a
 missing system library. On Debian and Ubuntu:
 
     sudo apt install libgtk-3-0 libnss3 libasound2 libgbm1
 
-River downloads Java 21 for you if it does not find one. Updates are manual for now:
-River tells you when a new version is out and opens the download page.
+Daisy downloads Java 21 for you if it does not find one. Updates are manual for now:
+Daisy tells you when a new version is out and opens the download page.
 
-Problems: https://discord.riverclient.xyz
+Problems: https://github.com/realvoidgojo/Daisy-Client/issues
 `;
 
 function modeFor(name, isDirectory) {
@@ -101,8 +101,8 @@ function listAll(dir, rel = "") {
 }
 
 async function main() {
-  if (!fs.existsSync(path.join(unpacked, "river-client"))) {
-    throw new Error(`Nothing to pack: ${unpacked} has no river-client. Run electron-builder --linux dir first.`);
+  if (!fs.existsSync(path.join(unpacked, "daisy"))) {
+    throw new Error(`Nothing to pack: ${unpacked} has no daisy. Run electron-builder --linux dir first.`);
   }
   fs.writeFileSync(path.join(unpacked, "README.txt"), README);
   fs.rmSync(output, { force: true });
@@ -144,16 +144,16 @@ async function main() {
     }
   };
 
-  const script = path.join(distDir, "river-client-start.sh");
+  const script = path.join(distDir, "daisy-start.sh");
   fs.writeFileSync(script, START_SCRIPT);
 
   await put("", { dir: true });
   for (const entry of listAll(unpacked)) {
-    // The real binary goes in as river-client-bin; river-client is the start script.
-    const rel = entry.rel === "river-client" ? "river-client-bin" : entry.rel;
+    // The real binary goes in as daisy-bin; daisy is the start script.
+    const rel = entry.rel === "daisy" ? "daisy-bin" : entry.rel;
     await put(rel, { dir: entry.dir, filePath: path.join(unpacked, ...entry.rel.split("/")) });
   }
-  await put("river-client", { dir: false, filePath: script });
+  await put("daisy", { dir: false, filePath: script });
   await write(Buffer.alloc(1024));
   await new Promise((resolve, reject) => {
     sink.on("finish", resolve);

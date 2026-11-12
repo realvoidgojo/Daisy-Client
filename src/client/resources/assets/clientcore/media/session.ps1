@@ -1,4 +1,4 @@
-# River's in-game media reader. Prints the Windows media session (Spotify first) as one
+# Daisy's in-game media reader. Prints the Windows media session (Spotify first) as one
 # JSON line every 400 ms, with the playback position in milliseconds worked out from the
 # session's last update so synced lyrics line up. Also runs media keys the game asks for
 # (a command.txt next to this script: next, prev or playpause). Exits on its own once the
