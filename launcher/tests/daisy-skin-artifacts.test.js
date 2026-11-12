@@ -6,8 +6,8 @@ const crypto = require('crypto');
 console.log('Testing Daisy Skin standalone artifact discovery and manifest validation...');
 
 const repoRoot = path.resolve(__dirname, '../..');
-const manifestPath = path.join(repoRoot, 'local-artifacts/skin/manifest.json');
-assert(fs.existsSync(manifestPath), 'Skin manifest must exist at local-artifacts/skin/manifest.json');
+const manifestPath = path.join(repoRoot, 'launcher/src/bundled/skin/manifest.json');
+assert(fs.existsSync(manifestPath), 'Skin manifest must exist at launcher/src/bundled/skin/manifest.json');
 
 const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
 assert.strictEqual(manifest.mod, 'Daisy Skin');
@@ -26,7 +26,7 @@ for (const ver of requiredVersions) {
   assert.strictEqual(entry.loader, 'fabric');
   assert.strictEqual(entry.artifact, 'daisy-skin');
 
-  const jarPath = path.resolve(repoRoot, entry.path);
+  const jarPath = path.resolve(path.dirname(manifestPath), entry.path);
   if (!fs.existsSync(jarPath)) {
     if (process.env.DAISY_REQUIRE_SKIN_ARTIFACTS === "1") throw new Error(`Missing optional skin artifact: ${jarPath}`);
     console.log(`Skipping local skin JAR checksum for ${ver}: artifact is not checked in`);

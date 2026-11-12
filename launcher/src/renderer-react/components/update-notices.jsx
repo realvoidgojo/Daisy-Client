@@ -10,7 +10,7 @@ import {
 import { useT } from "../i18n/context.jsx";
 
 /** #updates on the Daisy Discord - where every release's changes are posted. */
-const UPDATES_CHANNEL_URL = "https://discord.com/channels/1501139838311596103/1541128335529345114";
+const UPDATES_CHANNEL_URL = "https://github.com/realvoidgojo/Daisy-Client/releases";
 
 const DISMISS_KEY = "daisy:dismissedUpdateVersion";
 
@@ -57,7 +57,8 @@ export function UpdateBanner({ status, notify }) {
         notify?.(res.message || t("The update could not be installed."), "error");
         setInstalling(false);
       }
-      // On success the app relaunches into updater mode, so leave the spinner up.
+      if (res?.ok) notify?.(res.message, "info");
+      setInstalling(false);
     } catch (e) {
       notify?.(String(e?.message || e), "error");
       setInstalling(false);
@@ -77,7 +78,7 @@ export function UpdateBanner({ status, notify }) {
       </span>
       <Button size="sm" className="h-6 px-3 text-xs" onClick={install} disabled={installing}>
         {installing ? <Loader2 className="size-3 animate-spin" /> : null}
-        {t("Update now")}
+        {t("Download update")}
       </Button>
       <button
         aria-label={t("Dismiss")}
@@ -188,7 +189,7 @@ export function WhatsNewDialog({ status, refresh }) {
           <DialogDescription className="text-[13px] leading-relaxed text-muted-foreground">
             {items.length && notes?.summary
               ? notes.summary
-              : t("See everything that changed in #updates on our Discord.")}
+              : t("See changes and downloads on GitHub Releases.")}
           </DialogDescription>
 
           {sections.map(({ id, label, Icon, tone, entries }) => (
@@ -212,8 +213,8 @@ export function WhatsNewDialog({ status, refresh }) {
 
         <DialogFooter className="border-t border-border px-5 py-3">
           <Button variant="outline" onClick={openUpdates}>
-            <img src="../assets/discord-icon.png" alt="" className="size-3.5" />
-            {t("Read in #updates")}
+            <Download className="size-3.5" />
+            {t("View releases")}
           </Button>
           <Button onClick={close}>{t("Close")}</Button>
         </DialogFooter>

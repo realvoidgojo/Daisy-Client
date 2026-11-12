@@ -1,17 +1,61 @@
 name: Release
 on:
   push:
+    branches: [main]
     tags: ['v*']
+  workflow_dispatch:
+
+concurrency:
+  group: daisy-release
+  cancel-in-progress: false
 permissions:
   contents: read
 jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      publish: ${{ steps.release.outputs.publish }}
+      tag: ${{ steps.version.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - id: version
+        name: Validate coordinated release version
+        shell: bash
+        run: |
+          if [[ "$GITHUB_REF_TYPE" == tag ]]; then
+            version=$(python scripts/package-release.py version --tag "$GITHUB_REF_NAME")
+          else
+            version=$(python scripts/package-release.py version)
+          fi
+          echo "tag=v$version" >> "$GITHUB_OUTPUT"
+      - id: release
+        uses: actions/github-script@v7
+        env:
+          RELEASE_TAG: ${{ steps.version.outputs.tag }}
+          DISTRIBUTION_AUTHORIZED: ${{ vars.DAISY_DISTRIBUTION_AUTHORIZED }}
+        with:
+          script: |
+            core.setOutput('publish', 'false');
+            if (process.env.DISTRIBUTION_AUTHORIZED !== 'true') {
+              await core.summary.addRaw('Build validation runs, but release publication is blocked: document rights-holder authorization before setting DAISY_DISTRIBUTION_AUTHORIZED=true.').write();
+              return;
+            }
+            try {
+              const { data } = await github.rest.repos.getReleaseByTag({ ...context.repo, tag: process.env.RELEASE_TAG });
+              if (data.draft) core.setFailed('A draft already exists for this version. Review it before retrying; existing assets will not be overwritten.');
+              else await core.summary.addRaw('This version is already released. Bump the coordinated Daisy version for the next automatic release.').write();
+            } catch (error) {
+              if (error.status !== 404) throw error;
+              core.setOutput('publish', 'true');
+            }
   verify:
     uses: ./.github/workflows/ci.yml
   package:
-    needs: verify
-    # LICENSE requires written permission for modification and redistribution.
-    # Set this repository variable only after the rights holder's authorization is documented.
-    if: vars.DAISY_DISTRIBUTION_AUTHORIZED == 'true'
+    needs: [prepare, verify]
+    if: needs.prepare.outputs.publish == 'true'
     strategy:
       matrix:
         os: [windows-latest, ubuntu-latest]
@@ -27,7 +71,19 @@ jobs:
         with:
           name: fabric-clients
           path: launcher/src/bundled
-      - run: node -e "const p=require('./launcher/package.json'); if(process.env.GITHUB_REF_NAME !== 'v'+p.daisyVersion) throw Error('Tag must match daisyVersion')"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - name: Validate release tag
+        env:
+          RELEASE_TAG: ${{ needs.prepare.outputs.tag }}
+        run: python scripts/package-release.py version --tag "$env:RELEASE_TAG"
+        if: runner.os == 'Windows'
+      - name: Validate release tag
+        env:
+          RELEASE_TAG: ${{ needs.prepare.outputs.tag }}
+        run: python scripts/package-release.py version --tag "$RELEASE_TAG"
+        if: runner.os == 'Linux' 
       - run: npm ci
         working-directory: launcher
       - run: npm test
@@ -47,7 +103,7 @@ jobs:
             launcher/dist/Daisy-Linux.tar.gz
           if-no-files-found: error
   publish:
-    needs: package
+    needs: [prepare, package]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -78,8 +134,15 @@ jobs:
               dest = Path(f'versions/{mc}/build/libs')
               dest.mkdir(parents=True, exist_ok=True)
               shutil.copy2(source[0], dest / source[0].name)
-      - run: python scripts/package-release.py collect --tag "$GITHUB_REF_NAME"
-      - name: Publish verified artifacts
+      - name: Collect checksummed releases
+        env:
+          RELEASE_TAG: ${{ needs.prepare.outputs.tag }}
+        run: python scripts/package-release.py collect --tag "$RELEASE_TAG"
+      - name: Publish complete release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "$GITHUB_REF_NAME" release-artifacts/* --verify-tag --title "Daisy Client ${GITHUB_REF_NAME#v}" --notes "Versioned Fabric client JARs and Electron launcher distributions. See README and LICENSE for requirements and terms."
+          RELEASE_TAG: ${{ needs.prepare.outputs.tag }}
+        run: |
+          echo 'Versioned Fabric client JARs and Electron launcher distributions. See README and LICENSE for requirements and terms.' > release-notes.txt
+          gh release create "$RELEASE_TAG" release-artifacts/* --target "$GITHUB_SHA" --draft --title "Daisy Client ${RELEASE_TAG#v}" --notes-file release-notes.txt
+          gh release edit "$RELEASE_TAG" --draft=false --latest

@@ -5,15 +5,6 @@ The shared Kotlin/Java client sources live in `src/client`; Stonecutter builds t
 multiple Minecraft versions. The Electron launcher lives in `launcher/` and uses npm
 and electron-builder. It is not a Gradle module or a JAR.
 
-## License and release blocker
-
-This repository is **source available**, not open source. [LICENSE](LICENSE) retains
-WyZ_EU's copyright and original terms, including restrictions on modification and
-redistribution. No evidence of ownership transfer or written relicensing/distribution
-permission is present in the working tree. Rebranding does not confer those rights.
-Obtain written authorization from the rights holder before publishing modified builds.
-Third-party font and icon notices remain in their respective resource directories.
-
 ## Requirements and supported targets
 
 Use the checked-in Gradle wrapper, Python 3, Node.js 24 and npm. Install JDK 21 and

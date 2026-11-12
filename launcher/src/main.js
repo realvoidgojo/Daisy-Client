@@ -80,7 +80,8 @@ const nowPlaying = require("./now-playing.js");
 const curseforge = require("./curseforge.js");
 const { migrationPlan, migrationVersion } = require("./migration-plan.js");
 const { planRvrRestore } = require("./rvr-restore.js");
-const { pickDaisyModEntry, fileMatchesSha256 } = require("./daisy-mod-cache.js");
+const { pickDaisyModEntry, fileMatchesSha256, newestClientJar } = require("./daisy-mod-cache.js");
+const { RELEASES_URL, compareVersions, launcherReleaseState, downloadReleaseAsset } = require("./launcher-release.js");
 // Never bundle Daisy's CurseForge credential into a distributed launcher.
 function effectiveCurseForgeKey(settings) { return String(settings?.curseForgeApiKey || ""); }
 const { app, BrowserWindow, ipcMain, shell, dialog, screen, nativeImage, globalShortcut, clipboard, Notification } = require("electron");
@@ -574,7 +575,7 @@ function resolveDaisyRuntimeJars(mcVersion = DEFAULT_MC_VERSION) {
     // Stonecutter writes each target to versions/<mc>/build/libs. The clientcore-<mc>/
     // path is the pre-Stonecutter layout, kept so an older checkout still resolves.
     ...(root ? SUPPORTED_MC_VERSIONS.map((v) => path.join(root, "versions", v, "build", "libs")) : []),
-    ...(root ? SUPPORTED_MC_VERSIONS.map((v) => path.join(root, `clientcore-${v}`, "build", "libs")) : []),
+    path.join(app.getPath("userData"), "daisy-mod-cache"),
     ...bundledDirs
   ].filter(Boolean);
   const bootstrapLibDirs = [
@@ -589,11 +590,12 @@ function resolveDaisyRuntimeJars(mcVersion = DEFAULT_MC_VERSION) {
     return "";
   };
   const findClientIn = (dirs) => {
+    const matches = [];
     for (const dir of dirs) {
       const jar = newestJarMatching(dir, /^(?:daisy-client|clientcore)-[\w.+-]*\.jar$/i, (f) => clientcoreJarMatchesMc(f, mcVersion));
-      if (jar) return jar;
+      if (jar) matches.push(jar);
     }
-    return "";
+    return newestClientJar(matches);
   };
   return {
     bootstrapJar: findIn(bootstrapLibDirs, /^daisy-bootstrap-[\w.+-]*\.jar$/i),
@@ -660,8 +662,8 @@ function instanceRunsDaisyAt(instancePath) {
 }
 
 /**
- * Makes sure Daisy's jar for [mcVersion] is on disk. A build carries only its default version;
- * the others come from the update server the first time an instance needs them, are checked
+ * Makes sure the latest available Daisy jar for [mcVersion] is on disk.
+ * newer builds come from GitHub Releases when an instance needs them, are checked
  * against the release manifest's SHA-256, and are kept in the cache folder. Returns false when
  * Daisy cannot be had (offline, or no build for that version): the instance still launches,
  * without Daisy, the same as a version Daisy does not build for.
@@ -671,13 +673,7 @@ async function prefetchDaisyModJar(mcVersion) {
   const existing = resolveDaisyRuntimeJars(mcVersion).clientJar;
   const haveExisting = isRealRuntimeJar(existing);
   try {
-    /*
-      A jar shipped with the launcher (or a local dev build) is always the right one. A jar
-      in the download cache is only right while it is the release's own: it used to count
-      as "already have Daisy for this version", so a 0.2.7 download stayed in use after
-      0.2.8 came out and only the bundled 1.21.11 ever updated.
-    */
-    if (haveExisting && path.dirname(existing) !== cacheDir) return true;
+    // Check even bundled versions, so client releases reach existing launcher installs.
     const remote = await fetchRemoteUpdateManifest();
     const entry = pickDaisyModEntry(remote && remote.payload, mcVersion);
     // Offline or no build for this version: an older cached jar still beats no Daisy.
@@ -725,7 +721,7 @@ function resolveDaisySkinJar(mcVersion) {
   const v = String(mcVersion || DEFAULT_MC_VERSION).trim();
   const root = findClientRoot();
   const candidates = [
-    root ? path.join(root, "local-artifacts", "skin", v, `daisy-skin-0.1.0+${v}.jar`) : "",
+    root ? path.join(root, "launcher", "src", "bundled", "skin", v, `daisy-skin-0.1.0+${v}.jar`) : "",
     path.join(__dirname, "bundled", "skin", v, `daisy-skin-0.1.0+${v}.jar`),
     process.resourcesPath ? path.join(process.resourcesPath, "bundled", "skin", v, `daisy-skin-0.1.0+${v}.jar`) : "",
     path.join(app.getAppPath(), "bundled", "skin", v, `daisy-skin-0.1.0+${v}.jar`)
@@ -743,7 +739,7 @@ function ensureDaisySkinMod(instancePath, mcVersion, enableSkin = true) {
     const modsDir = path.join(instancePath, "mods");
     fs.mkdirSync(modsDir, { recursive: true });
 
-    const skinJarPattern = /^daisy-skin-[w.+-]*.jar(.disabled)?$/i;
+    const skinJarPattern = /^daisy-skin-[\w.+-]*\.jar(\.disabled)?$/i;
     // If skin is disabled or should not be installed, remove it or rename to .disabled
     if (!enableSkin) {
       for (const file of fs.readdirSync(modsDir)) {
@@ -9085,7 +9081,8 @@ async function autoSetupOnBoot() {
 
   try {
     emitBoot("Checking launcher updates", "Looking for a newer Daisy build...");
-    const update = await checkLauncherUpdates();
+    const update = readSettings().autoCheckUpdates !== false
+      ? await checkLauncherUpdates() : getLauncherUpdateState();
     if (update.blocking) {
       emitStatus();
       const headline = update.required ? "Update required" : "Update available";
@@ -9403,226 +9400,36 @@ function getLauncherUpdateState() {
   return launcherUpdateState;
 }
 
-/*
-  Daisy is told about a release instead of asking for one.
-
-  Suggested by Jack (BGRD), who pointed out that a socket is the right shape for this and
-  can carry everything else later. It is: an update now lands the moment it is published
-  rather than up to a poll interval late, and the polling that used to answer "nothing has
-  changed" hundreds of times a day per person is down to a fallback.
-
-  The socket is deliberately anonymous. Node cannot set request headers on a WebSocket
-  handshake, so it cannot carry the User-Agent and install id the usage counters read -
-  which is fine, because the ordinary startup check above already reports those once per
-  session. Nothing is counted here.
-*/
-const UPDATE_PUSH_URL = "wss://updates.riverclient.xyz/ws/updates";
-const UPDATE_PUSH_PROTOCOL = "river.updates.v1";
-const UPDATE_POLL_MS = 30 * 60 * 1000;
-/* Long enough to stay out of the way, short enough to beat the usual idle proxy timeout. */
-const UPDATE_PUSH_PING_MS = 4 * 60 * 1000;
-const UPDATE_PUSH_MAX_BACKOFF_MS = 5 * 60 * 1000;
-
-let updateSocket = null;
-let updateSocketPing = null;
-let updateSocketRetry = null;
-let updateSocketAttempts = 0;
-let updateSocketClosed = false;
-
-function stopUpdatePushSocket() {
-  updateSocketClosed = true;
-  if (updateSocketPing) { clearInterval(updateSocketPing); updateSocketPing = null; }
-  if (updateSocketRetry) { clearTimeout(updateSocketRetry); updateSocketRetry = null; }
-  if (updateSocket) {
-    try { updateSocket.close(); } catch { }
-    updateSocket = null;
-  }
-}
-
-function startUpdatePushSocket(onUpdate) {
-  // Without a WebSocket the fallback interval is the whole mechanism, which still works.
-  if (typeof WebSocket !== "function") return;
-  if (updateSocket || updateSocketClosed) return;
-
-  let socket;
-  try {
-    socket = new WebSocket(UPDATE_PUSH_URL, UPDATE_PUSH_PROTOCOL);
-  } catch {
-    scheduleUpdatePushReconnect(onUpdate);
-    return;
-  }
-  updateSocket = socket;
-
-  socket.addEventListener("open", () => {
-    updateSocketAttempts = 0;
-    if (updateSocketPing) clearInterval(updateSocketPing);
-    /*
-      Answered by Cloudflare without waking the object on the other end, so a keepalive
-      costs nothing beyond the packet. Something has to be sent or an idle proxy will
-      quietly drop the connection and neither side would notice.
-    */
-    updateSocketPing = setInterval(() => {
-      try { socket.send("ping"); } catch { }
-    }, UPDATE_PUSH_PING_MS);
-  });
-
-  socket.addEventListener("message", (event) => {
-    const raw = String(event?.data ?? "");
-    if (raw === "pong") return;
-    let payload = null;
-    try { payload = JSON.parse(raw); } catch { return; }
-    if (!payload || typeof payload !== "object") return;
-
-    /*
-      "latest" is sent on connect and describes where things already stand, so it is only
-      worth acting on when it disagrees with what we last saw - otherwise every reconnect
-      would fire a redundant check. "update" means a release just shipped.
-    */
-    if (payload.type === "update") onUpdate();
-    else if (payload.type === "latest" && payload.version && payload.version !== launcherUpdateState.latestVersion) onUpdate();
-  });
-
-  const drop = () => {
-    if (updateSocket === socket) updateSocket = null;
-    if (updateSocketPing) { clearInterval(updateSocketPing); updateSocketPing = null; }
-    scheduleUpdatePushReconnect(onUpdate);
-  };
-  socket.addEventListener("close", drop);
-  socket.addEventListener("error", drop);
-}
-
-/*
-  Backs off so a server that is down does not get hammered by every launcher at once, and
-  jitters so they do not all come back in the same second when it returns.
-*/
-function scheduleUpdatePushReconnect(onUpdate) {
-  if (updateSocketClosed || updateSocketRetry) return;
-  updateSocketAttempts += 1;
-  const base = Math.min(5000 * 2 ** (updateSocketAttempts - 1), UPDATE_PUSH_MAX_BACKOFF_MS);
-  const wait = base / 2 + Math.random() * (base / 2);
-  updateSocketRetry = setTimeout(() => {
-    updateSocketRetry = null;
-    startUpdatePushSocket(onUpdate);
-  }, wait);
-}
-
+// Poll GitHub Releases while the user's automatic-check setting is enabled.
 function startLauncherUpdateWatcher() {
-  // Remote Daisy updater disabled for Daisy Client local development
+  if (updateWatcher) return;
+  updateWatcher = setInterval(() => {
+    if (readSettings().autoCheckUpdates !== false) checkLauncherUpdates().then(emitStatus);
+  }, 30 * 60 * 1000);
+  updateWatcher.unref?.();
 }
 
 async function checkLauncherUpdates() {
-  const currentVersion = readBuildVersion();
-  launcherUpdateState = {
-    checkedAt: Date.now(),
-    available: false,
-    blocking: false,
-    required: false,
-    latestVersion: currentVersion,
-    currentVersion,
-    minimumVersion: "",
-    url: "",
-    installerUrl: "",
-    portableUrl: "",
-    linuxUrl: "",
-    packageUrl: "",
-    packageParts: [],
-    fileManifestUrl: "",
-    appFileManifestUrl: "",
-    appFileBaseUrl: "",
-    fileManifestSha256: "",
-    fileCount: 0,
-    packageSha256: "",
-    packageSize: 0,
-    checkFailed: false,
-    message: "Daisy is up to date."
-  };
-  return launcherUpdateState;
-}
-
-function readBundledUpdateManifest() {
-  const candidates = [
-    path.join(__dirname, "config", "update-manifest.json"),
-    path.join(process.resourcesPath || "", "app.asar", "config", "update-manifest.json")
-  ];
-
-  for (const candidate of candidates) {
+  if (updateCheckRunning) return updateCheckRunning;
+  updateCheckRunning = (async () => {
+    const currentVersion = readBuildVersion();
     try {
-      if (!candidate || !fs.existsSync(candidate)) continue;
-      return { url: pathToFileURL(candidate).href, payload: JSON.parse(fs.readFileSync(candidate, "utf8")) };
-    } catch { }
-  }
-
-  return null;
-}
-
-function parsePublishedTime(payload) {
-  const value = Date.parse(String(payload?.publishedAt || payload?.published_at || "").trim());
-  return Number.isFinite(value) ? value : 0;
-}
-
-function selectLauncherUpdateManifest(currentVersion, bundledManifest, remoteManifest) {
-  if (!bundledManifest) return remoteManifest;
-  if (!remoteManifest) return bundledManifest;
-
-  const bundledVersion = String(bundledManifest.payload?.version || "");
-  const remoteVersion = String(remoteManifest.payload?.version || "");
-  const bundledPublishedAt = parsePublishedTime(bundledManifest.payload);
-  const remotePublishedAt = parsePublishedTime(remoteManifest.payload);
-
-  if (bundledVersion && bundledVersion === currentVersion) {
-    if (remoteVersion && compareVersions(remoteVersion, bundledVersion) > 0 && remotePublishedAt > bundledPublishedAt) {
-      return remoteManifest;
+      const remote = await fetchRemoteUpdateManifest();
+      if (!remote) throw new Error("No published release manifest is reachable.");
+      launcherUpdateState = launcherReleaseState(currentVersion, remote.payload);
+    } catch (error) {
+      launcherUpdateState = {
+        ...launcherUpdateState, currentVersion, checkedAt: Date.now(), checkFailed: true,
+        message: `Could not check GitHub Releases: ${error.message}`
+      };
     }
-    return bundledManifest;
-  }
-
-  if (remoteVersion && compareVersions(remoteVersion, bundledVersion) > 0) return remoteManifest;
-  if (bundledPublishedAt >= remotePublishedAt) return bundledManifest;
-  return remoteManifest;
-}
-
-/**
- * Tester manifest, if this account is on the list and opted into the beta channel.
- *
- * Returns null for everyone else, so the caller falls straight through to the normal
- * stable manifest - not being a tester is an ordinary outcome, not an error.
- */
-async function fetchTesterUpdateManifest() {
-  if (readSettings().updateChannel !== "beta") return null;
-  const token = await daisySignIn();
-  if (!token) return null;
-
-  const url = updateManifestUrl.replace(/\/latest\.json$/, "/beta.json");
-  let timeout = null;
-  try {
-    const controller = new AbortController();
-    timeout = setTimeout(() => controller.abort(), 5000);
-    const response = await fetch(url, {
-      signal: controller.signal,
-      headers: {
-        "Accept": "application/json",
-        "User-Agent": launcherUserAgent,
-        "Authorization": `Bearer ${token}`
-      }
-    });
-    if (!response.ok) {
-      if (response.status === 403) emit("launcher:log", "[update] This account is not on the Daisy tester list.");
-      return null;
-    }
-    return { url, payload: await response.json() };
-  } catch {
-    return null;
-  } finally {
-    if (timeout) clearTimeout(timeout);
-  }
+    return launcherUpdateState;
+  })();
+  try { return await updateCheckRunning; }
+  finally { updateCheckRunning = false; }
 }
 
 async function fetchRemoteUpdateManifest() {
-  // Testers on the beta channel get their manifest first; everyone else, and any failure,
-  // falls through to the public one below.
-  const tester = await fetchTesterUpdateManifest();
-  if (tester) return tester;
-
   const candidates = [
     updateManifestUrl,
     "https://github.com/realvoidgojo/Daisy-Client/releases/latest/download/latest.json"
@@ -9635,7 +9442,7 @@ async function fetchRemoteUpdateManifest() {
       timeout = setTimeout(() => controller.abort(), 4000);
       const response = await fetch(url, {
         signal: controller.signal,
-        headers: metricsHeaders({ "Accept": "application/json" })
+        headers: { "Accept": "application/json", "User-Agent": launcherUserAgent }
       });
       if (!response.ok) continue;
       return { url, payload: await response.json() };
@@ -9659,16 +9466,6 @@ function resolveUpdateUrl(value, baseUrl) {
   }
 }
 
-function compareVersions(left, right) {
-  const a = String(left || "0").split(/[.-]/).map((part) => Number.parseInt(part, 10) || 0);
-  const b = String(right || "0").split(/[.-]/).map((part) => Number.parseInt(part, 10) || 0);
-  const length = Math.max(a.length, b.length);
-  for (let index = 0; index < length; index += 1) {
-    const diff = (a[index] || 0) - (b[index] || 0);
-    if (diff !== 0) return diff;
-  }
-  return 0;
-}
 
 /**
  * Creates a clean staging directory for an update.
@@ -9725,8 +9522,40 @@ async function prepareUpdateStagingDir(preferredDir) {
   throw new Error(detail);
 }
 
-async function installLauncherUpdate(forcedUpdate = null) {
-  return { ok: true, message: "Daisy is already up to date." };
+let launcherInstallRunning = false;
+async function installLauncherUpdate() {
+  if (launcherInstallRunning) return { ok: false, message: "An update download is already running." };
+  if (launchProcess) return { ok: false, message: "Close Minecraft before updating Daisy." };
+  launcherInstallRunning = true;
+  try {
+    const update = await checkLauncherUpdates();
+    if (!update.available) return { ok: false, message: update.message };
+    if (!update.asset) {
+      await shell.openExternal(update.url || RELEASES_URL);
+      return { ok: true, message: "Opened the release page. Choose a download for your platform." };
+    }
+    emitActivity({ title: "Downloading update", detail: `Daisy Client ${update.latestVersion}`, current: 0, total: update.asset.size, unit: "bytes" });
+    const directory = path.join(app.getPath("userData"), "updates", update.latestVersion);
+    const target = await downloadReleaseAsset(update.asset, directory, downloadFileWithProgress);
+    // Full distributions avoid patching the running app. The installer remains interactive.
+    const installer = process.platform === "win32" && !process.env.PORTABLE_EXECUTABLE_FILE;
+    if (installer) {
+      const error = await shell.openPath(target);
+      if (error) throw new Error(error);
+      app.quit();
+    } else {
+      shell.showItemInFolder(target);
+    }
+    const message = installer ? "Verified installer opened. Follow its steps to update Daisy."
+      : "Verified update downloaded. Close Daisy and replace the application using this download.";
+    emitActivity({ title: "Update downloaded", detail: message, done: true });
+    return { ok: true, message };
+  } catch (error) {
+    emitActivity({ title: "Update failed", detail: error.message, done: true, error: true });
+    return { ok: false, message: error.message };
+  } finally {
+    launcherInstallRunning = false;
+  }
 }
 
 /** Preview-only: animates a fake update so the updater window can be inspected without a real release. */
@@ -13426,7 +13255,6 @@ app.on("will-quit", () => {
     globalShortcut.unregisterAll();
   } catch { }
   // Otherwise the reconnect timers keep the process alive after the windows are gone.
-  stopUpdatePushSocket();
   stopPresenceSocket();
   stopSocialSocket();
 });

@@ -555,7 +555,7 @@ export function SettingsView({ status, refresh, notify, startTour }) {
             <Switch checked={settings.discordRpc !== false} onCheckedChange={(v) => patch({ discordRpc: v })} />
           </Field>
 
-          <Field label={t("Automatic updates")} hint={t("On startup")}>
+          <Field label={t("Automatic update checks")} hint={t("On startup")}>
             <Switch checked={settings.autoCheckUpdates !== false} onCheckedChange={(v) => patch({ autoCheckUpdates: v })} />
           </Field>
         </>
@@ -584,17 +584,10 @@ export function SettingsView({ status, refresh, notify, startTour }) {
             </Button>
           </Field>
 
-          <Field
-            label={t("Update channel")}
-            hint={t("Tester builds, if you're allowlisted")}
-          >
-            <Select value={settings.updateChannel || "stable"} onValueChange={(v) => patch({ updateChannel: v })}>
-              <SelectTrigger className="w-32"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="stable">{t("Stable")}</SelectItem>
-                <SelectItem value="beta">{t("Beta")}</SelectItem>
-              </SelectContent>
-            </Select>
+          <Field label={t("Releases")} hint={t("Client JARs and launcher downloads")}>
+            <Button variant="outline" size="sm" onClick={() => api()?.openExternal("https://github.com/realvoidgojo/Daisy-Client/releases")}>
+              <Download className="size-3.5" />{t("View releases")}
+            </Button>
           </Field>
 
           <Field label={t("Tutorial")} hint={t("Replay the tour")}>

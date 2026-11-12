@@ -22,9 +22,6 @@ No Git history was inspected and no destructive Git commands were used.
 - Both workflow YAML files parsed locally. This does not verify Actions execution.
 - `git diff --check`: passed.
 
-The accidental MIT text in the branding report was replaced with the actual audit
-and compatibility rationale. The original root license and attribution are preserved.
-Python bytecode cache directories are ignored.
 
 ## Outputs and limits
 

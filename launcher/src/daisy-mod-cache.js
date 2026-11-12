@@ -37,4 +37,18 @@ async function fileMatchesSha256(filePath, expected) {
   }
 }
 
-module.exports = { pickDaisyModEntry, sha256File, fileMatchesSha256 };
+// Callers already filter for the instance's exact Minecraft version. Compare the
+// Daisy version so a bundled older JAR cannot hide a freshly downloaded release.
+function newestClientJar(candidates) {
+  const version = (file) => (path.basename(file).match(/^(?:daisy-client|clientcore)-([\d.]+)/i)?.[1] || "0").split(".").map(Number);
+  return [...candidates].sort((left, right) => {
+    const a = version(left), b = version(right);
+    for (let i = 0; i < Math.max(a.length, b.length); i++) {
+      const diff = (b[i] || 0) - (a[i] || 0);
+      if (diff) return diff;
+    }
+    return 0;
+  })[0] || "";
+}
+
+module.exports = { pickDaisyModEntry, sha256File, fileMatchesSha256, newestClientJar };

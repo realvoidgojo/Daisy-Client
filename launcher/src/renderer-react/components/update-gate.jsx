@@ -33,7 +33,8 @@ export function UpdateGate({ status, notify }) {
         notify?.(res.message || t("The update could not be installed."), "error");
         setInstalling(false);
       }
-      // On success the app relaunches into updater mode, so leave the spinner up.
+      if (res?.ok) notify?.(res.message, "info");
+      setInstalling(false);
     } catch (e) {
       notify?.(String(e?.message || e), "error");
       setInstalling(false);
@@ -90,6 +91,9 @@ export function UpdateAction({ status, notify }) {
           if (res && res.ok === false) {
             notify?.(res.message || t("The update could not be installed."), "error");
             setInstalling(false);
+          } else {
+            if (res?.message) notify?.(res.message, "info");
+            setInstalling(false);
           }
         } catch (e) {
           notify?.(String(e?.message || e), "error");
@@ -98,7 +102,7 @@ export function UpdateAction({ status, notify }) {
       }}
     >
       {installing ? <Loader2 className="size-3.5 animate-spin" /> : <Download className="size-3.5" />}
-      {t("Install {version}", { version: update.latestVersion })}
+      {t("Download {version}", { version: update.latestVersion })}
     </Button>
   );
 }

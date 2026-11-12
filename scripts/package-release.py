@@ -18,8 +18,23 @@ def versions():
     return re.findall(r'"([\d.]+)"', re.search(r'^\s*versions\(([^)]+)\)', settings, re.M)[1])
 
 
-def client_jars():
+def project_version(tag=None):
     version = json.loads((ROOT / "launcher/package.json").read_text(encoding="utf-8"))["daisyVersion"]
+    if not re.fullmatch(r"\d+(?:\.\d+){2,4}", version):
+        raise ValueError("daisyVersion must be a numeric Daisy release version")
+    gradle = (ROOT / "build.gradle.kts").read_text(encoding="utf-8")
+    if f'version = "{version}+$minecraftVersion"' not in gradle:
+        raise ValueError("Gradle client version must match launcher daisyVersion")
+    config = json.loads((ROOT / "launcher/src/config/build-version.json").read_text(encoding="utf-8"))
+    if config["version"] != version:
+        raise ValueError("build-version.json must match launcher daisyVersion")
+    if tag is not None and tag != f"v{version}":
+        raise ValueError(f"Release tag must be v{version}, got {tag!r}")
+    return version
+
+
+def client_jars():
+    version = project_version()
     result = []
     for mc in versions():
         jar = ROOT / f"versions/{mc}/build/libs/daisy-client-{version}+{mc}.jar"
@@ -29,29 +44,39 @@ def client_jars():
                 raise ValueError(f"Wrong client metadata: {jar}")
             if "dev/daisy/clientcore/ClientCore.class" not in archive.namelist():
                 raise ValueError(f"Missing Daisy entrypoint: {jar}")
+            if any(name.startswith("dev/wyz/") for name in archive.namelist()):
+                raise ValueError(f"Client contains original-package classes: {jar}")
         result.append((mc, jar))
     return version, result
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("mode", choices=["stage-client", "collect"])
+    parser.add_argument("mode", choices=["version", "stage-client", "collect"])
     parser.add_argument("--artifacts", type=Path, default=ROOT / "release-artifacts")
     parser.add_argument("--tag", help="Must equal v<daisyVersion> for release collection")
     args = parser.parse_args()
+    if args.mode == "version":
+        print(project_version(args.tag))
+        return
+    project_version(args.tag)
     version, jars = client_jars()
     if args.mode == "stage-client":
         bundled = ROOT / "launcher/src/bundled"
         bundled.mkdir(parents=True, exist_ok=True)
+        agents = list((ROOT / "daisy-bootstrap/build/libs").glob("daisy-bootstrap-*.jar"))
+        agents = [p for p in agents if not p.name.endswith("-sources.jar")]
+        if len(agents) != 1:
+            raise ValueError("Build :daisy-bootstrap:build before staging (expected one agent JAR)")
+        with zipfile.ZipFile(agents[0]) as archive:
+            manifest = archive.read("META-INF/MANIFEST.MF").decode("utf-8")
+            if "Premain-Class: dev.daisy.bootstrap.Agent" not in manifest:
+                raise ValueError("Bootstrap JAR has no Daisy agent entrypoint")
         # These are generated staging files only. Never overwrite unrelated bundled assets.
         for old in bundled.glob("daisy-client-*.jar"):
             old.unlink()
         for _, jar in jars:
             shutil.copy2(jar, bundled / jar.name)
-        agents = list((ROOT / "daisy-bootstrap/build/libs").glob("daisy-bootstrap-*.jar"))
-        agents = [p for p in agents if not p.name.endswith("-sources.jar")]
-        if len(agents) != 1:
-            raise ValueError("Build :daisy-bootstrap:build before staging (expected one agent JAR)")
         for old in bundled.glob("daisy-bootstrap-*.jar"):
             old.unlink()
         shutil.copy2(agents[0], bundled / agents[0].name)
