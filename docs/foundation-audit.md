@@ -105,8 +105,9 @@ the latest stable release. No beta tag is created before local/branch validation
 ## Local verification and limits
 
 - Clean `build check`: all 13 targets and bootstrap passed in 4m 31s, 194/194 tasks
-  executed. Subsequent archive checks passed after adding full distribution notices.
-- Project, branding and license validation passed; 14 Python and 41 Node tests passed.
+  executed. Subsequent archive checks passed after adding full distribution notices. The final
+  all-target client build/check after the standalone updater change also passed (4m 32s).
+- Project, branding and license validation passed; 14 Python and 42 Node tests passed.
   Negative tests reject changed/unattributed assets, missing dependency licenses, corrupt
   updates and incompatible targets. All three workflow YAML files parsed locally.
 - A fresh `npm ci`, audit, bundle and offline native startup passed. Windows NSIS/portable
