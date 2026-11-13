@@ -17,15 +17,19 @@ def run(*command, cwd=ROOT):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--skip-install", action="store_true", help="Reuse existing npm dependencies")
+    parser.add_argument("--default-only", action="store_true", help="Build only the development target")
     args = parser.parse_args()
     run(sys.executable, "scripts/verify-project.py")
     run(sys.executable, "scripts/audit-branding.py")
+    run(sys.executable, "scripts/verify-licenses.py")
     run(sys.executable, "-m", "unittest", "discover", "-s", "scripts/tests", "-v")
     wrapper = ROOT / ("gradlew.bat" if os.name == "nt" else "gradlew")
     # Invoke sh explicitly: no executable-bit requirement for Windows-created checkouts.
     command = [str(wrapper)] if os.name == "nt" else ["sh", str(wrapper)]
-    run(*command, "clean", "build", "check", "--console=plain", "--no-build-cache")
-    run(sys.executable, "scripts/package-release.py", "stage-client")
+    tasks = [":1.21.11:clean", ":1.21.11:build", ":1.21.11:check", ":daisy-bootstrap:build"] if args.default_only else ["clean", "build", "check"]
+    run(*command, *tasks, "--console=plain", "--no-build-cache")
+    targets = ["--minecraft", "1.21.11"] if args.default_only else []
+    run(sys.executable, "scripts/package-release.py", "stage-client", *targets)
     npm = "npm.cmd" if os.name == "nt" else "npm"
     if not args.skip_install:
         run(npm, "ci", cwd=ROOT / "launcher")

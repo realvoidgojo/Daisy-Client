@@ -3,17 +3,7 @@ const path = require("node:path");
 const { fileMatchesSha256 } = require("./daisy-mod-cache.js");
 
 const RELEASES_URL = "https://github.com/realvoidgojo/Daisy-Client/releases";
-const VERSION = /^\d+(?:\.\d+){2,4}$/;
-
-function compareVersions(left, right) {
-  const a = String(left || "0").split(/[.-]/).map((part) => Number.parseInt(part, 10) || 0);
-  const b = String(right || "0").split(/[.-]/).map((part) => Number.parseInt(part, 10) || 0);
-  for (let i = 0; i < Math.max(a.length, b.length); i++) {
-    const diff = (a[i] || 0) - (b[i] || 0);
-    if (diff) return diff;
-  }
-  return 0;
-}
+const { VERSION, compareVersions } = require("./version.js");
 
 function releaseAsset(payload, platform, arch = process.arch) {
   if (!VERSION.test(String(payload?.version || "")) || arch !== "x64") return null;

@@ -1,5 +1,24 @@
 # Changelog
 
+## 1.0.0-beta.2 — 2026-11-13
+
+- Isolated native startup tests from real launcher instances by overriding all Electron data paths.
+- Matched the packaged Linux smoke test to the archive startup wrapper.
+- Separated beta client caches from stable caches for compatibility with older launchers.
+- Retained the unpublished beta.1 tag after its Linux startup check failed; no release assets were published.
+
+## 1.0.0-beta.1 — 2026-11-13
+
+- Established a contributor-friendly beta foundation while preserving the Stonecutter layout.
+- Kept local accounts and removed unused Microsoft sign-in UI and ownership-service code.
+- Made launcher startup independent of network services and cached Mojang/Fabric metadata for local reuse.
+- Added beta-aware client filenames, version ordering and separate stable/beta update discovery.
+- Added fast default-target CI, optional full compatibility checks and prerelease publication.
+- Replaced unverified bitmap artwork with original reproducible geometric assets and recorded asset provenance.
+- Excluded opaque optional skin binaries and removed stale generated/debug records.
+- Updated Electron and packaging dependencies, removed the unused WebGL viewer dependency, and patched minimatch.
+- Added an offline native-startup smoke test, license validation, templates and focused maintenance documentation.
+
 ## 0.2.8.4 — 2026-11-12
 
 - Added installed/latest launcher versions and direct update controls to Settings > Maintenance.

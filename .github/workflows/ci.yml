@@ -1,14 +1,27 @@
 name: CI
 on:
   push:
-    branches: [main]
+    branches: [main, 'refactor/**']
   pull_request:
   workflow_dispatch:
+    inputs:
+      compatibility:
+        description: Build every supported Minecraft target
+        type: boolean
+        default: false
   workflow_call:
+    inputs:
+      compatibility:
+        type: boolean
+        default: false
 permissions:
   contents: read
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}-${{ inputs.compatibility || false }}
+  cancel-in-progress: true
 jobs:
-  client:
+  validate:
+    name: Repository and license validation
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -18,8 +31,25 @@ jobs:
         with:
           python-version: '3.x'
       - run: python scripts/verify-project.py
+      - run: python scripts/verify-licenses.py
       - run: python scripts/audit-branding.py --report build/reports/branding.json
       - run: python -m unittest discover -s scripts/tests -v
+      - uses: actions/upload-artifact@v7
+        if: failure()
+        with:
+          name: validation-diagnostics
+          path: build/reports/
+  client:
+    name: Fabric client and bootstrap
+    needs: validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.x'
       - uses: actions/setup-java@v6
         with:
           distribution: temurin
@@ -29,19 +59,31 @@ jobs:
           distribution: temurin
           java-version: '21'
       - uses: gradle/actions/setup-gradle@v6
-      - run: bash gradlew clean build check --console=plain "-Porg.gradle.java.installations.paths=$JAVA_HOME_21_X64,$JAVA_HOME_25_X64"
-      - run: python scripts/package-release.py stage-client
+      - name: Build and check selected clients
+        env:
+          COMPATIBILITY: ${{ inputs.compatibility || false }}
+        run: |
+          if [[ "$COMPATIBILITY" == true ]]; then
+            bash gradlew clean build check --console=plain "-Porg.gradle.java.installations.paths=$JAVA_HOME_21_X64,$JAVA_HOME_25_X64"
+            python scripts/package-release.py stage-client
+          else
+            bash gradlew :1.21.11:clean :1.21.11:build :1.21.11:check :daisy-bootstrap:build :daisy-bootstrap:check --console=plain "-Porg.gradle.java.installations.paths=$JAVA_HOME_21_X64,$JAVA_HOME_25_X64"
+            python scripts/package-release.py stage-client --minecraft 1.21.11
+          fi
       - uses: actions/upload-artifact@v7
         with:
           name: fabric-clients
           path: launcher/src/bundled/*.jar
           if-no-files-found: error
       - uses: actions/upload-artifact@v7
-        if: always()
+        if: failure()
         with:
-          name: validation-reports
-          path: build/reports/
+          name: client-diagnostics
+          path: |
+            build/reports/
+            versions/*/build/reports/
   launcher:
+    name: Launcher tests and native startup
     needs: client
     runs-on: windows-latest
     steps:
@@ -59,12 +101,18 @@ jobs:
           path: launcher/src/bundled
       - run: npm ci
         working-directory: launcher
+      - run: npm audit --audit-level=high
+        working-directory: launcher
       - run: npm test
         working-directory: launcher
-      - run: npm run dist:dir
+      - run: npm run build:app
+        working-directory: launcher
+      - run: npm run test:startup
         working-directory: launcher
       - uses: actions/upload-artifact@v7
+        if: failure()
         with:
-          name: electron-unpacked-windows
-          path: launcher/dist/win-unpacked
-          if-no-files-found: error
+          name: launcher-diagnostics
+          path: |
+            build/reports/
+            launcher/*.log

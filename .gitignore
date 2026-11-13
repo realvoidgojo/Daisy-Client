@@ -82,3 +82,6 @@ versions/*/src/
 
 # Launch video renders
 brag-output/
+
+# Independently supplied optional artifacts; never source-controlled release inputs.
+local-artifacts/

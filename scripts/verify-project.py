@@ -63,6 +63,11 @@ def verify():
     lock = json.loads((ROOT / "launcher/package-lock.json").read_text())
     if package["name"] != "daisy-launcher" or package["build"]["productName"] != "Daisy Launcher":
         errors.append("Launcher package identity is inconsistent")
+    bootstrap = (ROOT / "daisy-bootstrap/build.gradle.kts").read_text(encoding="utf-8")
+    if f'version = "{package["daisyVersion"]}"' not in bootstrap:
+        errors.append("Bootstrap version must match Daisy release version")
+    if "-" in package["daisyVersion"] and package["version"] != package["daisyVersion"]:
+        errors.append("Beta launcher and client versions must match")
     if lock["version"] != package["version"] or lock["name"] != package["name"]:
         errors.append("npm package and lock metadata disagree")
     if "MIT License" not in (ROOT / "LICENSE").read_text():

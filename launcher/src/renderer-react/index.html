@@ -2,6 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https: http://127.0.0.1:*; font-src 'self' data:; connect-src 'self' https: http://127.0.0.1:*; object-src 'none'; base-uri 'self'" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Daisy Launcher</title>
     <!--
@@ -106,32 +107,14 @@
         #boot .boot-blocks i { animation: none; background: var(--on, #ffc72c); }
       }
     </style>
-    <script>
-      try {
-        var s = window.localStorage.getItem("daisy:bootSeason");
-        if (s) document.documentElement.dataset.season = s;
-        /* The launcher is always drawn in the Modern layout, and so is the splash. */
-        document.documentElement.dataset.bootUi = "modern";
-      } catch (e) {}
-    </script>
     <div id="boot" role="status" aria-label="Starting Daisy">
       <strong>Daisy</strong>
       <div class="boot-bar"><i></i></div>
       <div class="boot-blocks" id="boot-blocks"></div>
       <small>Starting up</small>
     </div>
-    <script>
-      /* Written here, not rendered by React, so the row is on the first frame with the rest. */
-      (function () {
-        var row = document.getElementById("boot-blocks");
-        for (var i = 0; i < 20; i++) {
-          var block = document.createElement("i");
-          block.style.animationDelay = (i * 55) + "ms";
-          row.appendChild(block);
-        }
-      })();
-    </script>
     <div id="root"></div>
+    <script src="./boot.js"></script>
     <script src="./renderer.js"></script>
   </body>
 </html>

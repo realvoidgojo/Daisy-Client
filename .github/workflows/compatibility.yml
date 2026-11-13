@@ -1,0 +1,10 @@
+name: Compatibility
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  all-targets:
+    uses: ./.github/workflows/ci.yml
+    with:
+      compatibility: true

@@ -1,3 +1,6 @@
+Exception: textures/ui/icons/spotify.png is original Daisy music-note artwork (MIT);
+the asset inventory records its source separately.
+
 These icons are rasterized from Lucide (https://lucide.dev).
 
 ISC License

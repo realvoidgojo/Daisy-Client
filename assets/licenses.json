@@ -1,0 +1,830 @@
+{
+  "gradle/wrapper/gradle-wrapper.jar": {
+    "sha256": "423cb469ccc0ecc31f0e4e1c309976198ccb734cdcbb7029d4bda0f18f57e8d9",
+    "license": "Apache-2.0",
+    "source": "https://github.com/gradle/gradle; required Gradle wrapper",
+    "notice": "THIRD_PARTY_NOTICES.md"
+  },
+  "launcher/packaging/icon.ico": {
+    "sha256": "b7c93964a6acaa94ec8b7b2b2e32c5dcda7d91430d3a44929007ffb89ebcd500",
+    "license": "MIT",
+    "source": "scripts/generate-assets.py and assets/artwork.json; original geometric artwork by Daisy contributors",
+    "notice": "LICENSE"
+  },
+  "launcher/packaging/icon.png": {
+    "sha256": "0243b23a8544b974df812160516f8b299cb316f8806d15af863ca186cfa6dec7",
+    "license": "MIT",
+    "source": "scripts/generate-assets.py and assets/artwork.json; original geometric artwork by Daisy contributors",
+    "notice": "LICENSE"
+  },
+  "launcher/src/assets/backdrop-halloween.jpg": {
+    "sha256": "25c73d5477d5219a6e098eae95636267c42286d8942bfd2056a1691e090bff67",
+    "license": "MIT",
+    "source": "scripts/generate-assets.py and assets/artwork.json; original geometric artwork by Daisy contributors",
+    "notice": "LICENSE"
+  },
+  "launcher/src/assets/backdrop.jpg": {
+    "sha256": "0237eceaa8ef0359cf6e760cb52672fc7f9a10dd75cd0f5d423b27dd0194efa4",
+    "license": "MIT",
+    "source": "scripts/generate-assets.py and assets/artwork.json; original geometric artwork by Daisy contributors",
+    "notice": "LICENSE"
+  },
+  "launcher/src/assets/daisy-client-halloween.png": {
+    "sha256": "3ed1405d6866bda416e239cb33f238d46fea1c808efa11b9192c9f0b21bf4fd6",
+    "license": "MIT",
+    "source": "scripts/generate-assets.py and assets/artwork.json; original geometric artwork by Daisy contributors",
+    "notice": "LICENSE"
+  },
+  "launcher/src/assets/daisy-client-selfsign.cer": {
+    "sha256": "99e1d08c74000cfcf1eb0e52bc6da504e4592df1714c34ddb82972aa311097b2",
+    "license": "LicenseRef-Public-Certificate",
+    "source": "Public certificate identity retained for optional compatibility",
+    "notice": "THIRD_PARTY_NOTICES.md"
+  },
+  "launcher/src/assets/daisy-client.png": {
+    "sha256": "0243b23a8544b974df812160516f8b299cb316f8806d15af863ca186cfa6dec7",
+    "license": "MIT",
+    "source": "scripts/generate-assets.py and assets/artwork.json; original geometric artwork by Daisy contributors",
+    "notice": "LICENSE"
+  },
+  "launcher/src/assets/daisy-logo-halloween.png": {
+    "sha256": "3ed1405d6866bda416e239cb33f238d46fea1c808efa11b9192c9f0b21bf4fd6",
+    "license": "MIT",
+    "source": "scripts/generate-assets.py and assets/artwork.json; original geometric artwork by Daisy contributors",
+    "notice": "LICENSE"
+  },
+  "launcher/src/assets/daisy-logo.png": {
+    "sha256": "0243b23a8544b974df812160516f8b299cb316f8806d15af863ca186cfa6dec7",
+    "license": "MIT",
+    "source": "scripts/generate-assets.py and assets/artwork.json; original geometric artwork by Daisy contributors",
+    "notice": "LICENSE"
+  },
+  "launcher/src/assets/discord-icon.png": {
+    "sha256": "4df23daef0f789c786d3c6838baa52a8de37c89213a96da9820f419baf511bea",
+    "license": "MIT",
+    "source": "scripts/generate-assets.py and assets/artwork.json; original geometric artwork by Daisy contributors",
+    "notice": "LICENSE"
+  },
+  "launcher/src/assets/fonts/press-start-2p-latin-ext.woff2": {
+    "sha256": "3e1ea894dba11389007b78e4f6ce1a1c70542fe66cda38f7de48deff0d89c372",
+    "license": "OFL-1.1",
+    "source": "https://github.com/google/fonts/tree/main/ofl/pressstart2p; embedded font family and license URL inspected",
+    "notice": "launcher/src/assets/fonts/OFL.txt"
+  },
+  "launcher/src/assets/fonts/press-start-2p-latin.woff2": {
+    "sha256": "42144b97bd2942ea606e5d880684eae0f7be5c804bdd57b1faac5a8d7699ae6e",
+    "license": "OFL-1.1",
+    "source": "https://github.com/google/fonts/tree/main/ofl/pressstart2p; embedded font family and license URL inspected",
+    "notice": "launcher/src/assets/fonts/OFL.txt"
+  },
+  "launcher/src/assets/home-bg-1.jpg": {
+    "sha256": "550ab567058f74c89feb077bb1457744127003ac4a86245f14c5fd214de55fd4",
+    "license": "MIT",
+    "source": "scripts/generate-assets.py and assets/artwork.json; original geometric artwork by Daisy contributors",
+    "notice": "LICENSE"
+  },
+  "launcher/src/assets/home-bg-2.jpg": {
+    "sha256": "78ea4ffc9c8a5df9f169d92b42d8156e88cc634ff254a3ad4b51fc7f1e80a5b9",
+    "license": "MIT",
+    "source": "scripts/generate-assets.py and assets/artwork.json; original geometric artwork by Daisy contributors",
+    "notice": "LICENSE"
+  },
+  "launcher/src/assets/home-bg-halloween.jpg": {
+    "sha256": "fbf64d836c1ba874023be1b3885ed9107c06a065a904f6982a99452839434f20",
+    "license": "MIT",
+    "source": "scripts/generate-assets.py and assets/artwork.json; original geometric artwork by Daisy contributors",
+    "notice": "LICENSE"
+  },
+  "launcher/src/assets/home-hero-custom.jpg": {
+    "sha256": "91af782fd37d33f4f7fdf39e584d877528209b4457671becf164f88369fb69fd",
+    "license": "MIT",
+    "source": "scripts/generate-assets.py and assets/artwork.json; original geometric artwork by Daisy contributors",
+    "notice": "LICENSE"
+  },
+  "launcher/src/assets/icon.ico": {
+    "sha256": "b7c93964a6acaa94ec8b7b2b2e32c5dcda7d91430d3a44929007ffb89ebcd500",
+    "license": "MIT",
+    "source": "scripts/generate-assets.py and assets/artwork.json; original geometric artwork by Daisy contributors",
+    "notice": "LICENSE"
+  },
+  "launcher/src/assets/loaders/daisy.png": {
+    "sha256": "b47586fc78de1cf122d8d16838fff781a49b2e1b7fe7e943490b8d68da5d7ff9",
+    "license": "MIT",
+    "source": "scripts/generate-assets.py and assets/artwork.json; original geometric artwork by Daisy contributors",
+    "notice": "LICENSE"
+  },
+  "launcher/src/assets/loaders/grass-block.png": {
+    "sha256": "74545725c88278fbb118453fd8b19b3ba06c3909a96253fd9cab12f4f59ac96f",
+    "license": "MIT",
+    "source": "scripts/generate-assets.py and assets/artwork.json; original geometric artwork by Daisy contributors",
+    "notice": "LICENSE"
+  },
+  "launcher/src/assets/modern/pixel-noise.png": {
+    "sha256": "a2c69671b939c23115841223d31779c3f653bf36db828436774643105d958c2f",
+    "license": "MIT",
+    "source": "scripts/generate-assets.py and assets/artwork.json; original geometric artwork by Daisy contributors",
+    "notice": "LICENSE"
+  },
+  "launcher/src/assets/season/bat.png": {
+    "sha256": "cbb46852459d1bfa4a09735a8996f7a3bbc21fd838e97684925aaf929ccd763b",
+    "license": "MIT",
+    "source": "scripts/generate-assets.py and assets/artwork.json; original geometric artwork by Daisy contributors",
+    "notice": "LICENSE"
+  },
+  "launcher/src/assets/season/mist.png": {
+    "sha256": "c8fbc622f0ef9fb71cc5a0fc8f61414f9a939b94dc1536f8d58920d2b332da11",
+    "license": "MIT",
+    "source": "scripts/generate-assets.py and assets/artwork.json; original geometric artwork by Daisy contributors",
+    "notice": "LICENSE"
+  },
+  "launcher/src/assets/season/moon.png": {
+    "sha256": "065897677df375d046b88e464c53689549ff431896622e5f5ff72dcd49a07cdd",
+    "license": "MIT",
+    "source": "scripts/generate-assets.py and assets/artwork.json; original geometric artwork by Daisy contributors",
+    "notice": "LICENSE"
+  },
+  "launcher/src/assets/season/moon_glow.png": {
+    "sha256": "ecaef0c68e3469a84821bbbc65234aca01eb5c6b790c3f11a084e82544647d82",
+    "license": "MIT",
+    "source": "scripts/generate-assets.py and assets/artwork.json; original geometric artwork by Daisy contributors",
+    "notice": "LICENSE"
+  },
+  "launcher/src/assets/season/pumpkin.png": {
+    "sha256": "3495dc615c84f0ff93c03dcdd15a7adca0e32ddc6e98e67ad9b6b6ba6d248f5f",
+    "license": "MIT",
+    "source": "scripts/generate-assets.py and assets/artwork.json; original geometric artwork by Daisy contributors",
+    "notice": "LICENSE"
+  },
+  "launcher/src/assets/season/pumpkin_light.png": {
+    "sha256": "6b2ef408c2dba9c5b76f4bd20bd9f528469eb86fb1f7a7223d919dfe54b1a562",
+    "license": "MIT",
+    "source": "scripts/generate-assets.py and assets/artwork.json; original geometric artwork by Daisy contributors",
+    "notice": "LICENSE"
+  },
+  "launcher/src/assets/season/web_left.png": {
+    "sha256": "e9bdddfaa1ba7165030369b92716348cd8f8e04aec123817faeb9fb894e2f651",
+    "license": "MIT",
+    "source": "scripts/generate-assets.py and assets/artwork.json; original geometric artwork by Daisy contributors",
+    "notice": "LICENSE"
+  },
+  "launcher/src/assets/season/web_right.png": {
+    "sha256": "3de9e5bb4ab6168b580f0e0de337b790f0cdfc4cc54f748c640f79f210da07ea",
+    "license": "MIT",
+    "source": "scripts/generate-assets.py and assets/artwork.json; original geometric artwork by Daisy contributors",
+    "notice": "LICENSE"
+  },
+  "launcher/src/renderer-react/animations/idle.bbmodel": {
+    "sha256": "44fbf08a42a8dcf11361c7a49f3095e639fbea491aa59a24e955c4c2516df815",
+    "license": "MIT",
+    "source": "Original six-bone rotation-only idle rig authored for the beta; no embedded textures",
+    "notice": "LICENSE"
+  },
+  "src/client/resources/assets/clientcore/font/exo-2-300-cyrillic.ttf": {
+    "sha256": "6451c8f8d17bcd573e3587908ab5e825383d49746f6fa8643d30c65c9afda722",
+    "license": "OFL-1.1",
+    "source": "https://github.com/google/fonts/tree/main/ofl/exo2; embedded font family and license URL inspected",
+    "notice": "src/client/resources/FONTS-LICENSE.txt"
+  },
+  "src/client/resources/assets/clientcore/font/exo-2-300-latin.ttf": {
+    "sha256": "ddda4dd50d00c343466b3dc90ba385315f24e8a41fa45b8fba0513c23e12d5bf",
+    "license": "OFL-1.1",
+    "source": "https://github.com/google/fonts/tree/main/ofl/exo2; embedded font family and license URL inspected",
+    "notice": "src/client/resources/FONTS-LICENSE.txt"
+  },
+  "src/client/resources/assets/clientcore/font/exo-2-700-cyrillic.ttf": {
+    "sha256": "2b30d4fac5e88b0a0432c029e346112e5fe9b1db7cdd41b5c141032455bffba8",
+    "license": "OFL-1.1",
+    "source": "https://github.com/google/fonts/tree/main/ofl/exo2; embedded font family and license URL inspected",
+    "notice": "src/client/resources/FONTS-LICENSE.txt"
+  },
+  "src/client/resources/assets/clientcore/font/exo-2-700-latin.ttf": {
+    "sha256": "b9a095b2a0afb036fedc6a835b99361479ecca03f954351b6e9a787fe33801ed",
+    "license": "OFL-1.1",
+    "source": "https://github.com/google/fonts/tree/main/ofl/exo2; embedded font family and license URL inspected",
+    "notice": "src/client/resources/FONTS-LICENSE.txt"
+  },
+  "src/client/resources/assets/clientcore/font/montserrat-500-cyrillic.ttf": {
+    "sha256": "b85c720da963213c1b66f206558edcdbbde666e85139b411085f62779a9c12c1",
+    "license": "OFL-1.1",
+    "source": "https://github.com/google/fonts/tree/main/ofl/montserrat; embedded font family and license URL inspected",
+    "notice": "src/client/resources/FONTS-LICENSE.txt"
+  },
+  "src/client/resources/assets/clientcore/font/montserrat-500-latin.ttf": {
+    "sha256": "ceefe8658a7b86fd27f23ff1571da1a5ff15b4c502ba3c0f9130f5bb9fed9cc7",
+    "license": "OFL-1.1",
+    "source": "https://github.com/google/fonts/tree/main/ofl/montserrat; embedded font family and license URL inspected",
+    "notice": "src/client/resources/FONTS-LICENSE.txt"
+  },
+  "src/client/resources/assets/clientcore/font/montserrat-600-cyrillic.ttf": {
+    "sha256": "d8240319d49835df35ca5ba63b1c4ede8930c2182457b334c3bfc60cfe3a8564",
+    "license": "OFL-1.1",
+    "source": "https://github.com/google/fonts/tree/main/ofl/montserrat; embedded font family and license URL inspected",
+    "notice": "src/client/resources/FONTS-LICENSE.txt"
+  },
+  "src/client/resources/assets/clientcore/font/montserrat-600-latin.ttf": {
+    "sha256": "9d6d7ddc09b5f0f2eb570d8622cf8f8c9742fdcb7c1801cb76b37fa45866accf",
+    "license": "OFL-1.1",
+    "source": "https://github.com/google/fonts/tree/main/ofl/montserrat; embedded font family and license URL inspected",
+    "notice": "src/client/resources/FONTS-LICENSE.txt"
+  },
+  "src/client/resources/assets/clientcore/textures/cape/axie.png": {
+    "sha256": "8091557155c33bcc5f381c01012599d329d5811da67cdd7880b862e3d2b511fb",
+    "license": "MIT",
+    "source": "scripts/generate-assets.py and assets/artwork.json; original geometric artwork by Daisy contributors",
+    "notice": "LICENSE"
+  },
+  "src/client/resources/assets/clientcore/textures/cape/daisy.png": {
+    "sha256": "20086d1662c26dde501c26a62124d2dffedffe738bf2759e92f70e10270123f4",
+    "license": "MIT",
+    "source": "scripts/generate-assets.py and assets/artwork.json; original geometric artwork by Daisy contributors",
+    "notice": "LICENSE"
+  },
+  "src/client/resources/assets/clientcore/textures/cape/eclipse.png": {
+    "sha256": "cecd20a95b36e294504e11991e59dd722f66f9c09599927ea9c337ca9a476112",
+    "license": "MIT",
+    "source": "scripts/generate-assets.py and assets/artwork.json; original geometric artwork by Daisy contributors",
+    "notice": "LICENSE"
+  },
+  "src/client/resources/assets/clientcore/textures/cape/eightball.png": {
+    "sha256": "1f9211341c177cd3f9acd61810ecdd9a68bedfd11c4871b0212e9502ac6277aa",
+    "license": "MIT",
+    "source": "scripts/generate-assets.py and assets/artwork.json; original geometric artwork by Daisy contributors",
+    "notice": "LICENSE"
+  },
+  "src/client/resources/assets/clientcore/textures/cape/halloween.png": {
+    "sha256": "3c1e6f66652eaee2a480b69a94421e40580accddf74db7b95752e167e92f5fc0",
+    "license": "MIT",
+    "source": "scripts/generate-assets.py and assets/artwork.json; original geometric artwork by Daisy contributors",
+    "notice": "LICENSE"
+  },
+  "src/client/resources/assets/clientcore/textures/cape/hardcore.png": {
+    "sha256": "b479a36116ec01a1bd5ec0c942800c715464f161c68361b2e9b948727e735362",
+    "license": "MIT",
+    "source": "scripts/generate-assets.py and assets/artwork.json; original geometric artwork by Daisy contributors",
+    "notice": "LICENSE"
+  },
+  "src/client/resources/assets/clientcore/textures/font/daisy_badge.png": {
+    "sha256": "7dd1b00e3cdaefce5951e8120119a55564e95bc7c2c0b1ca7c5720e27ca1dbab",
+    "license": "MIT",
+    "source": "scripts/generate-assets.py and assets/artwork.json; original geometric artwork by Daisy contributors",
+    "notice": "LICENSE"
+  },
+  "src/client/resources/assets/clientcore/textures/font/daisy_badge_halloween.png": {
+    "sha256": "7dd1b00e3cdaefce5951e8120119a55564e95bc7c2c0b1ca7c5720e27ca1dbab",
+    "license": "MIT",
+    "source": "scripts/generate-assets.py and assets/artwork.json; original geometric artwork by Daisy contributors",
+    "notice": "LICENSE"
+  },
+  "src/client/resources/assets/clientcore/textures/gui/white.png": {
+    "sha256": "508e92238640e05034d4f6ac7d906a3288e82dbe047b7e8f55ff4d993a7523ef",
+    "license": "MIT",
+    "source": "scripts/generate-assets.py and assets/artwork.json; original geometric artwork by Daisy contributors",
+    "notice": "LICENSE"
+  },
+  "src/client/resources/assets/clientcore/textures/menu_background.png": {
+    "sha256": "ffe84ace46b893f7a9f041bf4c4b181ca66561f6aaba1928db07a8adedb24d1f",
+    "license": "MIT",
+    "source": "scripts/generate-assets.py and assets/artwork.json; original geometric artwork by Daisy contributors",
+    "notice": "LICENSE"
+  },
+  "src/client/resources/assets/clientcore/textures/menu_background_halloween.png": {
+    "sha256": "007b61aadb3e7ac31bc07d0478c77e815ce7db5c77f1d700e7d5b2d46a6b89ef",
+    "license": "MIT",
+    "source": "scripts/generate-assets.py and assets/artwork.json; original geometric artwork by Daisy contributors",
+    "notice": "LICENSE"
+  },
+  "src/client/resources/assets/clientcore/textures/menu_title.png": {
+    "sha256": "ec14a7a51b4d02f9218bc97ad57bc1d2e00d4e1a397dbff661300d0c7f69c4dc",
+    "license": "MIT",
+    "source": "scripts/generate-assets.py and assets/artwork.json; original geometric artwork by Daisy contributors",
+    "notice": "LICENSE"
+  },
+  "src/client/resources/assets/clientcore/textures/menu_title_halloween.png": {
+    "sha256": "ec14a7a51b4d02f9218bc97ad57bc1d2e00d4e1a397dbff661300d0c7f69c4dc",
+    "license": "MIT",
+    "source": "scripts/generate-assets.py and assets/artwork.json; original geometric artwork by Daisy contributors",
+    "notice": "LICENSE"
+  },
+  "src/client/resources/assets/clientcore/textures/red_x_icon.png": {
+    "sha256": "45aae6d33597663db6e79861b0fa063605a2ccbd71716e8d22637b69a8241d54",
+    "license": "MIT",
+    "source": "scripts/generate-assets.py and assets/artwork.json; original geometric artwork by Daisy contributors",
+    "notice": "LICENSE"
+  },
+  "src/client/resources/assets/clientcore/textures/season/bat.png": {
+    "sha256": "cbb46852459d1bfa4a09735a8996f7a3bbc21fd838e97684925aaf929ccd763b",
+    "license": "MIT",
+    "source": "scripts/generate-assets.py and assets/artwork.json; original geometric artwork by Daisy contributors",
+    "notice": "LICENSE"
+  },
+  "src/client/resources/assets/clientcore/textures/season/mist.png": {
+    "sha256": "a978e30908e52f860565cee354ee98ad2a0ee995a63abd88d842321b6b615ce7",
+    "license": "MIT",
+    "source": "scripts/generate-assets.py and assets/artwork.json; original geometric artwork by Daisy contributors",
+    "notice": "LICENSE"
+  },
+  "src/client/resources/assets/clientcore/textures/season/moon.png": {
+    "sha256": "065897677df375d046b88e464c53689549ff431896622e5f5ff72dcd49a07cdd",
+    "license": "MIT",
+    "source": "scripts/generate-assets.py and assets/artwork.json; original geometric artwork by Daisy contributors",
+    "notice": "LICENSE"
+  },
+  "src/client/resources/assets/clientcore/textures/season/moon_glow.png": {
+    "sha256": "ecaef0c68e3469a84821bbbc65234aca01eb5c6b790c3f11a084e82544647d82",
+    "license": "MIT",
+    "source": "scripts/generate-assets.py and assets/artwork.json; original geometric artwork by Daisy contributors",
+    "notice": "LICENSE"
+  },
+  "src/client/resources/assets/clientcore/textures/season/pumpkin.png": {
+    "sha256": "3495dc615c84f0ff93c03dcdd15a7adca0e32ddc6e98e67ad9b6b6ba6d248f5f",
+    "license": "MIT",
+    "source": "scripts/generate-assets.py and assets/artwork.json; original geometric artwork by Daisy contributors",
+    "notice": "LICENSE"
+  },
+  "src/client/resources/assets/clientcore/textures/season/pumpkin_light.png": {
+    "sha256": "6b2ef408c2dba9c5b76f4bd20bd9f528469eb86fb1f7a7223d919dfe54b1a562",
+    "license": "MIT",
+    "source": "scripts/generate-assets.py and assets/artwork.json; original geometric artwork by Daisy contributors",
+    "notice": "LICENSE"
+  },
+  "src/client/resources/assets/clientcore/textures/season/spider.png": {
+    "sha256": "ec6389fb22a204e9b3ab28c60a585253e45f74bd7b17e78250c563c69415fa1e",
+    "license": "MIT",
+    "source": "scripts/generate-assets.py and assets/artwork.json; original geometric artwork by Daisy contributors",
+    "notice": "LICENSE"
+  },
+  "src/client/resources/assets/clientcore/textures/season/web_left.png": {
+    "sha256": "e9bdddfaa1ba7165030369b92716348cd8f8e04aec123817faeb9fb894e2f651",
+    "license": "MIT",
+    "source": "scripts/generate-assets.py and assets/artwork.json; original geometric artwork by Daisy contributors",
+    "notice": "LICENSE"
+  },
+  "src/client/resources/assets/clientcore/textures/season/web_right.png": {
+    "sha256": "3de9e5bb4ab6168b580f0e0de337b790f0cdfc4cc54f748c640f79f210da07ea",
+    "license": "MIT",
+    "source": "scripts/generate-assets.py and assets/artwork.json; original geometric artwork by Daisy contributors",
+    "notice": "LICENSE"
+  },
+  "src/client/resources/assets/clientcore/textures/spotify_logo.png": {
+    "sha256": "039a30e435641a55d5d5d56e748068562762b4b3d775ea3fcc9db0e2efa12021",
+    "license": "MIT",
+    "source": "scripts/generate-assets.py and assets/artwork.json; original geometric artwork by Daisy contributors",
+    "notice": "LICENSE"
+  },
+  "src/client/resources/assets/clientcore/textures/ui/icons/aperture.png": {
+    "sha256": "d402f0f891f717c22449f1377abcba9fa063e69f4e4df4dd075e998c84f4efba",
+    "license": "ISC",
+    "source": "https://lucide.dev/license; existing Lucide rasterizations",
+    "notice": "src/client/resources/ICONS-LICENSE.txt"
+  },
+  "src/client/resources/assets/clientcore/textures/ui/icons/apple.png": {
+    "sha256": "9b40131113e540611688449b7624c27f85cb78ae77db9091bdc1482cf840b321",
+    "license": "ISC",
+    "source": "https://lucide.dev/license; existing Lucide rasterizations",
+    "notice": "src/client/resources/ICONS-LICENSE.txt"
+  },
+  "src/client/resources/assets/clientcore/textures/ui/icons/ban.png": {
+    "sha256": "c467e085bc18bb06043ec69711061230a2653e3c315e281c382a46c035a196f2",
+    "license": "ISC",
+    "source": "https://lucide.dev/license; existing Lucide rasterizations",
+    "notice": "src/client/resources/ICONS-LICENSE.txt"
+  },
+  "src/client/resources/assets/clientcore/textures/ui/icons/border.png": {
+    "sha256": "546b9b96cbb4eee10cd36f49c9d2c8a938cd7520c5a68d1486b69629f4b5dc33",
+    "license": "ISC",
+    "source": "https://lucide.dev/license; existing Lucide rasterizations",
+    "notice": "src/client/resources/ICONS-LICENSE.txt"
+  },
+  "src/client/resources/assets/clientcore/textures/ui/icons/box.png": {
+    "sha256": "0afa507d3d313aa5182af9ace2f9e52e48da975349babde9d4dec84717c8623a",
+    "license": "ISC",
+    "source": "https://lucide.dev/license; existing Lucide rasterizations",
+    "notice": "src/client/resources/ICONS-LICENSE.txt"
+  },
+  "src/client/resources/assets/clientcore/textures/ui/icons/burst.png": {
+    "sha256": "1341fa3a9fc938da13ab8516499a8d8bd954c9caca8ca0cd6a15601be0a639bb",
+    "license": "ISC",
+    "source": "https://lucide.dev/license; existing Lucide rasterizations",
+    "notice": "src/client/resources/ICONS-LICENSE.txt"
+  },
+  "src/client/resources/assets/clientcore/textures/ui/icons/camera.png": {
+    "sha256": "79072925cc2abe4d3d64c55ca5e4c5315cdaff5c6af6ca72527cd2b9cee590d4",
+    "license": "ISC",
+    "source": "https://lucide.dev/license; existing Lucide rasterizations",
+    "notice": "src/client/resources/ICONS-LICENSE.txt"
+  },
+  "src/client/resources/assets/clientcore/textures/ui/icons/chat.png": {
+    "sha256": "3dec9a7ef7ae045ea1b052a068c04803ed47dce0752dfefc8b7aba9ba8db8db6",
+    "license": "ISC",
+    "source": "https://lucide.dev/license; existing Lucide rasterizations",
+    "notice": "src/client/resources/ICONS-LICENSE.txt"
+  },
+  "src/client/resources/assets/clientcore/textures/ui/icons/check.png": {
+    "sha256": "83fff2036d5f7857ae465a304e18a8c8b30d1c66f89dbad4eabdb3954c7d9ee3",
+    "license": "ISC",
+    "source": "https://lucide.dev/license; existing Lucide rasterizations",
+    "notice": "src/client/resources/ICONS-LICENSE.txt"
+  },
+  "src/client/resources/assets/clientcore/textures/ui/icons/chevron_down.png": {
+    "sha256": "d7bba39bd728062d058cd3e0384ea137b040796439f08c5c37fed294a811fb82",
+    "license": "ISC",
+    "source": "https://lucide.dev/license; existing Lucide rasterizations",
+    "notice": "src/client/resources/ICONS-LICENSE.txt"
+  },
+  "src/client/resources/assets/clientcore/textures/ui/icons/chip.png": {
+    "sha256": "8f5fc2eae2f99477c6fc4f1d23e9241362d1a5237dacec2ebb878673f777be37",
+    "license": "ISC",
+    "source": "https://lucide.dev/license; existing Lucide rasterizations",
+    "notice": "src/client/resources/ICONS-LICENSE.txt"
+  },
+  "src/client/resources/assets/clientcore/textures/ui/icons/clipboard.png": {
+    "sha256": "8272b41477a084ddb312f101787b9458d1787a525ca80e90d9332a20179082da",
+    "license": "ISC",
+    "source": "https://lucide.dev/license; existing Lucide rasterizations",
+    "notice": "src/client/resources/ICONS-LICENSE.txt"
+  },
+  "src/client/resources/assets/clientcore/textures/ui/icons/clock.png": {
+    "sha256": "f29ed2e67428f4c48bc4f3e1eaa21df2b839ef0c6f279dfb87baba81c0268fc3",
+    "license": "ISC",
+    "source": "https://lucide.dev/license; existing Lucide rasterizations",
+    "notice": "src/client/resources/ICONS-LICENSE.txt"
+  },
+  "src/client/resources/assets/clientcore/textures/ui/icons/compass.png": {
+    "sha256": "d5340e4e63ef9e3013ed12f204d274f75c7fef576aaaa4164638c5fce6897470",
+    "license": "ISC",
+    "source": "https://lucide.dev/license; existing Lucide rasterizations",
+    "notice": "src/client/resources/ICONS-LICENSE.txt"
+  },
+  "src/client/resources/assets/clientcore/textures/ui/icons/copy.png": {
+    "sha256": "499b995484713731c26836dfef61d5c666cec414ddba6015c99ca558b32eb4ff",
+    "license": "ISC",
+    "source": "https://lucide.dev/license; existing Lucide rasterizations",
+    "notice": "src/client/resources/ICONS-LICENSE.txt"
+  },
+  "src/client/resources/assets/clientcore/textures/ui/icons/crosshair.png": {
+    "sha256": "91c1ba5e5895efccd7cb5824495310622e958f95d0ed4316c409ddf984191e7d",
+    "license": "ISC",
+    "source": "https://lucide.dev/license; existing Lucide rasterizations",
+    "notice": "src/client/resources/ICONS-LICENSE.txt"
+  },
+  "src/client/resources/assets/clientcore/textures/ui/icons/edit.png": {
+    "sha256": "62d76b3b2cf29725394e2376afd7315e8c796a72a542f9446930a199ee6f1bf1",
+    "license": "ISC",
+    "source": "https://lucide.dev/license; existing Lucide rasterizations",
+    "notice": "src/client/resources/ICONS-LICENSE.txt"
+  },
+  "src/client/resources/assets/clientcore/textures/ui/icons/eraser.png": {
+    "sha256": "373b68ec1d3357491f800eb8f691083f11d5eeb9199ddcf879af5537ac93c3d7",
+    "license": "ISC",
+    "source": "https://lucide.dev/license; existing Lucide rasterizations",
+    "notice": "src/client/resources/ICONS-LICENSE.txt"
+  },
+  "src/client/resources/assets/clientcore/textures/ui/icons/eye.png": {
+    "sha256": "7b2b26fcbe65a4d8b31c4bd673c01315d6c966df7d5965d697e6dba47d704345",
+    "license": "ISC",
+    "source": "https://lucide.dev/license; existing Lucide rasterizations",
+    "notice": "src/client/resources/ICONS-LICENSE.txt"
+  },
+  "src/client/resources/assets/clientcore/textures/ui/icons/flag.png": {
+    "sha256": "b1578772b316ee2af905e43b01ed44d6436e52a33a7eaef1f48853d50c216446",
+    "license": "ISC",
+    "source": "https://lucide.dev/license; existing Lucide rasterizations",
+    "notice": "src/client/resources/ICONS-LICENSE.txt"
+  },
+  "src/client/resources/assets/clientcore/textures/ui/icons/flame.png": {
+    "sha256": "69d1da3a42bf771a00742ba5fc7c86a9af1826377d3ca9b734a1c4ae3b52783d",
+    "license": "ISC",
+    "source": "https://lucide.dev/license; existing Lucide rasterizations",
+    "notice": "src/client/resources/ICONS-LICENSE.txt"
+  },
+  "src/client/resources/assets/clientcore/textures/ui/icons/flask.png": {
+    "sha256": "3ec590f5f92935a46a5c1d42659ee7469d534f5bb6e8998561b10debc007d3b3",
+    "license": "ISC",
+    "source": "https://lucide.dev/license; existing Lucide rasterizations",
+    "notice": "src/client/resources/ICONS-LICENSE.txt"
+  },
+  "src/client/resources/assets/clientcore/textures/ui/icons/folder.png": {
+    "sha256": "6d99123ac514441fc328efdbb101540b244cabdbe818032754113bdb644c72cd",
+    "license": "ISC",
+    "source": "https://lucide.dev/license; existing Lucide rasterizations",
+    "notice": "src/client/resources/ICONS-LICENSE.txt"
+  },
+  "src/client/resources/assets/clientcore/textures/ui/icons/gauge.png": {
+    "sha256": "90bea84f763f14e6d40bf1f3d23d99c14c7c6e8d85e568b96e5e72473ca21d71",
+    "license": "ISC",
+    "source": "https://lucide.dev/license; existing Lucide rasterizations",
+    "notice": "src/client/resources/ICONS-LICENSE.txt"
+  },
+  "src/client/resources/assets/clientcore/textures/ui/icons/gear.png": {
+    "sha256": "dee098e5d7f19434ffa973365880536d316e189d427f4e88d8d3957606dd6ecf",
+    "license": "ISC",
+    "source": "https://lucide.dev/license; existing Lucide rasterizations",
+    "notice": "src/client/resources/ICONS-LICENSE.txt"
+  },
+  "src/client/resources/assets/clientcore/textures/ui/icons/grid.png": {
+    "sha256": "dbda9c82b0ce1b382608161758eb35e46db618a2c4b917e59571edec5a55e32f",
+    "license": "ISC",
+    "source": "https://lucide.dev/license; existing Lucide rasterizations",
+    "notice": "src/client/resources/ICONS-LICENSE.txt"
+  },
+  "src/client/resources/assets/clientcore/textures/ui/icons/heartcrack.png": {
+    "sha256": "77ae8adf45097eb8f5ec7e57ca6a6cebe8fd849e94b33ddf46d7325f8b8f6ae3",
+    "license": "ISC",
+    "source": "https://lucide.dev/license; existing Lucide rasterizations",
+    "notice": "src/client/resources/ICONS-LICENSE.txt"
+  },
+  "src/client/resources/assets/clientcore/textures/ui/icons/hourglass.png": {
+    "sha256": "5646bbd1634d350105cc9841813d765243d13cd12340075560e7fddc7650f456",
+    "license": "ISC",
+    "source": "https://lucide.dev/license; existing Lucide rasterizations",
+    "notice": "src/client/resources/ICONS-LICENSE.txt"
+  },
+  "src/client/resources/assets/clientcore/textures/ui/icons/inbox.png": {
+    "sha256": "d5147243f38f2dd9e28fba6da17feb1709ff99ad35dc4d591e058a5a3faafa7a",
+    "license": "ISC",
+    "source": "https://lucide.dev/license; existing Lucide rasterizations",
+    "notice": "src/client/resources/ICONS-LICENSE.txt"
+  },
+  "src/client/resources/assets/clientcore/textures/ui/icons/keyboard.png": {
+    "sha256": "9c2eba187dd56696a372c90170e189b202d6917b0533d5c21bbdd3ef20adaa00",
+    "license": "ISC",
+    "source": "https://lucide.dev/license; existing Lucide rasterizations",
+    "notice": "src/client/resources/ICONS-LICENSE.txt"
+  },
+  "src/client/resources/assets/clientcore/textures/ui/icons/keys.png": {
+    "sha256": "9c2eba187dd56696a372c90170e189b202d6917b0533d5c21bbdd3ef20adaa00",
+    "license": "ISC",
+    "source": "https://lucide.dev/license; existing Lucide rasterizations",
+    "notice": "src/client/resources/ICONS-LICENSE.txt"
+  },
+  "src/client/resources/assets/clientcore/textures/ui/icons/layout.png": {
+    "sha256": "0f43fc99b8b14d12a6ffadfa477334db38ad8a54f430ac32fd621f696a156103",
+    "license": "ISC",
+    "source": "https://lucide.dev/license; existing Lucide rasterizations",
+    "notice": "src/client/resources/ICONS-LICENSE.txt"
+  },
+  "src/client/resources/assets/clientcore/textures/ui/icons/list.png": {
+    "sha256": "df8059a496e1d5547e2425e08488537d0231cce3f0cedc14dc152a3ceffb4294",
+    "license": "ISC",
+    "source": "https://lucide.dev/license; existing Lucide rasterizations",
+    "notice": "src/client/resources/ICONS-LICENSE.txt"
+  },
+  "src/client/resources/assets/clientcore/textures/ui/icons/location.png": {
+    "sha256": "0b58ad541cff688202a6bc3167c16dd5d16f143ac18fd7752cf170e11532bca2",
+    "license": "ISC",
+    "source": "https://lucide.dev/license; existing Lucide rasterizations",
+    "notice": "src/client/resources/ICONS-LICENSE.txt"
+  },
+  "src/client/resources/assets/clientcore/textures/ui/icons/message.png": {
+    "sha256": "6b706ed1e0326da115d0c6c23e0284656be4ee7bc436d734ae392974fdaec6e7",
+    "license": "ISC",
+    "source": "https://lucide.dev/license; existing Lucide rasterizations",
+    "notice": "src/client/resources/ICONS-LICENSE.txt"
+  },
+  "src/client/resources/assets/clientcore/textures/ui/icons/monitor.png": {
+    "sha256": "8928f9082114eb77e079ec07f0e7846061aa787ded8c9163fb81f0442a9df76a",
+    "license": "ISC",
+    "source": "https://lucide.dev/license; existing Lucide rasterizations",
+    "notice": "src/client/resources/ICONS-LICENSE.txt"
+  },
+  "src/client/resources/assets/clientcore/textures/ui/icons/more.png": {
+    "sha256": "e00a76192d322c2f7abd55cb0d261f7d04596084d122b4e2a869c0f024987356",
+    "license": "ISC",
+    "source": "https://lucide.dev/license; existing Lucide rasterizations",
+    "notice": "src/client/resources/ICONS-LICENSE.txt"
+  },
+  "src/client/resources/assets/clientcore/textures/ui/icons/orbit.png": {
+    "sha256": "7a255357c94a36603c6e73ec51d390012e7643318b6db181e2c4f3ce884358be",
+    "license": "ISC",
+    "source": "https://lucide.dev/license; existing Lucide rasterizations",
+    "notice": "src/client/resources/ICONS-LICENSE.txt"
+  },
+  "src/client/resources/assets/clientcore/textures/ui/icons/palette.png": {
+    "sha256": "ce7b94fc8d4b116951f12a712efb4bdb7f074f92dc7d84058245c8cd96e32084",
+    "license": "ISC",
+    "source": "https://lucide.dev/license; existing Lucide rasterizations",
+    "notice": "src/client/resources/ICONS-LICENSE.txt"
+  },
+  "src/client/resources/assets/clientcore/textures/ui/icons/pearl.png": {
+    "sha256": "a22a657d0614dd3e7e7f60c89a2e411932db2732a1ba462fd3ff91fb6b0f4e6e",
+    "license": "ISC",
+    "source": "https://lucide.dev/license; existing Lucide rasterizations",
+    "notice": "src/client/resources/ICONS-LICENSE.txt"
+  },
+  "src/client/resources/assets/clientcore/textures/ui/icons/plug.png": {
+    "sha256": "1b4bd2da23a2b74bb54afdc7b3a277a8386f0bf35929eb4341c9c3e6588cad7a",
+    "license": "ISC",
+    "source": "https://lucide.dev/license; existing Lucide rasterizations",
+    "notice": "src/client/resources/ICONS-LICENSE.txt"
+  },
+  "src/client/resources/assets/clientcore/textures/ui/icons/plus.png": {
+    "sha256": "ff136d46de21ff93c138eddaa97a0f0d40a012151518493b01ee22a3a1f830a4",
+    "license": "ISC",
+    "source": "https://lucide.dev/license; existing Lucide rasterizations",
+    "notice": "src/client/resources/ICONS-LICENSE.txt"
+  },
+  "src/client/resources/assets/clientcore/textures/ui/icons/pointer.png": {
+    "sha256": "996d46e4ad249dedfc2f6d092d22a6bc6180ace1a720dad700829a083fdb6a8d",
+    "license": "ISC",
+    "source": "https://lucide.dev/license; existing Lucide rasterizations",
+    "notice": "src/client/resources/ICONS-LICENSE.txt"
+  },
+  "src/client/resources/assets/clientcore/textures/ui/icons/power.png": {
+    "sha256": "25f2c4e1ea34ea5842a469b8797c40207ffa74eedea00e3b82631118c16252b0",
+    "license": "ISC",
+    "source": "https://lucide.dev/license; existing Lucide rasterizations",
+    "notice": "src/client/resources/ICONS-LICENSE.txt"
+  },
+  "src/client/resources/assets/clientcore/textures/ui/icons/reset.png": {
+    "sha256": "a8059c4c6183ae80542c6c43c7caf02da397743bda03643b8757a8cfda2cf1ab",
+    "license": "ISC",
+    "source": "https://lucide.dev/license; existing Lucide rasterizations",
+    "notice": "src/client/resources/ICONS-LICENSE.txt"
+  },
+  "src/client/resources/assets/clientcore/textures/ui/icons/run.png": {
+    "sha256": "a876ced3655e871f869cdf44ba1b61ae2355b94ff37973f10f1bc1574081f42f",
+    "license": "ISC",
+    "source": "https://lucide.dev/license; existing Lucide rasterizations",
+    "notice": "src/client/resources/ICONS-LICENSE.txt"
+  },
+  "src/client/resources/assets/clientcore/textures/ui/icons/scoreboard.png": {
+    "sha256": "f40fcbc9df2dbb304ab3953dbc32b636bbb4960542a9937bfad2de570aa979a1",
+    "license": "ISC",
+    "source": "https://lucide.dev/license; existing Lucide rasterizations",
+    "notice": "src/client/resources/ICONS-LICENSE.txt"
+  },
+  "src/client/resources/assets/clientcore/textures/ui/icons/search.png": {
+    "sha256": "39f3566146e14ba94c789ae1114bb95cbfad6ba8d7592f2103e5b5acad242f7b",
+    "license": "ISC",
+    "source": "https://lucide.dev/license; existing Lucide rasterizations",
+    "notice": "src/client/resources/ICONS-LICENSE.txt"
+  },
+  "src/client/resources/assets/clientcore/textures/ui/icons/send.png": {
+    "sha256": "1c5c27675a5b7fccc54f2be14397a8d389ab8b315ea2ea867947d82cd45e6de4",
+    "license": "ISC",
+    "source": "https://lucide.dev/license; existing Lucide rasterizations",
+    "notice": "src/client/resources/ICONS-LICENSE.txt"
+  },
+  "src/client/resources/assets/clientcore/textures/ui/icons/server.png": {
+    "sha256": "398ea408d8322e16442c99ec641ec9f6c17b8191855504557fe5da31b6a0f57a",
+    "license": "ISC",
+    "source": "https://lucide.dev/license; existing Lucide rasterizations",
+    "notice": "src/client/resources/ICONS-LICENSE.txt"
+  },
+  "src/client/resources/assets/clientcore/textures/ui/icons/shield.png": {
+    "sha256": "579ea3224059615afc9cd9438906e9be18b84f453faa3ddd1044eb9b4883dc7a",
+    "license": "ISC",
+    "source": "https://lucide.dev/license; existing Lucide rasterizations",
+    "notice": "src/client/resources/ICONS-LICENSE.txt"
+  },
+  "src/client/resources/assets/clientcore/textures/ui/icons/shirt.png": {
+    "sha256": "215be7d88f1aba619a28ad53efaf41e02e2cedc61a2a2d9d94beffa318df4391",
+    "license": "ISC",
+    "source": "https://lucide.dev/license; existing Lucide rasterizations",
+    "notice": "src/client/resources/ICONS-LICENSE.txt"
+  },
+  "src/client/resources/assets/clientcore/textures/ui/icons/sparkle.png": {
+    "sha256": "948693ae11c5fed94193f875714dd57b9ef0b41c47b97b0b766c72fa1c3f6aa9",
+    "license": "ISC",
+    "source": "https://lucide.dev/license; existing Lucide rasterizations",
+    "notice": "src/client/resources/ICONS-LICENSE.txt"
+  },
+  "src/client/resources/assets/clientcore/textures/ui/icons/speed.png": {
+    "sha256": "055f3fd4ab449b2b5a39e388a11c557dd66c964d2c20ed2f8acc74457bfd78fd",
+    "license": "ISC",
+    "source": "https://lucide.dev/license; existing Lucide rasterizations",
+    "notice": "src/client/resources/ICONS-LICENSE.txt"
+  },
+  "src/client/resources/assets/clientcore/textures/ui/icons/spotify.png": {
+    "sha256": "5c87a4e8998da559bdd8cde993c20de6f3574460c57465a609601093fec13f0a",
+    "license": "MIT",
+    "source": "scripts/generate-assets.py and assets/artwork.json; original geometric artwork by Daisy contributors",
+    "notice": "LICENSE"
+  },
+  "src/client/resources/assets/clientcore/textures/ui/icons/star.png": {
+    "sha256": "c6173f18e639075cbd2a0652d1d734091acfdbc9853c8770fba069eea9878814",
+    "license": "ISC",
+    "source": "https://lucide.dev/license; existing Lucide rasterizations",
+    "notice": "src/client/resources/ICONS-LICENSE.txt"
+  },
+  "src/client/resources/assets/clientcore/textures/ui/icons/sun.png": {
+    "sha256": "c6d3f1f0e60324b47ada6815c982d225ad3c66a9f53e43fd14c689c510c4f120",
+    "license": "ISC",
+    "source": "https://lucide.dev/license; existing Lucide rasterizations",
+    "notice": "src/client/resources/ICONS-LICENSE.txt"
+  },
+  "src/client/resources/assets/clientcore/textures/ui/icons/swords.png": {
+    "sha256": "c6b3f194e5219c3aa69e75f0b98cea1227fc7d129220485886b1b07188c256bb",
+    "license": "ISC",
+    "source": "https://lucide.dev/license; existing Lucide rasterizations",
+    "notice": "src/client/resources/ICONS-LICENSE.txt"
+  },
+  "src/client/resources/assets/clientcore/textures/ui/icons/tag.png": {
+    "sha256": "d0aa0574abe72f54d6ecc4b4b8baba61ea9b3f49e42922950cd5492793fca15a",
+    "license": "ISC",
+    "source": "https://lucide.dev/license; existing Lucide rasterizations",
+    "notice": "src/client/resources/ICONS-LICENSE.txt"
+  },
+  "src/client/resources/assets/clientcore/textures/ui/icons/target.png": {
+    "sha256": "b2cc5aec7d6b68565d67a3357e5d323bab1b6ae65a4f49e13d6a13ccf99d9757",
+    "license": "ISC",
+    "source": "https://lucide.dev/license; existing Lucide rasterizations",
+    "notice": "src/client/resources/ICONS-LICENSE.txt"
+  },
+  "src/client/resources/assets/clientcore/textures/ui/icons/tool.png": {
+    "sha256": "3f2324f8c08dee14b4c179919a7fc87c985c2654b51ba72825182a0892fb1be8",
+    "license": "ISC",
+    "source": "https://lucide.dev/license; existing Lucide rasterizations",
+    "notice": "src/client/resources/ICONS-LICENSE.txt"
+  },
+  "src/client/resources/assets/clientcore/textures/ui/icons/totem.png": {
+    "sha256": "14454e8849ce13db90c15399c515a8b5f12c884299470f4a642e4ed16f098db2",
+    "license": "ISC",
+    "source": "https://lucide.dev/license; existing Lucide rasterizations",
+    "notice": "src/client/resources/ICONS-LICENSE.txt"
+  },
+  "src/client/resources/assets/clientcore/textures/ui/icons/trash.png": {
+    "sha256": "a83c1fbf2017416979354f9df3f81f569a1aff7396f5425d80ab599af93e2954",
+    "license": "ISC",
+    "source": "https://lucide.dev/license; existing Lucide rasterizations",
+    "notice": "src/client/resources/ICONS-LICENSE.txt"
+  },
+  "src/client/resources/assets/clientcore/textures/ui/icons/user_minus.png": {
+    "sha256": "536ca179039d8561a69496e69375f25a2abe9aba0b02f81c57383e33b8d084da",
+    "license": "ISC",
+    "source": "https://lucide.dev/license; existing Lucide rasterizations",
+    "notice": "src/client/resources/ICONS-LICENSE.txt"
+  },
+  "src/client/resources/assets/clientcore/textures/ui/icons/user_plus.png": {
+    "sha256": "a2d8c38fddb8624065d50d4a8b7a43dbe9d93d89f944ba8c3568f93b40ae9c80",
+    "license": "ISC",
+    "source": "https://lucide.dev/license; existing Lucide rasterizations",
+    "notice": "src/client/resources/ICONS-LICENSE.txt"
+  },
+  "src/client/resources/assets/clientcore/textures/ui/icons/users.png": {
+    "sha256": "473b6fae7926544cb791f1eac28449d33368f55b28b25a34cbc35413b8623df4",
+    "license": "ISC",
+    "source": "https://lucide.dev/license; existing Lucide rasterizations",
+    "notice": "src/client/resources/ICONS-LICENSE.txt"
+  },
+  "src/client/resources/assets/clientcore/textures/ui/icons/video.png": {
+    "sha256": "2801bf5958643c73ef9820ccfb1a6844be5b5c956ddf3752d81cfe11bd334a7f",
+    "license": "ISC",
+    "source": "https://lucide.dev/license; existing Lucide rasterizations",
+    "notice": "src/client/resources/ICONS-LICENSE.txt"
+  },
+  "src/client/resources/assets/clientcore/textures/ui/icons/wifi.png": {
+    "sha256": "10376e643e4dd2cd95899fd87e0c9f3c3160c7b0a6bb391e901c2acb6bae5085",
+    "license": "ISC",
+    "source": "https://lucide.dev/license; existing Lucide rasterizations",
+    "notice": "src/client/resources/ICONS-LICENSE.txt"
+  },
+  "src/client/resources/assets/clientcore/textures/ui/icons/wrench.png": {
+    "sha256": "ed9d4711f5a01f5977bce6f3666f8333bdaaa51f6f006a4b2defd23f89c9479e",
+    "license": "ISC",
+    "source": "https://lucide.dev/license; existing Lucide rasterizations",
+    "notice": "src/client/resources/ICONS-LICENSE.txt"
+  },
+  "src/client/resources/assets/clientcore/textures/ui/icons/x.png": {
+    "sha256": "c7abc1305e0b4183e585def5053c1a759198e62dd7a343b3ee9cbf86dfe95ffc",
+    "license": "ISC",
+    "source": "https://lucide.dev/license; existing Lucide rasterizations",
+    "notice": "src/client/resources/ICONS-LICENSE.txt"
+  },
+  "src/client/resources/assets/clientcore/textures/ui/icons/zoom.png": {
+    "sha256": "a7441efae2da21d680d7160231c436828cdd7fda83f7320c5092e2a7fa7a83c1",
+    "license": "ISC",
+    "source": "https://lucide.dev/license; existing Lucide rasterizations",
+    "notice": "src/client/resources/ICONS-LICENSE.txt"
+  },
+  "src/client/resources/assets/clientcore/textures/ui/widgets/toggle_knob.png": {
+    "sha256": "f15281fb56ab21492fa03ffe740e1f7ff78ad7c7fa7c52e0a0a651c1cbb73f16",
+    "license": "MIT",
+    "source": "scripts/generate-assets.py and assets/artwork.json; original geometric artwork by Daisy contributors",
+    "notice": "LICENSE"
+  },
+  "src/client/resources/assets/clientcore/textures/ui/widgets/toggle_track.png": {
+    "sha256": "9602b62d5633e0e58ca76ee89345f85619abb8a51f671fceb733527e7cc17df7",
+    "license": "MIT",
+    "source": "scripts/generate-assets.py and assets/artwork.json; original geometric artwork by Daisy contributors",
+    "notice": "LICENSE"
+  },
+  "src/client/resources/assets/clientcore/textures/watermark_logo.png": {
+    "sha256": "0243b23a8544b974df812160516f8b299cb316f8806d15af863ca186cfa6dec7",
+    "license": "MIT",
+    "source": "scripts/generate-assets.py and assets/artwork.json; original geometric artwork by Daisy contributors",
+    "notice": "LICENSE"
+  },
+  "src/client/resources/assets/clientcore/textures/watermark_logo_halloween.png": {
+    "sha256": "0243b23a8544b974df812160516f8b299cb316f8806d15af863ca186cfa6dec7",
+    "license": "MIT",
+    "source": "scripts/generate-assets.py and assets/artwork.json; original geometric artwork by Daisy contributors",
+    "notice": "LICENSE"
+  },
+  "src/main/resources/assets/clientcore/icon.png": {
+    "sha256": "0243b23a8544b974df812160516f8b299cb316f8806d15af863ca186cfa6dec7",
+    "license": "MIT",
+    "source": "scripts/generate-assets.py and assets/artwork.json; original geometric artwork by Daisy contributors",
+    "notice": "LICENSE"
+  }
+}

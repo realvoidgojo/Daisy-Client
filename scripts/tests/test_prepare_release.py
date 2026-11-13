@@ -18,6 +18,7 @@ class PrepareReleaseTests(unittest.TestCase):
                 "launcher/package-lock.json": '{"version":"0.1.8","packages":{"":{"version":"0.1.8"}}}',
                 "launcher/src/config/build-version.json": '{"version":"0.2.8.2","channel":"stable","builtAt":"old"}',
                 "build.gradle.kts": 'version = "0.2.8.2+$minecraftVersion"\n',
+                "daisy-bootstrap/build.gradle.kts": 'version = "0.1.9.0"\n',
             }
             for name, content in inputs.items():
                 path = root / name
@@ -36,3 +37,7 @@ class PrepareReleaseTests(unittest.TestCase):
             self.assertEqual(package["version"], lock["packages"][""]["version"])
             self.assertNotIn("builtAt", config)
             self.assertIn('0.2.8.3+$minecraftVersion', (root / "build.gradle.kts").read_text())
+            release.prepare(root, "1.0.0-beta.1", "1.0.0-beta.1")
+            beta = json.loads((root / "launcher/src/config/build-version.json").read_text())
+            self.assertEqual(beta["channel"], "beta")
+            self.assertIn('version = "1.0.0-beta.1"', (root / "daisy-bootstrap/build.gradle.kts").read_text())
