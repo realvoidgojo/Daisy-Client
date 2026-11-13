@@ -177,3 +177,8 @@ jobs:
           node launcher/scripts/verify-client-update.js "$RELEASE_TAG" 26.2
           node launcher/scripts/verify-client-update.js "$RELEASE_TAG" 1.21.11 skin
           node launcher/scripts/verify-client-update.js "$RELEASE_TAG" 26.2 skin
+      - name: Verify installed stable launcher upgrade through GitHub Latest
+        if: ${{ !contains(needs.prepare.outputs.tag, '-') }}
+        run: |
+          git fetch --no-tags --depth=1 origin 34075f782555e2bced6d7165e282ce2a2b05fd75
+          node launcher/scripts/verify-launcher-update.js "$RELEASE_TAG"

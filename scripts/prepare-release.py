@@ -47,6 +47,11 @@ def prepare(root, version, launcher_version):
         changes[bootstrap_path] = re.sub(r'^version = "[^"]+"', f'version = "{version}"', bootstrap, count=1, flags=re.M)
     changes.update({package_path: json_text(package), lock_path: json_text(lock),
                config_path: json_text(config), gradle_path: gradle.replace(declaration, f'version = "{version}+$minecraftVersion"')})
+    placeholder_path = root / "launcher/src/config/update-manifest.json"
+    if placeholder_path.exists():
+        placeholder = json.loads(placeholder_path.read_text(encoding="utf-8"))
+        placeholder.update(version=version, channel=config["channel"])
+        changes[placeholder_path] = json_text(placeholder)
     for path, content in changes.items():
         path.write_text(content, encoding="utf-8", newline="\n")
     return changes

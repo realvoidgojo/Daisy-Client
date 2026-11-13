@@ -1,16 +1,16 @@
-# Daisy Client · 1.0 beta
+# Daisy Client · 1.0
 
 Daisy is a Fabric Minecraft client and native desktop launcher for local-account play.
 It combines configurable HUD modules, visual effects, cosmetics, instance management
 and optional performance mods. Core local play does not require Microsoft or social sign-in.
 
-The beta is a foundation release, not a claim that every module and Minecraft target
-has been tested in game. Minecraft itself is a separate product; Daisy does not grant
+Automated builds and startup checks cover the configured targets; they do not certify
+every module in game. Minecraft itself is a separate product; Daisy does not grant
 access to authenticated servers or paid online services.
 
 ## Install
 
-Get the beta from [GitHub Releases](https://github.com/realvoidgojo/Daisy-Client/releases).
+Get the latest stable build from [GitHub Releases](https://github.com/realvoidgojo/Daisy-Client/releases/latest).
 Choose `Daisy-Setup.exe` (Windows installer), `Daisy-Portable.exe`, or
 `Daisy-Linux.tar.gz` (Linux x64, experimental). Create a local account, choose a
 Minecraft version, and create an instance. The launcher manages the matching client

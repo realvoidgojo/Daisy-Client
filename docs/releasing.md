@@ -11,7 +11,7 @@ release API; stable launchers use the latest stable manifest.
 Prepare synchronized client, Electron and bootstrap versions:
 
 ```sh
-python scripts/prepare-release.py 1.0.0-beta.3 --launcher-version 1.0.0-beta.3
+python scripts/prepare-release.py 1.0.0 --launcher-version 1.0.0
 ```
 
 The script updates Gradle, bootstrap, npm package/lock and build metadata. Add release
@@ -23,8 +23,8 @@ manifests are generated from produced bytes, not maintained as handwritten URLs/
 Commit on the reviewed branch. Only after checks pass, create and push its matching tag:
 
 ```sh
-git tag -a v1.0.0-beta.3 -m "Daisy Client 1.0.0-beta.3"
-git push origin HEAD v1.0.0-beta.3
+git tag -a v1.0.0 -m "Daisy Client 1.0.0"
+git push origin HEAD v1.0.0
 ```
 
 The tag must match `daisyVersion`. Do not move existing tags or overwrite published
@@ -43,9 +43,9 @@ repair it through a new version rather than silently changing published bytes.
 ## Verification and responsibilities
 
 ```sh
-python scripts/verify-release.py --tag v1.0.0-beta.3
-node launcher/scripts/verify-client-update.js v1.0.0-beta.3 1.21.11
-node launcher/scripts/verify-client-update.js v1.0.0-beta.3 26.2
+python scripts/verify-release.py --tag v1.0.0
+node launcher/scripts/verify-client-update.js v1.0.0 1.21.11
+node launcher/scripts/verify-client-update.js v1.0.0 26.2
 ```
 
 Use the corresponding source checkout. Record native installer, Linux runtime and
@@ -58,3 +58,20 @@ Staging and collection also produce one deterministic standalone local-skin JAR 
 Minecraft target from the compiled client. The manifest includes a separate `skins`
 array, and publication verifies all 31 assets plus real skin downloads/cache/install
 checks for 1.21.11 and 26.2. No opaque local skin binaries are release inputs.
+
+## Stable launcher synchronization
+
+A stable release must be published with `prerelease=false` and GitHub Latest pointing to
+its tag. Existing stable launchers (including 0.2.8.4) consume
+`https://github.com/realvoidgojo/Daisy-Client/releases/latest/download/latest.json`;
+prereleases intentionally do not replace that endpoint. The source package/lock,
+client/bootstrap and both build/update metadata files must agree on version and channel.
+`prepare-release.py` synchronizes these files; `verify-project.py` rejects drift.
+
+For stable tags, release verification checks both the GitHub Latest API and the public
+stable manifest URL against the just-published immutable manifest, allowing a bounded
+GitHub redirect/CDN propagation delay. The workflow then retrieves the pinned original
+0.2.8.4 updater source and verifies discovery, update availability, a real Windows
+package download, SHA-256 and cached reuse. It also checks that beta.3 sees the stable
+upgrade and that the current installed version does not offer itself again. This smoke
+check never executes an installer or modifies launcher settings/instances.

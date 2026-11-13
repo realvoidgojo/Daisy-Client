@@ -132,3 +132,14 @@ test("an explicit development manifest overrides beta channel discovery", async 
   assert.equal(remote.url, url);
   assert.deepEqual(requested, [url]);
 });
+
+test("stable 1.0 updates legacy and beta launchers and stops offering itself after upgrade", () => {
+  const payload = manifest("1.0.0");
+  for (const installed of ["0.2.8.4", "1.0.0-beta.3"]) {
+    const state = launcherReleaseState(installed, payload, "win32", "x64");
+    assert.equal(state.available, true);
+    assert.equal(state.latestVersion, "1.0.0");
+    assert.ok(state.asset);
+  }
+  assert.equal(launcherReleaseState("1.0.0", payload, "win32", "x64").available, false);
+});

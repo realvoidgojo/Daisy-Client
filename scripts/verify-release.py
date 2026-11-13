@@ -5,10 +5,12 @@ import hashlib
 import importlib.util
 import json
 import os
+import time
 from pathlib import Path
 from urllib.request import Request, urlopen
 
 REPO = "https://api.github.com/repos/realvoidgojo/Daisy-Client"
+LATEST_MANIFEST = "https://github.com/realvoidgojo/Daisy-Client/releases/latest/download/latest.json"
 
 
 def read(url, api=False):
@@ -19,6 +21,23 @@ def read(url, api=False):
             headers["Authorization"] = "Bearer " + os.environ["GH_TOKEN"]
     with urlopen(Request(url, headers=headers), timeout=120) as response:
         return response.read()
+
+
+def verify_latest_stable(version, manifest_bytes, attempts=6):
+    """Verify the endpoint used by already-installed stable launchers, not just a tag."""
+    for attempt in range(attempts):
+        try:
+            latest = json.loads(read(f"{REPO}/releases/latest", api=True))
+            if latest["tag_name"] != f"v{version}" or latest["draft"] or latest["prerelease"]:
+                raise ValueError("GitHub Latest does not point to this stable release")
+            if read(LATEST_MANIFEST) != manifest_bytes:
+                raise ValueError("Stable launcher endpoint does not serve this release's manifest")
+            return
+        except Exception:
+            if attempt + 1 == attempts:
+                raise
+            # Allow GitHub's Latest redirect/CDN to converge after publication.
+            time.sleep(10)
 
 
 def main():
@@ -73,6 +92,8 @@ def main():
     for kind, entry in manifest["files"].items():
         if manifest[f"{kind}Url"] != assets[entry["name"]]["browser_download_url"]:
             raise ValueError(f"Wrong distribution download URL: {kind}")
+    if "-" not in version:
+        verify_latest_stable(version, manifest_bytes)
     print(f"Verified {args.tag}: {len(assets)} published assets and all upload digests match the release manifest.")
 
 

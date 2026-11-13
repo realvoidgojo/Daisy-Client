@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.0.0 — 2026-11-13
+
+- Published the 1.0 foundation as a stable GitHub Latest release so installed 0.2.8.4 launchers discover the upgrade.
+- Synchronized client, skin JARs, bootstrap, launcher, package lock and update metadata to 1.0.0/stable.
+- Automated version/channel consistency checks and coordinated development update metadata.
+- Verified GitHub Latest and the stable manifest endpoint after publication.
+- Added a real Windows package download/hash/cache check using the original 0.2.8.4 updater.
+- Includes local accounts, source-built skin support, GitHub-backed client updates and the Windows ICO fixes from the beta line.
+
 ## 1.0.0-beta.3 — 2026-11-13
 
 - Merged the validated foundation into main while retaining Git history.
