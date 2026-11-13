@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.1 — 2026-11-13
+
+- Passed the prepared release tag into the legacy stable-upgrade verification step.
+- Added a regression check for the workflow environment and an actionable missing-tag error.
+- Retained the published 1.0.0 assets and tag; this patch provides the corrected release verification pipeline.
+
 ## 1.0.0 — 2026-11-13
 
 - Published the 1.0 foundation as a stable GitHub Latest release so installed 0.2.8.4 launchers discover the upgrade.

@@ -143,3 +143,11 @@ test("stable 1.0 updates legacy and beta launchers and stops offering itself aft
   }
   assert.equal(launcherReleaseState("1.0.0", payload, "win32", "x64").available, false);
 });
+
+test("stable upgrade CLI rejects a missing prepared release tag before any network request", () => {
+  const { spawnSync } = require("node:child_process");
+  const result = spawnSync(process.execPath, [path.join(__dirname, "../scripts/verify-launcher-update.js")],
+    { encoding: "utf8", env: { ...process.env, RELEASE_TAG: "" } });
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /export RELEASE_TAG from the prepared workflow output/);
+});

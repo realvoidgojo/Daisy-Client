@@ -24,8 +24,9 @@ async function get(url) {
   return response;
 }
 async function main() {
-  const [tag] = process.argv.slice(2);
-  assert.match(tag || "", /^v\d+\.\d+\.\d+$/);
+  const tag = process.argv[2] || process.env.RELEASE_TAG;
+  assert.match(tag || "", /^v\d+\.\d+\.\d+$/,
+    "Pass a stable vX.Y.Z tag or export RELEASE_TAG from the prepared workflow output.");
   const legacyCache = historicalModule("daisy-mod-cache.js");
   const legacy = historicalModule("launcher-release.js", { "./daisy-mod-cache.js": legacyCache });
   const payload = await (await get("https://github.com/realvoidgojo/Daisy-Client/releases/latest/download/latest.json")).json();
