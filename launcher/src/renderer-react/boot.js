@@ -4,7 +4,7 @@ try {
         /* The launcher is always drawn in the Modern layout, and so is the splash. */
         document.documentElement.dataset.bootUi = "modern";
       } catch (e) {}
-    
+
 /* Written here, not rendered by React, so the row is on the first frame with the rest. */
       (function () {
         var row = document.getElementById("boot-blocks");
@@ -14,4 +14,3 @@ try {
           row.appendChild(block);
         }
       })();
-    
