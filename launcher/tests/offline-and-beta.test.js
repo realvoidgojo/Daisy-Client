@@ -50,3 +50,21 @@ test("local account readiness does not call Microsoft or require ownership servi
   assert.equal(localCreated, true);
   assert.doesNotMatch(source, /async function requestMicrosoftDeviceCode|async function assertMinecraftOwnership/);
 });
+
+test("smoke mode isolates shared app data as well as settings and Chromium state", () => {
+  const source = fs.readFileSync(path.join(__dirname, "../src/main.js"), "utf8");
+  const start = source.indexOf("const smokeTest =");
+  const end = source.indexOf('const { spawn }', start);
+  const paths = {};
+  vm.runInNewContext(source.slice(start, end), {
+    app: { setPath: (name, value) => { paths[name] = value; }, disableHardwareAcceleration: () => {} },
+    process: { argv: ["--smoke-test"], env: { DAISY_SMOKE_TEST: "1", DAISY_SMOKE_DIR: "isolated" } }
+  });
+  assert.deepEqual(paths, { appData: "isolated", userData: "isolated", sessionData: "isolated" });
+});
+
+test("beta downloads cannot enter the cache scanned by older stable launchers", () => {
+  const { clientCacheDirectory } = require("../src/daisy-mod-cache.js");
+  assert.equal(path.basename(clientCacheDirectory("data", "0.2.8.4")), "daisy-mod-cache");
+  assert.notEqual(clientCacheDirectory("data", "1.0.0-beta.2"), clientCacheDirectory("data", "0.2.8.4"));
+});

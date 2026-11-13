@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.0.0-beta.2 — 2026-11-13
+
+- Isolated native startup tests from real launcher instances by overriding all Electron data paths.
+- Matched the packaged Linux smoke test to the archive startup wrapper.
+- Separated beta client caches from stable caches for compatibility with older launchers.
+- Retained the unpublished beta.1 tag after its Linux startup check failed; no release assets were published.
+
 ## 1.0.0-beta.1 — 2026-11-13
 
 - Established a contributor-friendly beta foundation while preserving the Stonecutter layout.

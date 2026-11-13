@@ -80,7 +80,7 @@ const nowPlaying = require("./now-playing.js");
 const curseforge = require("./curseforge.js");
 const { migrationPlan, migrationVersion } = require("./migration-plan.js");
 const { planRvrRestore } = require("./rvr-restore.js");
-const { newestClientJar, createDaisyModUpdater, installDaisyModJar } = require("./daisy-mod-cache.js");
+const { newestClientJar, createDaisyModUpdater, installDaisyModJar, clientCacheDirectory } = require("./daisy-mod-cache.js");
 const { clientJarIdentity, latestChannelRelease } = require("./version.js");
 const { cachedMetadata } = require("./metadata-cache.js");
 const ensureLatestDaisyMod = createDaisyModUpdater();
@@ -91,7 +91,9 @@ function effectiveCurseForgeKey(settings) { return String(settings?.curseForgeAp
 const { app, BrowserWindow, ipcMain, shell, dialog, screen, nativeImage, globalShortcut, clipboard, Notification } = require("electron");
 const smokeTest = process.env.DAISY_SMOKE_TEST === "1" && process.argv.includes("--smoke-test");
 if (smokeTest) {
+  app.setPath("appData", process.env.DAISY_SMOKE_DIR);
   app.setPath("userData", process.env.DAISY_SMOKE_DIR);
+  app.setPath("sessionData", process.env.DAISY_SMOKE_DIR);
   app.disableHardwareAcceleration();
   globalThis.fetch = async () => { throw new Error("Offline startup smoke test"); };
 }
@@ -687,7 +689,7 @@ async function prefetchDaisyModJar(mcVersion) {
   try {
     const result = await ensureLatestDaisyMod({
       mcVersion: version,
-      cacheDir: path.join(app.getPath("userData"), "daisy-mod-cache"),
+      cacheDir: clientCacheDirectory(app.getPath("userData"), readBuildVersion()),
       existingJar,
       fetchManifest: fetchRemoteUpdateManifest,
       download: downloadFile,
@@ -1554,6 +1556,10 @@ function createWindow() {
   if (startedAtLogin && !devPlacement) mainWindow.minimize();
 
   if (smokeTest) {
+    const relativeInstance = path.relative(process.env.DAISY_SMOKE_DIR, defaultInstancePath());
+    if (relativeInstance.startsWith("..") || path.isAbsolute(relativeInstance)) {
+      throw new Error("Smoke test instance escaped its temporary directory");
+    }
     mainWindow.webContents.on("render-process-gone", () => app.exit(1));
     mainWindow.webContents.on("did-fail-load", () => app.exit(1));
     mainWindow.webContents.once("did-finish-load", () => setTimeout(async () => {

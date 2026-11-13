@@ -171,4 +171,10 @@ function installDaisyModJar(sourceJar, modsDir, mcVersion) {
   return { path: target, disabled, removed };
 }
 
-module.exports = { pickDaisyModEntry, sha256File, fileMatchesSha256, newestClientJar, createDaisyModUpdater, installDaisyModJar };
+// Older stable launchers only understand numeric filenames. Keep beta downloads
+// out of their cache so they cannot mistake a beta JAR for another Minecraft target.
+function clientCacheDirectory(userData, version) {
+  return path.join(userData, version.includes("-") ? "daisy-mod-cache-beta" : "daisy-mod-cache");
+}
+
+module.exports = { pickDaisyModEntry, sha256File, fileMatchesSha256, newestClientJar, createDaisyModUpdater, installDaisyModJar, clientCacheDirectory };

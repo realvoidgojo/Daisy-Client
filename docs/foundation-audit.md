@@ -87,7 +87,7 @@ ownership of external services or substitute for upstream license terms.
 
 ## CI, versioning and release verification
 
-Versions are synchronized to `1.0.0-beta.1` across client, bootstrap, Electron, build and
+Versions are synchronized to `1.0.0-beta.2` across client, bootstrap, Electron, build and
 release metadata. Shared version rules preserve older numeric versions and order beta/rc
 versions correctly. Stable update discovery does not opt users into prereleases.
 
@@ -107,7 +107,7 @@ the latest stable release. No beta tag is created before local/branch validation
 - Clean `build check`: all 13 targets and bootstrap passed in 4m 31s, 194/194 tasks
   executed. Subsequent archive checks passed after adding full distribution notices. The final
   all-target client build/check after the standalone updater change also passed (4m 32s).
-- Project, branding and license validation passed; 14 Python and 42 Node tests passed.
+- Project, branding and license validation passed; 14 Python and 44 Node tests passed.
   Negative tests reject changed/unattributed assets, missing dependency licenses, corrupt
   updates and incompatible targets. All three workflow YAML files parsed locally.
 - A fresh `npm ci`, audit, bundle and offline native startup passed. Windows NSIS/portable
@@ -123,3 +123,17 @@ this audit. Interactive Linux use, every module/mixin in game, optional external
 and user-supplied optional JARs require their own runtime/provenance checks. Existing Gradle
 and dependency deprecation warnings remain. These limits are not presented as successful
 manual tests or as a claim that beta gameplay is production-certified.
+
+## Candidate correction
+
+The beta.1 tag remains immutable and unpublished. Its full client compatibility checks and
+Linux package build passed, but the packaged Linux smoke test omitted the production
+wrapper's `--no-sandbox` argument. Beta.2 corrects that test invocation.
+
+Local smoke testing also exposed an isolation defect: overriding only Electron userData
+left the instance directory under the real appData path. The smoke-installed beta client
+in the default instance was backed up and replaced with the size/SHA-verified stable
+0.2.8.4 client. Worlds and game configuration were untouched. Smoke tests now isolate
+appData, userData and sessionData, assert instance containment, and have regression tests.
+The corrected native smoke passed with the restored stable client unchanged. Beta caches
+also use a separate directory so older stable launchers never parse beta cache filenames.

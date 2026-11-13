@@ -12,6 +12,8 @@ delete env.ELECTRON_RUN_AS_NODE;
 const packaged = process.argv.includes("--packaged");
 const executable = packaged ? path.join(root, "dist", process.platform === "win32" ? "win-unpacked/Daisy.exe" : "linux-unpacked/daisy") : require("electron");
 const args = packaged ? ["--smoke-test"] : [root, "--smoke-test"];
+// Match the Linux archive's real startup wrapper; the SUID helper is not installed.
+if (process.platform === "linux") args.push("--no-sandbox");
 const child = spawn(executable, args, { env, windowsHide: true });
 let output = "";
 child.stdout.on("data", (chunk) => { output += chunk; process.stdout.write(chunk); });
