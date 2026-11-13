@@ -13,7 +13,7 @@ group = "dev.daisy"
   The bootstrap agent is the same for every Minecraft version, so it deliberately
   carries no +<mc> suffix.
 */
-version = "1.0.1"
+version = "1.0.2"
 
 repositories {
     mavenCentral()

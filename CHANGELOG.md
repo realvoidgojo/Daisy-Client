@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.2 — 2026-11-13
+
+- Included the maintainer's updated normal and Halloween menu title logos.
+- Recorded the supplied artwork in the asset inventory and excluded it from geometric asset regeneration.
+
 ## 1.0.1 — 2026-11-13
 
 - Passed the prepared release tag into the legacy stable-upgrade verification step.
