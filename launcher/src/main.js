@@ -1358,7 +1358,7 @@ const IS_LINUX = process.platform === "linux";
 // distros. The window only ever loads Daisy's own bundled pages, so run without it.
 if (IS_LINUX) app.commandLine.appendSwitch("no-sandbox");
 const appIcon = process.platform === "win32"
-  ? path.join(__dirname, "assets", "icon.ico")
+  ? (app.isPackaged ? path.join(process.resourcesPath, "icon.ico") : path.join(__dirname, "assets", "icon.ico"))
   : path.join(__dirname, "assets", "daisy-client.png");
 const halloweenAppIcon = appIcon;
 /** The window icon: Daisy client logo. */
@@ -1373,6 +1373,20 @@ function currentAppIcon(settings) {
 // BrowserWindow icon. Without this the app inherits electron.exe's identity and shows
 // the Electron logo on the taskbar and in notifications, whatever the window icon says.
 if (process.platform === "win32") app.setAppUserModelId("dev.daisy.launcher");
+// Explorer cannot read an ICO inside app.asar. Supply a real file for taskbar
+// buttons and new pinned shortcuts, including development runs of electron.exe.
+app.on("browser-window-created", (_event, window) => {
+  if (process.platform !== "win32") return;
+  const executable = process.env.PORTABLE_EXECUTABLE_FILE || process.execPath;
+  const command = app.isPackaged ? `"${executable}"` : `"${process.execPath}" "${app.getAppPath()}"`;
+  window.setAppDetails({
+    appId: "dev.daisy.launcher",
+    appIconPath: process.env.PORTABLE_EXECUTABLE_FILE || appIcon,
+    appIconIndex: 0,
+    relaunchCommand: command,
+    relaunchDisplayName: "Daisy Launcher"
+  });
+});
 const updateManifestUrl = String(process.env.DAISY_UPDATE_MANIFEST_URL || "https://github.com/realvoidgojo/Daisy-Client/releases/latest/download/latest.json").trim();
 
 /**

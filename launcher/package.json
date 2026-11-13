@@ -78,6 +78,10 @@
     "asar": true,
     "extraResources": [
       {
+        "from": "packaging/icon.ico",
+        "to": "icon.ico"
+      },
+      {
         "from": "app/bundled",
         "to": "bundled"
       }
