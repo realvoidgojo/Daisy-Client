@@ -9199,7 +9199,7 @@ async function checkLauncherUpdates() {
 
 async function fetchRemoteUpdateManifest() {
   const candidates = [];
-  if (readBuildVersion().includes("-")) {
+  if (readBuildVersion().includes("-") && !process.env.DAISY_UPDATE_MANIFEST_URL) {
     try {
       const response = await fetchWithTimeout("https://api.github.com/repos/realvoidgojo/Daisy-Client/releases?per_page=30",
         { headers: { "Accept": "application/vnd.github+json", "User-Agent": launcherUserAgent } }, 4000);

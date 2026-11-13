@@ -114,3 +114,21 @@ test("launcher installation rechecks the latest release and opens only a verifie
   assert.equal(installed.ok, true);
   assert.deepEqual(events, ["check", "verified 0.2.8.2", "open installer", "quit"]);
 });
+
+test("an explicit development manifest overrides beta channel discovery", async () => {
+  const source = fs.readFileSync(path.join(__dirname, "../src/main.js"), "utf8");
+  const start = source.indexOf("async function fetchRemoteUpdateManifest() {");
+  const end = source.indexOf("function resolveUpdateUrl(", start);
+  const url = "https://example.invalid/latest.json";
+  const requested = [];
+  const context = vm.createContext({
+    updateManifestUrl: url, process: { env: { DAISY_UPDATE_MANIFEST_URL: url } },
+    readBuildVersion: () => "1.0.0-beta.1", launcherUserAgent: "test",
+    AbortController, setTimeout, clearTimeout,
+    fetch: async (target) => { requested.push(target); return { ok: true, json: async () => manifest("1.0.0-beta.2") }; }
+  });
+  vm.runInContext(source.slice(start, end), context);
+  const remote = await vm.runInContext("fetchRemoteUpdateManifest()", context);
+  assert.equal(remote.url, url);
+  assert.deepEqual(requested, [url]);
+});
