@@ -81,12 +81,20 @@ const curseforge = require("./curseforge.js");
 const { migrationPlan, migrationVersion } = require("./migration-plan.js");
 const { planRvrRestore } = require("./rvr-restore.js");
 const { newestClientJar, createDaisyModUpdater, installDaisyModJar } = require("./daisy-mod-cache.js");
+const { clientJarIdentity, latestChannelRelease } = require("./version.js");
+const { cachedMetadata } = require("./metadata-cache.js");
 const ensureLatestDaisyMod = createDaisyModUpdater();
 const verifiedDaisyModJars = new Map();
 const { RELEASES_URL, compareVersions, launcherReleaseState, downloadReleaseAsset } = require("./launcher-release.js");
 // Never bundle Daisy's CurseForge credential into a distributed launcher.
 function effectiveCurseForgeKey(settings) { return String(settings?.curseForgeApiKey || ""); }
 const { app, BrowserWindow, ipcMain, shell, dialog, screen, nativeImage, globalShortcut, clipboard, Notification } = require("electron");
+const smokeTest = process.env.DAISY_SMOKE_TEST === "1" && process.argv.includes("--smoke-test");
+if (smokeTest) {
+  app.setPath("userData", process.env.DAISY_SMOKE_DIR);
+  app.disableHardwareAcceleration();
+  globalThis.fetch = async () => { throw new Error("Offline startup smoke test"); };
+}
 const { spawn } = require("node:child_process");
 const crypto = require("node:crypto");
 // Shared with scripts/publish-update.js on purpose: if the two ends chunked differently
@@ -115,6 +123,7 @@ const semver = require("semver");
 // their own failures, so reaching here means something unexpected, not fatal.
 function logMainError(kind, error) {
   const line = `[${new Date().toISOString()}] ${kind}: ${(error && error.stack) || error}\n`;
+  if (smokeTest) { process.stderr.write(line); app.exit(1); return; }
   try { process.stderr.write(line); } catch { }
   try { fs.appendFileSync(path.join(app.getPath("userData"), "main-errors.log"), line); } catch { }
 }
@@ -465,8 +474,7 @@ function requiredJavaMajor(mcVersion) {
  * Legacy unsuffixed jars predate multi-version support and are the default 1.21.11 build.
  */
 function clientcoreJarMcVersion(fileName) {
-  const m = String(fileName || "").match(/(?:daisy-client|clientcore)-[\w.]*?\+(\d+\.\d+(?:\.\d+)?)\.jar(?:\.disabled)?$/i);
-  return m ? m[1] : DEFAULT_MC_VERSION;
+  return clientJarIdentity(String(fileName || ""))?.minecraft || DEFAULT_MC_VERSION;
 }
 
 function clientcoreJarMatchesMc(fileName, mcVersion) {
@@ -1269,11 +1277,9 @@ const defaults = {
   },
   selectedVersion: "1.21.11",
   offlineName: "DaisyPlayer",
-  microsoftClientId: "",
   javaPath: "",
   jvmArgs: "--add-modules jdk.incubator.vector -XX:+UseG1GC -XX:+ParallelRefProcEnabled -XX:MaxGCPauseMillis=50 -XX:+DisableExplicitGC",
   keepLauncherOpen: true,
-  developerOfflineMode: true,
   autoBuildBeforeLaunch: true,
   autoInstallAfterBuild: true,
   verifyModDownloads: true,
@@ -1531,10 +1537,12 @@ function createWindow() {
     backgroundColor: "#0b0c10",
     title: "Daisy Launcher",
     icon: currentAppIcon(),
-    show: !startedAtLogin,
+    show: !startedAtLogin && !smokeTest,
     titleBarStyle: "hidden",
     trafficLightPosition: { x: 16, y: 16 },
     webPreferences: {
+      offscreen: smokeTest,
+      backgroundThrottling: !smokeTest,
       preload: path.join(__dirname, "preload.js"),
       contextIsolation: true,
       nodeIntegration: false,
@@ -1545,6 +1553,26 @@ function createWindow() {
   // Started at sign-in: straight to the taskbar, so a window does not pop up over the desktop.
   if (startedAtLogin && !devPlacement) mainWindow.minimize();
 
+  if (smokeTest) {
+    mainWindow.webContents.on("render-process-gone", () => app.exit(1));
+    mainWindow.webContents.on("did-fail-load", () => app.exit(1));
+    mainWindow.webContents.once("did-finish-load", () => setTimeout(async () => {
+      try {
+        let rendered = false;
+        for (let attempt = 0; attempt < 30; attempt++) {
+          rendered = await mainWindow.webContents.executeJavaScript("Boolean(!document.getElementById('boot') && document.getElementById('root')?.innerText.includes('Daisy'))");
+          if (rendered) break;
+          await new Promise((resolve) => setTimeout(resolve, 500));
+        }
+        if (!rendered) throw new Error("The launcher did not become ready offline");
+        await new Promise((resolve) => setTimeout(resolve, 500));
+        const image = await mainWindow.webContents.capturePage();
+        fs.writeFileSync(process.env.DAISY_SMOKE_REPORT, image.toPNG());
+        console.log("DAISY_SMOKE_OK");
+        app.exit(0);
+      } catch (error) { logMainError("smoke", error); }
+    }, 2500));
+  }
   mainWindow.loadFile(path.join(__dirname, "renderer", "index.html"));
 
   // Zoom has to be (re)applied per load - Electron resets it on navigation - and again
@@ -1598,10 +1626,9 @@ function createWindow() {
       }), 700);
     }
   });
-  mainWindow.webContents.on("console-message", (_event, level, message, line, sourceId) => {
-    try {
-      console.log(`[renderer:${level}] ${message} (${sourceId || "unknown"}:${line || 0})`);
-    } catch { }
+  mainWindow.webContents.on("console-message", (event) => {
+    console.log(`[renderer:${event.level}] ${event.message} (${event.sourceId || "unknown"}:${event.lineNumber || 0})`);
+    if (smokeTest && event.level === "error") app.exit(1);
   });
   mainWindow.webContents.on("render-process-gone", (_event, details) => {
     try {
@@ -2054,7 +2081,6 @@ function normalizeSettings(value) {
   merged.modFilters.loader = String(merged.modFilters.loader || defaults.modFilters.loader);
   merged.modFilters.tags = String(merged.modFilters.tags || "");
   merged.offlineName = String(merged.offlineName || defaults.offlineName);
-  merged.microsoftClientId = String(merged.microsoftClientId || "");
   merged.javaPath = String(merged.javaPath || "");
   merged.jvmArgs = String(merged.jvmArgs || defaults.jvmArgs || "").trim();
   /*
@@ -2064,7 +2090,6 @@ function normalizeSettings(value) {
   */
   if (merged.jvmArgs === "--add-modules jdk.incubator.vector -XX:+UseG1GC -XX:+ParallelRefProcEnabled -XX:MaxGCPauseMillis=50 -XX:+DisableExplicitGC -XX:+AlwaysPreTouch") merged.jvmArgs = defaults.jvmArgs;
   merged.keepLauncherOpen = Boolean(merged.keepLauncherOpen);
-  merged.developerOfflineMode = Boolean(merged.developerOfflineMode);
   merged.autoBuildBeforeLaunch = true;
   merged.autoInstallAfterBuild = true;
   merged.verifyModDownloads = Boolean(merged.verifyModDownloads);
@@ -2750,18 +2775,11 @@ function readAuth() {
 }
 
 function normalizeAuth(auth) {
-  const expiresAt = Number(auth.expiresAt || 0);
-  let sessionExpiresAt = Number(auth.sessionExpiresAt || 0);
-  const hasRefreshTokenForMigration = Boolean(auth.microsoftRefreshToken && auth.profile);
-  if (!sessionExpiresAt && hasRefreshTokenForMigration) sessionExpiresAt = Date.now() + AUTH_SESSION_MS;
-  const hasRefreshSession = Boolean(auth.microsoftRefreshToken && auth.profile && sessionExpiresAt > Date.now());
-  const hasLiveMinecraftToken = Boolean(auth.minecraftAccessToken && auth.profile && expiresAt > Date.now() + 60_000);
   return {
-    signedIn: hasLiveMinecraftToken || hasRefreshSession,
-    microsoftRefreshToken: String(auth.microsoftRefreshToken || ""),
-    minecraftAccessToken: String(auth.minecraftAccessToken || ""),
-    expiresAt,
-    sessionExpiresAt,
+    signedIn: Boolean(auth.profile?.id && auth.profile?.name),
+    // Compatibility fields carry no paid-service credentials in local account mode.
+    microsoftRefreshToken: "", minecraftAccessToken: "0",
+    expiresAt: 0, sessionExpiresAt: 0,
     profile: auth.profile && auth.profile.id && auth.profile.name
       ? {
         id: String(auth.profile.id),
@@ -2801,16 +2819,7 @@ function clearAuth() {
 }
 
 function hasUsableMinecraftToken(auth) {
-  return Boolean(auth && auth.signedIn && auth.minecraftAccessToken && auth.profile && Number(auth.expiresAt || 0) > Date.now() + 60_000);
-}
-
-function withAuthRefreshError(auth, error) {
-  const tokenStillUsable = hasUsableMinecraftToken(auth);
-  return {
-    ...auth,
-    signedIn: tokenStillUsable,
-    refreshError: error?.message || "Microsoft session refresh failed. Sign in again."
-  };
+  return Boolean(auth && auth.signedIn && auth.minecraftAccessToken && auth.minecraftAccessToken !== "0" && auth.profile && Number(auth.expiresAt || 0) > Date.now() + 60_000);
 }
 
 function resolvePartnerUrl(value) {
@@ -4084,7 +4093,7 @@ ipcMain.handle("launcher:refresh-auth", async () => {
   if (!hasUsableMinecraftToken(auth) && auth.refreshError) {
     return { ok: false, message: auth.refreshError, auth };
   }
-  return { ok: true, message: auth.signedIn ? "Microsoft session refreshed." : "Not signed in.", auth };
+  return { ok: true, message: auth.signedIn ? "Local account ready." : "Create a local account.", auth };
 });
 
 ipcMain.handle("launcher:update-settings", (_event, patch) => {
@@ -5313,8 +5322,7 @@ function setOfflineAccount(name, skinDataUrl = null) {
   const currentSettings = readSettings();
   writeSettings({
     ...currentSettings,
-    offlineName: cleanName,
-    developerOfflineMode: true
+    offlineName: cleanName
   });
   return auth;
 }
@@ -5363,9 +5371,7 @@ ipcMain.handle("launcher:install-instance-version", async (_event, request) => {
 });
 
 ipcMain.handle("launcher:microsoft-login", async () => {
-  const offline = await offlineResult("Microsoft login");
-  if (offline) return offline;
-  const result = await signInWithMicrosoft();
+  const result = await signInLocalAccount();
   emitStatus();
   return result;
 });
@@ -5505,7 +5511,7 @@ ipcMain.handle("launcher:export-skin", async (_event, skinId) => {
 
 ipcMain.handle("launcher:equip-cape", async (_event, capeId) => {
   const auth = await ensureFreshAuth();
-  if (!hasUsableMinecraftToken(auth)) return { ok: false, message: auth.refreshError || "Sign in with Microsoft before changing capes." };
+  if (!hasUsableMinecraftToken(auth)) return { ok: false, message: auth.refreshError || "Online cape changes are unavailable in local-account mode." };
   const offline = await offlineResult("Cape equip");
   if (offline) return offline;
 
@@ -5523,7 +5529,7 @@ ipcMain.handle("launcher:equip-cape", async (_event, capeId) => {
 
 ipcMain.handle("launcher:clear-cape", async () => {
   const auth = await ensureFreshAuth();
-  if (!hasUsableMinecraftToken(auth)) return { ok: false, message: auth.refreshError || "Sign in with Microsoft before changing capes." };
+  if (!hasUsableMinecraftToken(auth)) return { ok: false, message: auth.refreshError || "Online cape changes are unavailable in local-account mode." };
   const offline = await offlineResult("Cape clear");
   if (offline) return offline;
 
@@ -6009,9 +6015,8 @@ ipcMain.handle("launcher:launch-client", async (_event, opts = {}) => {
 
     const launchAuth = await ensureFreshAuth();
     const status = getStatus();
-    const devOffline = Boolean(status.settings.developerOfflineMode);
-    if (!hasUsableMinecraftToken(launchAuth) && !devOffline) {
-      return failLaunch(launchAuth.refreshError || "Sign in with Microsoft before launching Daisy, or enable Developer Offline Test Mode in Settings.");
+    if (!launchAuth?.profile?.name) {
+      return failLaunch(launchAuth.refreshError || "Create a local account before launching Daisy.");
     }
 
     setLaunchStep(0);
@@ -6099,8 +6104,8 @@ ipcMain.handle("launcher:stop-client", async () => {
 async function launchStandaloneMinecraft(status, joinAddress = "", plainInstance = null) {
   const freshAuth = await ensureFreshAuth();
   const authenticated = hasUsableMinecraftToken(freshAuth);
-  if (!authenticated && !status.settings.developerOfflineMode) {
-    return { ok: false, message: freshAuth.refreshError || "Sign in with Microsoft before launching Daisy, or enable Developer Offline Test Mode in Settings." };
+  if (!freshAuth?.profile?.name) {
+    return { ok: false, message: freshAuth.refreshError || "Create a local account before launching Daisy." };
   }
   let launch;
   try {
@@ -6257,13 +6262,10 @@ function attachLaunchProcess(status) {
   });
 }
 
+// Legacy channel retained for older renderers; local accounts have no OAuth setup.
 ipcMain.handle("launcher:microsoft-status", () => ({
-  available: true,
-  clientConfigured: Boolean(getMicrosoftClientId()),
-  auth: readAuth(),
-  message: getMicrosoftClientId()
-    ? "Microsoft sign-in is ready."
-    : "Daisy login is not configured in the launcher build yet."
+  available: false, clientConfigured: false, mode: "local", auth: readAuth(),
+  message: "Daisy uses local accounts. Microsoft sign-in is not required."
 }));
 
 ipcMain.handle("launcher:search-mods", async (_event, request) => {
@@ -8196,7 +8198,7 @@ async function installJavaRuntime(majorVersion = 21, options = {}) {
   return { ok: true, message: `Java ${majorVersion} installed and set as the active runtime.`, javaPath: javaExe };
 }
 
-// Profile switcher (multiple Microsoft accounts)
+// Profile switcher (local accounts)
 function profilesPath() { return path.join(app.getPath("userData"), "profiles.json"); }
 function readProfiles() {
   try { return JSON.parse(fs.readFileSync(profilesPath(), "utf8")); } catch { return []; }
@@ -9046,73 +9048,14 @@ ipcMain.handle("launcher:get-partners", async () => {
 });
 
 async function autoSetupOnBoot() {
-  if (setupRunning) return;
-  setupRunning = true;
+  // Opening the launcher must never wait for GitHub, Mojang or a social service.
+  // Game/support installation remains in the explicit create, repair and launch paths.
+  const settings = readSettings();
+  removeDaisyInGameJars(path.join(settings.instancePath, "mods"));
+  emitBoot("Ready", "Local accounts and cached instances are ready.", true, false);
   emitStatus();
-  emitBoot("Preparing Daisy", "Checking project and build files...");
-
-  try {
-    emitBoot("Checking launcher updates", "Looking for a newer Daisy build...");
-    const update = readSettings().autoCheckUpdates !== false
-      ? await checkLauncherUpdates() : getLauncherUpdateState();
-    if (update.blocking) {
-      emitStatus();
-      const headline = update.required ? "Update required" : "Update available";
-      emitBoot(
-        headline,
-        `${update.message} Use Install update in the dialog when you are ready.`,
-        true,
-        false
-      );
-      return;
-    }
-    emitBoot("Up to date", update.message || "Daisy is up to date.");
-
-    emitBoot("Loading versions", "Refreshing Mojang version manifest...");
-    await refreshMojangVersions();
-
-    const bootSettings = readSettings();
-    removeDaisyInGameJars(path.join(bootSettings.instancePath, "mods"));
-    emitBoot("Installing support mods", "Making sure Fabric API and Fabric Language Kotlin are present...");
-    const supportInstall = await ensureRequiredSupportMods(
-      bootSettings.instancePath,
-      bootSettings.selectedVersion || "1.21.11",
-      bootSettings.modFilters?.loader || "fabric",
-      "daisy-support-boot"
-    );
-    if (!supportInstall.ok && !(supportInstall.installed || []).length) {
-      emitBoot("Support mod install failed", supportInstall.message, true, true);
-      return;
-    }
-
-    if (shouldRunOptimizationSuite(bootSettings.instancePath)) {
-      emitBoot("Optimizing instance", "Installing Daisy performance mods for this instance...");
-      const optimization = await ensureOptimizationSuite(
-        bootSettings.instancePath,
-        bootSettings.selectedVersion || "1.21.11",
-        bootSettings.modFilters?.loader || "fabric",
-        "daisy-optimization-boot"
-      );
-      if (!optimization.ok && !(optimization.installed || []).length) {
-        emitBoot("Optimization failed", optimization.message, true, true);
-        return;
-      }
-      writeInstanceMeta(bootSettings.instancePath, { optimizationAppliedAt: new Date().toISOString() });
-    } else {
-      emitBoot("Optimization already applied", "Daisy already optimized this instance once. Skipping.");
-    }
-
-    // Mod-update availability is informational and never launch-critical, so it must not
-    // gate "Ready" - awaiting a full Modrinth scan of a fully-optimized instance (30-50 mods)
-    // was stalling the boot for up to ~2 minutes. Fire it in the background instead, skip it
-    // when a scan ran recently, and let results surface via emitStatus when it finishes.
-    emitBoot("Ready", "Daisy is ready to launch Minecraft.", true, false);
-    maybeCheckModUpdatesInBackground(readSettings().instancePath);
-  } catch (error) {
-    emitBoot("Setup failed", error.message, true, true);
-  } finally {
-    setupRunning = false;
-    emitStatus();
+  if (settings.autoCheckUpdates !== false) {
+    checkLauncherUpdates().then(emitStatus).catch((error) => emit("launcher:log", `[update] ${error.message}`));
   }
 }
 
@@ -9144,143 +9087,10 @@ async function refreshMojangVersions() {
 }
 
 
-async function signInWithMicrosoft() {
-  const curName = readSettings().offlineName || "DaisyPlayer";
-  const auth = setOfflineAccount(curName);
+async function signInLocalAccount() {
+  const auth = await ensureFreshAuth();
   emitStatus();
-  return { ok: true, message: "Logged in as " + auth.profile.name, auth };
-}
-
-async function refreshMicrosoftSession(auth = readAuth()) {
-  const name = (auth && auth.profile && auth.profile.name) || readSettings().offlineName || "DaisyPlayer";
-  return setOfflineAccount(name);
-}
-
-function getMicrosoftClientId() {
-  return "offline";
-}
-
-
-async function requestMicrosoftDeviceCode(clientId) {
-  const body = new URLSearchParams({
-    client_id: clientId,
-    scope: "XboxLive.signin offline_access"
-  });
-  const response = await fetch("https://login.microsoftonline.com/consumers/oauth2/v2.0/devicecode", {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body
-  });
-  const payload = await response.json();
-  if (!response.ok) throw new Error(payload.error_description || "Microsoft device-code request failed.");
-  return payload;
-}
-
-async function pollMicrosoftToken(clientId, device) {
-  const started = Date.now();
-  const expiresAt = started + Number(device.expires_in || 900) * 1000;
-  const interval = Math.max(5, Number(device.interval || 5));
-
-  while (Date.now() < expiresAt) {
-    await delay(interval * 1000);
-    const response = await fetch("https://login.microsoftonline.com/consumers/oauth2/v2.0/token", {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({
-        grant_type: "urn:ietf:params:oauth:grant-type:device_code",
-        client_id: clientId,
-        device_code: device.device_code
-      })
-    });
-    const payload = await response.json();
-    if (response.ok) return payload;
-    if (payload.error === "authorization_pending") continue;
-    if (payload.error === "slow_down") await delay(5000);
-    else throw new Error(payload.error_description || payload.error || "Microsoft token request failed.");
-  }
-
-  throw new Error("Microsoft sign-in expired. Start login again.");
-}
-
-async function refreshMicrosoftToken(clientId, refreshToken) {
-  const response = await fetch("https://login.microsoftonline.com/consumers/oauth2/v2.0/token", {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({
-      grant_type: "refresh_token",
-      client_id: clientId,
-      refresh_token: refreshToken,
-      scope: "XboxLive.signin offline_access"
-    })
-  });
-  const payload = await response.json();
-  if (!response.ok) throw new Error(payload.error_description || payload.error || "Microsoft session refresh failed.");
-  return payload;
-}
-
-async function authenticateXboxLive(accessToken) {
-  const response = await fetch("https://user.auth.xboxlive.com/user/authenticate", {
-    method: "POST",
-    headers: { "Content-Type": "application/json", "Accept": "application/json" },
-    body: JSON.stringify({
-      Properties: {
-        AuthMethod: "RPS",
-        SiteName: "user.auth.xboxlive.com",
-        RpsTicket: `d=${accessToken}`
-      },
-      RelyingParty: "http://auth.xboxlive.com",
-      TokenType: "JWT"
-    })
-  });
-  const payload = await response.json();
-  if (!response.ok) throw new Error(payload.XErr ? `Xbox Live auth failed: ${describeXboxError(payload.XErr)}` : responseMessage(payload, "Xbox Live auth failed."));
-  return payload;
-}
-
-async function authorizeXsts(userToken) {
-  const response = await fetch("https://xsts.auth.xboxlive.com/xsts/authorize", {
-    method: "POST",
-    headers: { "Content-Type": "application/json", "Accept": "application/json" },
-    body: JSON.stringify({
-      Properties: {
-        SandboxId: "RETAIL",
-        UserTokens: [userToken]
-      },
-      RelyingParty: "rp://api.minecraftservices.com/",
-      TokenType: "JWT"
-    })
-  });
-  const payload = await response.json();
-  if (!response.ok) {
-    throw new Error(payload.XErr ? `XSTS auth failed: ${describeXboxError(payload.XErr)}` : responseMessage(payload, "XSTS auth failed."));
-  }
-  return payload;
-}
-
-async function authenticateMinecraft(xsts) {
-  const uhs = xsts.DisplayClaims && xsts.DisplayClaims.xui && xsts.DisplayClaims.xui[0]
-    ? xsts.DisplayClaims.xui[0].uhs
-    : "";
-  const response = await fetch("https://api.minecraftservices.com/authentication/login_with_xbox", {
-    method: "POST",
-    headers: { "Content-Type": "application/json", "Accept": "application/json" },
-    body: JSON.stringify({
-      identityToken: `XBL3.0 x=${uhs};${xsts.Token}`
-    })
-  });
-  const payload = await response.json();
-  if (!response.ok) throw new Error(responseMessage(payload, "Minecraft authentication failed."));
-  return payload;
-}
-
-async function assertMinecraftOwnership(accessToken) {
-  const response = await fetch("https://api.minecraftservices.com/entitlements/mcstore", {
-    headers: { "Authorization": `Bearer ${accessToken}` }
-  });
-  const payload = await response.json();
-  if (!response.ok) throw new Error(responseMessage(payload, "Could not verify Minecraft ownership."));
-  const ownsGame = (payload.items || []).some((item) => item.name === "game_minecraft" || item.name === "product_minecraft");
-  if (!ownsGame) throw new Error("This Microsoft account does not own Minecraft: Java Edition.");
+  return { ok: true, message: "Local account ready: " + auth.profile.name, auth };
 }
 
 async function fetchMinecraftProfile(accessToken) {
@@ -9303,21 +9113,7 @@ async function fetchMinecraftProfile(accessToken) {
 }
 
 function responseMessage(payload, fallback) {
-  const message = payload.errorMessage || payload.message || payload.error_description || payload.error || fallback;
-  if (String(message).toLowerCase().includes("invalid app registration")) {
-    return "Daisy's Microsoft app registration is not approved for Minecraft Java Edition services yet. Submit the app for Mojang's Java Edition Game Service API review: https://aka.ms/mce-reviewappid";
-  }
-  return message;
-}
-
-function describeXboxError(value) {
-  const code = Number(value);
-  if (code === 2148916233) return "2148916233, this Microsoft account does not have an Xbox profile. Open xbox.com once and finish profile setup.";
-  if (code === 2148916235) return "2148916235, Xbox Live is not available in this account's region.";
-  if (code === 2148916236) return "2148916236, this account needs adult verification on Xbox.";
-  if (code === 2148916237) return "2148916237, this account needs adult verification on Xbox.";
-  if (code === 2148916238) return "2148916238, this account is under 18 and needs family settings changed.";
-  return String(value);
+  return payload.errorMessage || payload.message || payload.error_description || payload.error || fallback;
 }
 
 function delay(ms) {
@@ -9402,10 +9198,22 @@ async function checkLauncherUpdates() {
 }
 
 async function fetchRemoteUpdateManifest() {
-  const candidates = [
+  const candidates = [];
+  if (readBuildVersion().includes("-")) {
+    try {
+      const response = await fetchWithTimeout("https://api.github.com/repos/realvoidgojo/Daisy-Client/releases?per_page=30",
+        { headers: { "Accept": "application/vnd.github+json", "User-Agent": launcherUserAgent } }, 4000);
+      if (response.ok) {
+        const release = latestChannelRelease(await response.json(), true);
+        if (release) candidates.push(`https://github.com/realvoidgojo/Daisy-Client/releases/download/${release.tag_name}/latest.json`);
+      }
+    } catch { /* A failed beta discovery must not claim the beta is current. */ }
+    if (!candidates.length && !process.env.DAISY_UPDATE_MANIFEST_URL) return null;
+  }
+  candidates.push(...[
     updateManifestUrl,
     "https://github.com/realvoidgojo/Daisy-Client/releases/latest/download/latest.json"
-  ].filter((value, index, self) => value && self.indexOf(value) === index);
+  ].filter((value, index, self) => value && self.indexOf(value) === index));
 
   for (const url of candidates) {
     let timeout = null;
@@ -11214,8 +11022,13 @@ async function prepareStandaloneMinecraftLaunch(status, auth, authenticated, joi
 }
 
 async function fetchMinecraftVersionJson(versionId) {
-  const manifest = await fetchJson("https://piston-meta.mojang.com/mc/game/version_manifest_v2.json");
-  const version = (manifest.versions || []).find((item) => item.id === versionId);
+  const manifestUrl = "https://piston-meta.mojang.com/mc/game/version_manifest_v2.json";
+  let manifest = await fetchJson(manifestUrl);
+  let version = (manifest.versions || []).find((item) => item.id === versionId);
+  if (!version) {
+    manifest = await fetchJson(manifestUrl, { refresh: true });
+    version = (manifest.versions || []).find((item) => item.id === versionId);
+  }
   if (!version?.url) throw new Error(`Minecraft ${versionId} was not found in Mojang's version manifest.`);
   return fetchJson(version.url);
 }
@@ -11224,13 +11037,21 @@ async function fetchFabricProfileJson(versionId, loaderVersion) {
   return fetchJson(`https://meta.fabricmc.net/v2/versions/loader/${encodeURIComponent(versionId)}/${encodeURIComponent(loaderVersion)}/profile/json`);
 }
 
-async function fetchJson(url) {
-  const response = await fetchWithTimeout(url, {
-    headers: { "User-Agent": `DaisyClientLauncher/${clientModVersion} (realvoidgojo)` }
-  }, 45000);
-  if (!response.ok) throw new Error(`Request failed with ${response.status}: ${url}`);
-  return response.json();
+async function fetchJson(url, options = {}) {
+  const download = async () => {
+    const response = await fetchWithTimeout(url, {
+      headers: { "User-Agent": launcherUserAgent }
+    }, 45000);
+    if (!response.ok) throw new Error(`Request failed with ${response.status}: ${url}`);
+    return response.json();
+  };
+  const host = new URL(url).hostname;
+  if (["piston-meta.mojang.com", "launchermeta.mojang.com", "meta.fabricmc.net"].includes(host)) {
+    return cachedMetadata(url, path.join(app.getPath("userData"), "metadata-cache"), download, options.refresh === true);
+  }
+  return download();
 }
+
 
 async function downloadIfMissing(url, target, sha1 = "", options = {}) {
   if (!url) return;
@@ -13198,6 +13019,7 @@ if (singleInstanceLock) {
       discordRpcRefreshTimer = setInterval(() => scheduleDiscordPresenceRefresh(), 15000);
     }
     createWindow();
+    if (smokeTest) return;
     startLocalYggdrasilServer().catch((err) => logMainError("startLocalYggdrasilServer", err));
     syncLoginItem(readSettings());
     if (startupRvrPath) queueRvrImport(startupRvrPath);

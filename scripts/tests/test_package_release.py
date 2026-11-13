@@ -61,6 +61,13 @@ class PackageReleaseTests(unittest.TestCase):
         self.assertTrue((bundled / "skin/manifest.json").exists())
         self.assertEqual(list(bundled.glob("*/daisy-client-*.jar")), [])
 
+    def test_default_staging_does_not_require_every_compatibility_output(self):
+        other = self.root / "versions/26.2/build/libs/daisy-client-0.2.8.2+26.2.jar"
+        other.unlink()
+        self.run_mode("stage-client", "--minecraft", "1.21.11")
+        names = {p.name for p in (self.root / "launcher/src/bundled").glob("*.jar")}
+        self.assertEqual(names, {"daisy-client-0.2.8.2+1.21.11.jar", "daisy-bootstrap-0.1.9.0.jar"})
+
     def test_missing_agent_does_not_destroy_staged_clients(self):
         agent = next((self.root / "daisy-bootstrap/build/libs").glob("*.jar"))
         agent.unlink()

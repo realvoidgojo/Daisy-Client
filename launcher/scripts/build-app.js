@@ -11,6 +11,8 @@ fs.mkdirSync(path.join(out, "renderer"), { recursive: true });
 for (const name of ["LICENSE", "THIRD_PARTY_NOTICES.md"]) {
   fs.copyFileSync(path.join(root, "..", name), path.join(out, name));
 }
+fs.cpSync(path.join(root, "..", "licenses"), path.join(out, "licenses"), { recursive: true });
+fs.copyFileSync(path.join(root, "..", "assets/licenses.json"), path.join(out, "ASSET-LICENSES.json"));
 // npm reports the installed production dependency tree without adding a dependency.
 const npmCli = process.env.npm_execpath;
 const licenses = spawnSync(npmCli ? process.execPath : (process.platform === "win32" ? "npm.cmd" : "npm"),
@@ -38,10 +40,18 @@ fs.writeFileSync(path.join(out, "DEPENDENCY-LICENSES.json"), JSON.stringify(depe
 fs.cpSync(path.join(root, "src", "assets"), path.join(out, "assets"), { recursive: true });
 fs.cpSync(path.join(root, "src", "config"), path.join(out, "config"), { recursive: true });
 const packageInfo = JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf8"));
-fs.writeFileSync(path.join(out, "config", "build-version.json"), JSON.stringify({ version: packageInfo.daisyVersion, channel: "stable" }, null, 2));
-fs.cpSync(path.join(root, "src", "bundled"), path.join(out, "bundled"), { recursive: true });
-if (fs.existsSync(path.join(root, "src", "authlib"))) {
-  fs.cpSync(path.join(root, "src", "authlib"), path.join(out, "authlib"), { recursive: true });
+fs.writeFileSync(path.join(out, "config", "build-version.json"), JSON.stringify({ version: packageInfo.daisyVersion, channel: packageInfo.daisyVersion.includes("-") ? "beta" : "stable" }, null, 2));
+// Official packages contain only the coordinated, source-built client/agent JARs.
+// Local optional skin/authentication-agent binaries are never distribution inputs.
+const bundled = path.join(root, "src", "bundled");
+const bundledOutput = path.join(out, "bundled");
+fs.mkdirSync(bundledOutput, { recursive: true });
+const { clientJarIdentity } = require("../src/version.js");
+for (const name of fs.readdirSync(bundled)) {
+  const identity = clientJarIdentity(name);
+  if (identity?.version === packageInfo.daisyVersion || name === `daisy-bootstrap-${packageInfo.daisyVersion}.jar`) {
+    fs.copyFileSync(path.join(bundled, name), path.join(bundledOutput, name));
+  }
 }
 // PowerShell helper for the now-playing feed: a data file, not something esbuild bundles.
 fs.copyFileSync(path.join(root, "src", "now-playing.ps1"), path.join(out, "now-playing.ps1"));
@@ -173,6 +183,7 @@ async function bundle() {
     .replace(/> </g, "><")
     .trim();
   fs.writeFileSync(path.join(out, "renderer", "index.html"), html);
+  fs.copyFileSync(path.join(root, "src/renderer-react/boot.js"), path.join(out, "renderer/boot.js"));
 
   const minifyCss = (source) => source
     .replace(/\/\*[\s\S]*?\*\//g, "")

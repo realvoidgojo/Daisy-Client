@@ -4,12 +4,13 @@ const crypto = require("node:crypto");
 const fs = require("node:fs");
 const path = require("node:path");
 
-const CLIENT_NAME = /^(?:daisy-client|clientcore)-(\d+(?:\.\d+){2,4})\+(\d+(?:\.\d+)+)\.jar$/;
+const { VERSION, compareVersions, clientJarIdentity } = require("./version.js");
+const CLIENT_NAME = /^(?:daisy-client|clientcore)-(.+)\+(\d+(?:\.\d+)+)\.jar$/;
 
 /** Accept only the exact Minecraft target and immutable assets in this repository. */
 function pickDaisyModEntry(manifest, mcVersion) {
   const wanted = String(mcVersion || "").trim();
-  if (!wanted || !/^\d+(?:\.\d+){2,4}$/.test(String(manifest?.version || ""))) return null;
+  if (!wanted || !VERSION.test(String(manifest?.version || ""))) return null;
   const mods = Array.isArray(manifest?.mods) ? manifest.mods : [];
   const entries = mods.filter((mod) => mod && mod.minecraft === wanted);
   if (entries.length !== 1) return null;
@@ -50,15 +51,9 @@ async function fileMatchesSha256(filePath, expected) {
 // Callers already filter for the instance's exact Minecraft version. Compare the
 // Daisy version so a bundled older JAR cannot hide a freshly downloaded release.
 function newestClientJar(candidates) {
-  const version = (file) => (path.basename(file).match(/^(?:daisy-client|clientcore)-([\d.]+)/i)?.[1] || "0").split(".").map(Number);
-  return [...candidates].sort((left, right) => {
-    const a = version(left), b = version(right);
-    for (let i = 0; i < Math.max(a.length, b.length); i++) {
-      const diff = (b[i] || 0) - (a[i] || 0);
-      if (diff) return diff;
-    }
-    return 0;
-  })[0] || "";
+  const version = (file) => clientJarIdentity(path.basename(file))?.version
+    || path.basename(file).match(/^(?:daisy-client|clientcore)-([\d.]+)/)?.[1] || "0.0.0";
+  return [...candidates].sort((a, b) => compareVersions(version(b), version(a)))[0] || "";
 }
 
 async function matchesEntry(file, entry) {

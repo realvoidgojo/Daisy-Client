@@ -8,6 +8,9 @@ import shutil
 import zipfile
 from pathlib import Path
 from urllib.parse import quote
+import sys
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from versioning import VERSION
 
 ROOT = Path(__file__).resolve().parents[1]
 REPO = "https://github.com/realvoidgojo/Daisy-Client"
@@ -20,8 +23,8 @@ def versions():
 
 def project_version(tag=None):
     version = json.loads((ROOT / "launcher/package.json").read_text(encoding="utf-8"))["daisyVersion"]
-    if not re.fullmatch(r"\d+(?:\.\d+){2,4}", version):
-        raise ValueError("daisyVersion must be a numeric Daisy release version")
+    if not VERSION.fullmatch(version):
+        raise ValueError("daisyVersion must be a valid Daisy release version")
     gradle = (ROOT / "build.gradle.kts").read_text(encoding="utf-8")
     if f'version = "{version}+$minecraftVersion"' not in gradle:
         raise ValueError("Gradle client version must match launcher daisyVersion")
@@ -33,10 +36,10 @@ def project_version(tag=None):
     return version
 
 
-def client_jars():
+def client_jars(targets=None):
     version = project_version()
     result = []
-    for mc in versions():
+    for mc in (targets or versions()):
         jar = ROOT / f"versions/{mc}/build/libs/daisy-client-{version}+{mc}.jar"
         with zipfile.ZipFile(jar) as archive:
             metadata = json.loads(archive.read("fabric.mod.json"))
@@ -55,12 +58,15 @@ def main():
     parser.add_argument("mode", choices=["version", "stage-client", "collect"])
     parser.add_argument("--artifacts", type=Path, default=ROOT / "release-artifacts")
     parser.add_argument("--tag", help="Must equal v<daisyVersion> for release collection")
+    parser.add_argument("--minecraft", action="append", help="Stage only selected configured targets")
     args = parser.parse_args()
     if args.mode == "version":
         print(project_version(args.tag))
         return
     project_version(args.tag)
-    version, jars = client_jars()
+    if args.minecraft and (args.mode != "stage-client" or not set(args.minecraft) <= set(versions())):
+        raise ValueError("--minecraft requires configured staging targets")
+    version, jars = client_jars(args.minecraft)
     if args.mode == "stage-client":
         bundled = ROOT / "launcher/src/bundled"
         bundled.mkdir(parents=True, exist_ok=True)
@@ -99,7 +105,7 @@ def main():
         if not (out / name).is_file():
             raise ValueError(f"Missing Electron distribution: {out / name}")
     manifest = {"name": "Daisy Client", "version": version, "minimumVersion": "0.1.7",
-                "required": False, "pageUrl": f"{REPO}/releases/tag/{args.tag}", "mods": mods,
+                "required": False, "channel": "beta" if "-" in version else "stable", "pageUrl": f"{REPO}/releases/tag/{args.tag}", "mods": mods,
                 **{key: base + name for key, name in required.items()}}
     # Full installer/portable downloads use the updater's existing fallback path.
     manifest["files"] = {key.removesuffix("Url"): {"name": name,

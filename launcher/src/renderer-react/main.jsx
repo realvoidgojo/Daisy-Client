@@ -18,7 +18,6 @@ import { UpdateGate } from "./components/update-gate";
 import { UpdateBanner, WhatsNewDialog } from "./components/update-notices";
 import { SeasonalDecor } from "./components/seasonal-decor";
 import { activeSeason, SeasonContext } from "./lib/seasons";
-import { AuthDialog } from "./components/auth-dialog";
 import { ActivityBar } from "./components/activity-bar";
 import { LaunchOverlay } from "./components/launch-overlay";
 import { Tour } from "./components/tour";
@@ -282,7 +281,6 @@ function App() {
       <WhatsNewDialog status={status} refresh={refresh} />
       <Tour open={tourOpen} onClose={closeTour} setView={go} />
       {/* Global: the sign-in flow can be started from Home, Settings or Wardrobe. */}
-      <AuthDialog />
       {/* Owns the screen from the moment Launch is pressed until the game is on screen. */}
       <LaunchOverlay status={status} notify={notify} />
       <Toast toast={toast} onDismiss={() => setToast(null)} />

@@ -1,0 +1,20 @@
+name: Bug report
+description: Report a reproducible client, launcher or build problem.
+body:
+  - type: input
+    id: version
+    attributes:
+      label: Daisy version, Minecraft version and operating system
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce and expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs or screenshots
+      description: Remove tokens, account details and other private information before posting.

@@ -1,7 +1,9 @@
 # Automatic client updates
 
-The launcher reads `latest.json` from the latest stable release in
-`realvoidgojo/Daisy-Client`. The release workflow generates this manifest from
+Stable launchers read `latest.json` from the latest stable GitHub release. Beta
+launchers discover published beta/stable candidates through the repository release API
+and select the newest compatible release. A failed discovery is reported as a failed
+check rather than a false up-to-date result. The release workflow generates this manifest from
 the built artifacts, including a Minecraft target, filename, immutable release
 URL, byte size and SHA-256 for every client JAR.
 

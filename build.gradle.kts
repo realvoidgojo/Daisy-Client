@@ -35,7 +35,7 @@ apply(plugin = if (unobfuscated) "net.fabricmc.fabric-loom" else "net.fabricmc.f
 // accessor, so the extension is looked up by type instead.
 val loom = extensions.getByType<net.fabricmc.loom.api.LoomGradleExtensionAPI>()
 
-version = "0.2.8.4+$minecraftVersion"
+version = "1.0.0-beta.1+$minecraftVersion"
 group = "dev.daisy"
 
 base {
@@ -164,6 +164,7 @@ tasks.withType<org.gradle.jvm.tasks.Jar>().configureEach {
     isReproducibleFileOrder = true
     from(rootProject.file("LICENSE")) { into("META-INF") }
     from(rootProject.file("THIRD_PARTY_NOTICES.md")) { into("META-INF") }
+    from(rootProject.file("licenses")) { into("META-INF/licenses") }
     manifest.attributes(
         "Implementation-Title" to "Daisy Client",
         "Implementation-Version" to project.version,

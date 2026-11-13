@@ -1,42 +1,22 @@
-const assert = require('assert');
-const fs = require('fs');
-const path = require('path');
-const crypto = require('crypto');
-
-console.log('Testing Daisy Skin standalone artifact discovery and manifest validation...');
-
-const repoRoot = path.resolve(__dirname, '../..');
-const manifestPath = path.join(repoRoot, 'launcher/src/bundled/skin/manifest.json');
-assert(fs.existsSync(manifestPath), 'Skin manifest must exist at launcher/src/bundled/skin/manifest.json');
-
-const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
-assert.strictEqual(manifest.mod, 'Daisy Skin');
-assert.strictEqual(manifest.id, 'daisyskin');
-assert.strictEqual(manifest.author, 'realvoidgojo');
-
-const requiredVersions = [
-  "1.21", "1.21.1", "1.21.2", "1.21.3", "1.21.4", "1.21.5",
-  "1.21.6", "1.21.7", "1.21.8", "1.21.10", "1.21.11", "26.1.2", "26.2"
-];
-
-for (const ver of requiredVersions) {
-  const entry = manifest.artifacts[ver];
-  assert(entry, `Manifest must contain entry for Minecraft ${ver}`);
-  assert.strictEqual(entry.status, 'ready');
-  assert.strictEqual(entry.loader, 'fabric');
-  assert.strictEqual(entry.artifact, 'daisy-skin');
-
-  const jarPath = path.resolve(path.dirname(manifestPath), entry.path);
-  if (!fs.existsSync(jarPath)) {
-    if (process.env.DAISY_REQUIRE_SKIN_ARTIFACTS === "1") throw new Error(`Missing optional skin artifact: ${jarPath}`);
-    console.log(`Skipping local skin JAR checksum for ${ver}: artifact is not checked in`);
-    continue;
-  }
-
-  const buffer = fs.readFileSync(jarPath);
-  const actualHash = crypto.createHash('sha256').update(buffer).digest('hex');
-  assert.strictEqual(actualHash, entry.sha256, `SHA-256 checksum must match for ${ver}`);
-}
-
-console.log('✓ All skin metadata checked; available local JAR checksums verified.');
-
+const test = require("node:test");
+const assert = require("node:assert/strict");
+const fs = require("node:fs");
+const path = require("node:path");
+const os = require("node:os");
+const vm = require("node:vm");
+test("optional local skin discovery never claims a missing or mismatched JAR is ready", (t) => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "daisy-skin-"));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const source = fs.readFileSync(path.join(__dirname, "../src/main.js"), "utf8");
+  const start = source.indexOf("function resolveDaisySkinJar(");
+  const end = source.indexOf("function ensureDaisySkinMod(", start);
+  const context = vm.createContext({ fs, path, __dirname: root, process: {},
+    DEFAULT_MC_VERSION: "1.21.11", findClientRoot: () => "", app: { getAppPath: () => root } });
+  vm.runInContext(source.slice(start, end), context);
+  assert.equal(vm.runInContext('resolveDaisySkinJar("1.21.11")', context), "");
+  const jar = path.join(root, "bundled", "skin", "1.21.11", "daisy-skin-0.1.0+1.21.11.jar");
+  fs.mkdirSync(path.dirname(jar), { recursive: true });
+  fs.writeFileSync(jar, "local fixture");
+  assert.equal(vm.runInContext('resolveDaisySkinJar("1.21.11")', context), jar);
+  assert.equal(vm.runInContext('resolveDaisySkinJar("26.2")', context), "");
+});

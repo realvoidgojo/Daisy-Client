@@ -30,8 +30,8 @@ def main():
     spec.loader.exec_module(package)
     version = package.project_version(args.tag)
     release = json.loads(read(f"{REPO}/releases/tags/{args.tag}", api=True))
-    if release["draft"] or release["prerelease"]:
-        raise ValueError("Expected a published stable release")
+    if release["draft"] or release["prerelease"] != ("-" in version):
+        raise ValueError("Expected a published release in the matching channel")
     assets = {asset["name"]: asset for asset in release["assets"]}
     expected = {f"daisy-client-{version}+{mc}.jar" for mc in package.versions()}
     expected.update({"Daisy-Setup.exe", "Daisy-Portable.exe", "Daisy-Linux.tar.gz", "latest.json", "SHA256SUMS"})

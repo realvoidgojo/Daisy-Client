@@ -48,7 +48,10 @@ jobs:
               core.setOutput('publish', 'true');
             }
   verify:
+    needs: prepare
     uses: ./.github/workflows/ci.yml
+    with:
+      compatibility: true
   package:
     needs: [prepare, verify]
     if: needs.prepare.outputs.publish == 'true'
@@ -91,6 +94,14 @@ jobs:
         working-directory: launcher
       - if: runner.os == 'Linux'
         run: npm run dist:linux
+        working-directory: launcher
+      - name: Verify packaged Windows startup offline
+        if: runner.os == 'Windows'
+        run: node scripts/smoke-launcher.js --packaged
+        working-directory: launcher
+      - name: Verify packaged Linux startup offline
+        if: runner.os == 'Linux'
+        run: xvfb-run -a node scripts/smoke-launcher.js --packaged
         working-directory: launcher
       - uses: actions/upload-artifact@v7
         with:
@@ -145,7 +156,11 @@ jobs:
         run: |
           cp CHANGELOG.md release-notes.txt
           gh release create "$RELEASE_TAG" release-artifacts/* --target "$GITHUB_SHA" --draft --title "Daisy Client ${RELEASE_TAG#v}" --notes-file release-notes.txt
-          gh release edit "$RELEASE_TAG" --draft=false --latest
+          if [[ "$RELEASE_TAG" == *-* ]]; then
+            gh release edit "$RELEASE_TAG" --draft=false --prerelease --latest=false
+          else
+            gh release edit "$RELEASE_TAG" --draft=false --latest
+          fi
       - name: Verify published assets and checksums
         env:
           GH_TOKEN: ${{ github.token }}

@@ -1,0 +1,387 @@
+[
+  {
+    "path": "launcher/packaging/icon.ico",
+    "width": 256,
+    "height": 256,
+    "kind": "flower",
+    "variant": 3882045681
+  },
+  {
+    "path": "launcher/packaging/icon.png",
+    "width": 512,
+    "height": 512,
+    "kind": "flower",
+    "variant": 3319181835
+  },
+  {
+    "path": "launcher/src/assets/backdrop-halloween.jpg",
+    "width": 1920,
+    "height": 1080,
+    "kind": "landscape",
+    "variant": 786878316
+  },
+  {
+    "path": "launcher/src/assets/backdrop.jpg",
+    "width": 1920,
+    "height": 1080,
+    "kind": "landscape",
+    "variant": 2012895345
+  },
+  {
+    "path": "launcher/src/assets/daisy-client-halloween.png",
+    "width": 1,
+    "height": 1,
+    "kind": "flower",
+    "variant": 3768122948
+  },
+  {
+    "path": "launcher/src/assets/daisy-client.png",
+    "width": 512,
+    "height": 512,
+    "kind": "flower",
+    "variant": 3485824128
+  },
+  {
+    "path": "launcher/src/assets/daisy-logo-halloween.png",
+    "width": 1,
+    "height": 1,
+    "kind": "flower",
+    "variant": 4078776105
+  },
+  {
+    "path": "launcher/src/assets/daisy-logo.png",
+    "width": 512,
+    "height": 512,
+    "kind": "flower",
+    "variant": 66860452
+  },
+  {
+    "path": "launcher/src/assets/discord-icon.png",
+    "width": 225,
+    "height": 225,
+    "kind": "chat",
+    "variant": 1598642892
+  },
+  {
+    "path": "launcher/src/assets/home-bg-1.jpg",
+    "width": 736,
+    "height": 414,
+    "kind": "landscape",
+    "variant": 468758778
+  },
+  {
+    "path": "launcher/src/assets/home-bg-2.jpg",
+    "width": 1200,
+    "height": 675,
+    "kind": "landscape",
+    "variant": 2614061635
+  },
+  {
+    "path": "launcher/src/assets/home-bg-halloween.jpg",
+    "width": 1200,
+    "height": 675,
+    "kind": "landscape",
+    "variant": 2741098083
+  },
+  {
+    "path": "launcher/src/assets/home-hero-custom.jpg",
+    "width": 1024,
+    "height": 576,
+    "kind": "landscape",
+    "variant": 3053785579
+  },
+  {
+    "path": "launcher/src/assets/icon.ico",
+    "width": 256,
+    "height": 256,
+    "kind": "flower",
+    "variant": 639178695
+  },
+  {
+    "path": "launcher/src/assets/loaders/daisy.png",
+    "width": 96,
+    "height": 96,
+    "kind": "flower",
+    "variant": 1667462453
+  },
+  {
+    "path": "launcher/src/assets/loaders/grass-block.png",
+    "width": 96,
+    "height": 96,
+    "kind": "cube",
+    "variant": 195078342
+  },
+  {
+    "path": "launcher/src/assets/modern/pixel-noise.png",
+    "width": 12,
+    "height": 12,
+    "kind": "noise",
+    "variant": 1555078369
+  },
+  {
+    "path": "launcher/src/assets/season/bat.png",
+    "width": 768,
+    "height": 60,
+    "kind": "bat",
+    "variant": 1080811122
+  },
+  {
+    "path": "launcher/src/assets/season/mist.png",
+    "width": 512,
+    "height": 96,
+    "kind": "mist",
+    "variant": 1157558679
+  },
+  {
+    "path": "launcher/src/assets/season/moon.png",
+    "width": 48,
+    "height": 48,
+    "kind": "moon",
+    "variant": 358028124
+  },
+  {
+    "path": "launcher/src/assets/season/moon_glow.png",
+    "width": 128,
+    "height": 128,
+    "kind": "moon_glow",
+    "variant": 3457256420
+  },
+  {
+    "path": "launcher/src/assets/season/pumpkin.png",
+    "width": 32,
+    "height": 32,
+    "kind": "pumpkin",
+    "variant": 3178015932
+  },
+  {
+    "path": "launcher/src/assets/season/pumpkin_light.png",
+    "width": 32,
+    "height": 32,
+    "kind": "pumpkin_light",
+    "variant": 633052947
+  },
+  {
+    "path": "launcher/src/assets/season/web_left.png",
+    "width": 256,
+    "height": 256,
+    "kind": "web_left",
+    "variant": 1343133509
+  },
+  {
+    "path": "launcher/src/assets/season/web_right.png",
+    "width": 256,
+    "height": 256,
+    "kind": "web_right",
+    "variant": 459066633
+  },
+  {
+    "path": "src/client/resources/assets/clientcore/textures/cape/axie.png",
+    "width": 64,
+    "height": 32,
+    "kind": "cape",
+    "variant": 2858596246
+  },
+  {
+    "path": "src/client/resources/assets/clientcore/textures/cape/daisy.png",
+    "width": 64,
+    "height": 32,
+    "kind": "cape",
+    "variant": 1665719432
+  },
+  {
+    "path": "src/client/resources/assets/clientcore/textures/cape/eclipse.png",
+    "width": 64,
+    "height": 32,
+    "kind": "cape",
+    "variant": 597464678
+  },
+  {
+    "path": "src/client/resources/assets/clientcore/textures/cape/eightball.png",
+    "width": 512,
+    "height": 256,
+    "kind": "cape",
+    "variant": 2033381317
+  },
+  {
+    "path": "src/client/resources/assets/clientcore/textures/cape/halloween.png",
+    "width": 512,
+    "height": 256,
+    "kind": "cape",
+    "variant": 2976326502
+  },
+  {
+    "path": "src/client/resources/assets/clientcore/textures/cape/hardcore.png",
+    "width": 64,
+    "height": 32,
+    "kind": "cape",
+    "variant": 4199493101
+  },
+  {
+    "path": "src/client/resources/assets/clientcore/textures/font/daisy_badge.png",
+    "width": 32,
+    "height": 32,
+    "kind": "flower",
+    "variant": 1449103506
+  },
+  {
+    "path": "src/client/resources/assets/clientcore/textures/font/daisy_badge_halloween.png",
+    "width": 32,
+    "height": 32,
+    "kind": "flower",
+    "variant": 77929578
+  },
+  {
+    "path": "src/client/resources/assets/clientcore/textures/gui/white.png",
+    "width": 4,
+    "height": 4,
+    "kind": "white",
+    "variant": 453480323
+  },
+  {
+    "path": "src/client/resources/assets/clientcore/textures/menu_background.png",
+    "width": 1920,
+    "height": 1080,
+    "kind": "landscape",
+    "variant": 876862090
+  },
+  {
+    "path": "src/client/resources/assets/clientcore/textures/menu_background_halloween.png",
+    "width": 1920,
+    "height": 1080,
+    "kind": "landscape",
+    "variant": 289585107
+  },
+  {
+    "path": "src/client/resources/assets/clientcore/textures/menu_title.png",
+    "width": 1024,
+    "height": 275,
+    "kind": "title",
+    "variant": 2481771323
+  },
+  {
+    "path": "src/client/resources/assets/clientcore/textures/menu_title_halloween.png",
+    "width": 1024,
+    "height": 275,
+    "kind": "title",
+    "variant": 2647182368
+  },
+  {
+    "path": "src/client/resources/assets/clientcore/textures/red_x_icon.png",
+    "width": 100,
+    "height": 100,
+    "kind": "cross",
+    "variant": 4294431016
+  },
+  {
+    "path": "src/client/resources/assets/clientcore/textures/season/bat.png",
+    "width": 768,
+    "height": 60,
+    "kind": "bat",
+    "variant": 1469280120
+  },
+  {
+    "path": "src/client/resources/assets/clientcore/textures/season/mist.png",
+    "width": 512,
+    "height": 96,
+    "kind": "mist",
+    "variant": 3083955176
+  },
+  {
+    "path": "src/client/resources/assets/clientcore/textures/season/moon.png",
+    "width": 48,
+    "height": 48,
+    "kind": "moon",
+    "variant": 3847997879
+  },
+  {
+    "path": "src/client/resources/assets/clientcore/textures/season/moon_glow.png",
+    "width": 128,
+    "height": 128,
+    "kind": "moon_glow",
+    "variant": 2148421334
+  },
+  {
+    "path": "src/client/resources/assets/clientcore/textures/season/pumpkin.png",
+    "width": 32,
+    "height": 32,
+    "kind": "pumpkin",
+    "variant": 1318888551
+  },
+  {
+    "path": "src/client/resources/assets/clientcore/textures/season/pumpkin_light.png",
+    "width": 32,
+    "height": 32,
+    "kind": "pumpkin_light",
+    "variant": 897700740
+  },
+  {
+    "path": "src/client/resources/assets/clientcore/textures/season/spider.png",
+    "width": 32,
+    "height": 32,
+    "kind": "spider",
+    "variant": 2837528751
+  },
+  {
+    "path": "src/client/resources/assets/clientcore/textures/season/web_left.png",
+    "width": 256,
+    "height": 256,
+    "kind": "web_left",
+    "variant": 3374843115
+  },
+  {
+    "path": "src/client/resources/assets/clientcore/textures/season/web_right.png",
+    "width": 256,
+    "height": 256,
+    "kind": "web_right",
+    "variant": 3928817636
+  },
+  {
+    "path": "src/client/resources/assets/clientcore/textures/spotify_logo.png",
+    "width": 64,
+    "height": 64,
+    "kind": "music",
+    "variant": 3370971462
+  },
+  {
+    "path": "src/client/resources/assets/clientcore/textures/ui/icons/spotify.png",
+    "width": 48,
+    "height": 48,
+    "kind": "music",
+    "variant": 1864708164
+  },
+  {
+    "path": "src/client/resources/assets/clientcore/textures/ui/widgets/toggle_knob.png",
+    "width": 48,
+    "height": 48,
+    "kind": "toggle",
+    "variant": 1228406098
+  },
+  {
+    "path": "src/client/resources/assets/clientcore/textures/ui/widgets/toggle_track.png",
+    "width": 136,
+    "height": 56,
+    "kind": "toggle",
+    "variant": 1293252735
+  },
+  {
+    "path": "src/client/resources/assets/clientcore/textures/watermark_logo.png",
+    "width": 512,
+    "height": 512,
+    "kind": "flower",
+    "variant": 3524881978
+  },
+  {
+    "path": "src/client/resources/assets/clientcore/textures/watermark_logo_halloween.png",
+    "width": 512,
+    "height": 512,
+    "kind": "flower",
+    "variant": 1210992104
+  },
+  {
+    "path": "src/main/resources/assets/clientcore/icon.png",
+    "width": 512,
+    "height": 512,
+    "kind": "flower",
+    "variant": 134747577
+  }
+]

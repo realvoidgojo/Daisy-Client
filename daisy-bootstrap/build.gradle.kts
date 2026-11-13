@@ -13,7 +13,7 @@ group = "dev.daisy"
   The bootstrap agent is the same for every Minecraft version, so it deliberately
   carries no +<mc> suffix.
 */
-version = "0.1.9.0"
+version = "1.0.0-beta.1"
 
 repositories {
     mavenCentral()
@@ -44,6 +44,7 @@ tasks.jar {
     isReproducibleFileOrder = true
     from(rootProject.file("LICENSE")) { into("META-INF") }
     from(rootProject.file("THIRD_PARTY_NOTICES.md")) { into("META-INF") }
+    from(rootProject.file("licenses")) { into("META-INF/licenses") }
     archiveBaseName.set("daisy-bootstrap")
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     manifest {

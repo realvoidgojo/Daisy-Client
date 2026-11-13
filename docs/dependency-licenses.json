@@ -1,0 +1,34 @@
+{
+  "sodium": {
+    "license": {
+      "id": "LicenseRef-Polyform-Shield-1.0.0",
+      "name": "",
+      "url": "https://github.com/CaffeineMC/sodium/blob/dev/LICENSE.md"
+    },
+    "source": "https://github.com/CaffeineMC/sodium"
+  },
+  "lithium": {
+    "license": {
+      "id": "LGPL-3.0-only",
+      "name": "GNU Lesser General Public License v3.0 only",
+      "url": null
+    },
+    "source": "https://github.com/caffeinemc/lithium-fabric"
+  },
+  "ferrite-core": {
+    "license": {
+      "id": "MIT",
+      "name": "MIT License",
+      "url": null
+    },
+    "source": "https://github.com/malte0811/FerriteCore"
+  },
+  "immediatelyfast": {
+    "license": {
+      "id": "LGPL-3.0-or-later",
+      "name": "GNU Lesser General Public License v3.0 or later",
+      "url": null
+    },
+    "source": "https://github.com/RaphiMC/ImmediatelyFast"
+  }
+}

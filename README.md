@@ -1,181 +1,102 @@
-# Daisy Client
+# Daisy Client · 1.0 beta
 
-Daisy Client contains a Fabric Minecraft client and an Electron/React desktop launcher.
-Maintained by **realvoidgojo**. It provides configurable HUD modules, cosmetics,
-instance management, content downloads and launcher account integration.
-The shared Kotlin/Java client sources live in `src/client`; Stonecutter builds them for
-multiple Minecraft versions. The Electron launcher lives in `launcher/` and uses npm
-and electron-builder. It is not a Gradle module or a JAR.
+Daisy is a Fabric Minecraft client and native desktop launcher for local-account play.
+It combines configurable HUD modules, visual effects, cosmetics, instance management
+and optional performance mods. Core local play does not require Microsoft or social sign-in.
 
-## Installation
+The beta is a foundation release, not a claim that every module and Minecraft target
+has been tested in game. Minecraft itself is a separate product; Daisy does not grant
+access to authenticated servers or paid online services.
 
-Download the matching Fabric client JAR and the native Daisy Launcher separately
-from [GitHub Releases](https://github.com/realvoidgojo/Daisy-Client/releases).
-Install the client into the `mods/`
-directory of a matching Minecraft/Fabric profile with Fabric API and Fabric
-Language Kotlin. On Windows run the launcher installer or portable executable;
-on Linux extract the launcher archive and run `./daisy`. Sign in and create an
-instance with the matching Minecraft version. Minecraft access requires an
-appropriate account. Release checksums accompany the downloads.
+## Install
 
-## Structure
+Get the beta from [GitHub Releases](https://github.com/realvoidgojo/Daisy-Client/releases).
+Choose `Daisy-Setup.exe` (Windows installer), `Daisy-Portable.exe`, or
+`Daisy-Linux.tar.gz` (Linux x64, experimental). Create a local account, choose a
+Minecraft version, and create an instance. The launcher manages the matching client
+JAR. To use another Fabric launcher, install the exact-version Daisy client JAR with
+Fabric API and Fabric Language Kotlin in its `mods/` directory.
 
-`src/client/` holds shared Kotlin/Java client sources and resources;
-`src/main/resources/` holds Fabric metadata. `versions/` defines game targets.
-`daisy-bootstrap/` contains the existing Java agent, `launcher/` the independent
-Electron app, `scripts/` maintenance tools and `docs/` migration evidence.
-See [CONTRIBUTING.md](CONTRIBUTING.md) for development and branch conventions.
+First-time game, loader, Java and support-mod installation needs a network connection.
+After setup, cached game metadata, assets and verified client JARs can be reused
+locally. Cosmetics, news, content browsing and social services are optional network
+features and may be unavailable. See [offline troubleshooting](docs/troubleshooting.md).
 
-## Requirements and supported targets
+## Supported Minecraft versions
 
-Use the checked-in Gradle wrapper, Python 3, Node.js 24 and npm. Install JDK 21 and
-JDK 25 and make both discoverable to Gradle. Run Gradle on JDK 21; the per-target
-Java/Kotlin toolchains select 21 for 1.21.x and 25 for 26.x.
+Default development target: **1.21.11** (JDK 21).
+Compatibility builds: 1.21, 1.21.1, 1.21.2, 1.21.3, 1.21.4, 1.21.5, 1.21.6,
+1.21.7, 1.21.8, 1.21.10, 1.21.11, 26.1.2 and 26.2.
+The 26.x targets require JDK 25. These are configured build targets, not in-game
+certification. `settings.gradle.kts` is authoritative.
 
-The authoritative target list is in `settings.gradle.kts`:
+## Develop
 
-`1.21`, `1.21.1`, `1.21.2`, `1.21.3`, `1.21.4`, `1.21.5`, `1.21.6`,
-`1.21.7`, `1.21.8`, `1.21.10`, `1.21.11`, `26.1.2`, `26.2`.
-
-Configured targets are build targets, not a claim that each has been tested in game.
-The client mod requires Fabric Loader, Fabric API and Fabric Language Kotlin. Other
-launcher loader choices do not make this Fabric client compatible with those loaders.
-
-## Client build and validation
-
-From the repository root (use `gradlew.bat` in PowerShell):
+Install JDK 21 and 25, Node.js 24 with npm, and Python 3.10+. Run Gradle on JDK 21.
+From the repository root (use `gradlew.bat` on Windows):
 
 ```sh
-./gradlew build check --console=plain
-./gradlew :1.21.11:build
+python scripts/verify-project.py
+python scripts/verify-licenses.py
 python scripts/audit-branding.py
-python scripts/audit-branding.py --show-allowed
+python -m unittest discover -s scripts/tests -v
+./gradlew :1.21.11:build :1.21.11:check :daisy-bootstrap:build
+npm ci --prefix launcher
+npm test --prefix launcher
+npm run build:app --prefix launcher
+npm run test:startup --prefix launcher
 ```
 
-The unqualified `build check` selects all configured Stonecutter targets and the existing
-bootstrap component. Client artifacts are
-`versions/<minecraft>/build/libs/daisy-client-<client-version>+<minecraft>.jar`.
-Source JARs are also generated; use the regular versioned JAR as the mod.
-The source-controlled active version remains 1.21.11. No extra client/launcher Gradle
-modules or separate launcher JARs are required.
-
-`daisy-bootstrap/` remains an existing Gradle component.
-Its executable/agent JAR supports the launcher's existing injection fallback and is
-not a second client mod. Its launcher discovery paths and manifest classes are renamed
-together. JVM property names used by existing launch configurations are preserved.
-
-## Launcher build, tests and packaging
+Stage the actual default client before running the launcher:
 
 ```sh
-cd launcher
-npm ci
-npm test
-npm run build:app
-npm start
+python scripts/package-release.py stage-client --minecraft 1.21.11
+npm start --prefix launcher
 ```
 
-`build:app` bundles the main process, preloads, React UI and styles into `launcher/app/`.
-`npm start` rebuilds and opens Electron. Unit tests run with Node's built-in test runner.
-The existing optional Daisy Skin artifact test validates manifest metadata and hashes
-any local skin JARs available. Set `DAISY_REQUIRE_SKIN_ARTIFACTS=1` to require every local
-skin artifact; those ignored binaries are not reproducible standalone Gradle outputs.
+For every configured target, use `./gradlew clean build check --console=plain`, then
+`python scripts/package-release.py stage-client`. Native packaging uses
+`npm run dist --prefix launcher` on Windows or `npm run dist:linux --prefix launcher`
+on Linux. [Building](docs/building.md) covers toolchains and common failures.
 
-To bundle the current client builds into the launcher, build all Gradle targets, then
-run from the repository root:
+## Repository and contribution
 
-```sh
-python scripts/package-release.py stage-client
-```
+Shared client sources remain in `src/`, per-target properties in `versions/`, the
+existing agent in `daisy-bootstrap/`, and Electron/React sources in `launcher/`.
+This preserves Stonecutter's source preprocessing and the proven release layout.
+There is no duplicate `client/` module or launcher JAR.
 
-This validates Fabric metadata and entrypoints and stages the actual versioned client
-JARs plus the bootstrap agent into `launcher/src/bundled/`. It never creates new JARs.
-Then, from `launcher/`, choose a supported Electron distribution:
+Start with [CONTRIBUTING.md](CONTRIBUTING.md), [architecture](docs/architecture.md)
+and the [contributor guide](docs/contributing.md). Bug and feature templates are
+available on GitHub. [The foundation audit](docs/foundation-audit.md) records cleanup,
+baseline checks, attribution decisions and verification limits.
 
-```sh
-npm run dist:dir          # Windows unpacked application: dist/win-unpacked/
-npm run dist             # Windows NSIS installer and portable executable
-npm run dist:installer   # dist/Daisy-Setup.exe
-npm run dist:portable    # dist/Daisy-Portable.exe
-npm run dist:linux       # dist/Daisy-Linux.tar.gz (experimental)
-```
+## Updates and releases
 
-Build Windows distributions on Windows and Linux distributions on Linux. Packaging
-inputs (icons and NSIS footer) are checked in under `launcher/packaging/`. The Linux
-archive contains `Daisy-Linux/daisy`; its existing wrapper uses `--no-sandbox`.
-The launcher can download matching client builds from a release manifest and still
-recognizes older `clientcore-*.jar` names for installed instances.
+Maintenance settings show the installed/latest launcher versions and offer a verified
+native update download. Client JARs update independently before launch, with exact
+Minecraft target selection, size/SHA-256 verification and cached fallback.
+[Client updates](docs/client-updates.md) describes the integrity checks.
 
-## CI and releases
-
-`.github/workflows/ci.yml` runs the branding audit, `build check` for every configured
-client target, launcher tests, renderer/main-process bundling and Windows directory
-packaging. It collects actual Fabric/agent JARs and the unpacked Electron application.
-Workflow execution on GitHub is separate from local verification.
-
-`.github/workflows/release.yml` runs for version tags and manual dispatch. It validates
-coordinated versions, reuses CI, packages Windows installer/portable and Linux tar
-builds, and publishes a complete GitHub Release. Existing releases are never overwritten.
-No external hosting service or distribution variable is needed for GitHub Releases.
-
-Prepare the next release with:
-
-```sh
-python scripts/prepare-release.py <client-version> --launcher-version <electron-version>
-```
-
-This updates Gradle, npm package/lock metadata and build metadata together. Update
-`CHANGELOG.md`, run the contribution checks, commit, and push `main` with a matching
-`v<client-version>` tag. The tag must match `launcher/package.json daisyVersion`.
-Electron's package version must be a separate three-part version. See
-[CONTRIBUTING.md](CONTRIBUTING.md) for the publishing commands.
-
-The release workflow stages verified Fabric clients and the bootstrap agent into
-both launcher distributions. It generates `latest.json` and `SHA256SUMS` from the
-produced files, uploads all assets, and verifies their published digests. It then
-exercises the production client updater against real released JARs for Minecraft
-1.21.11 and 26.2, including cache reuse, offline reuse and instance installation.
-A failed verification marks the workflow failed; publication is not rolled back.
-
-### Automatic client updates
-
-Daisy instances check this repository's latest stable GitHub release when created
-and before launch. The launcher downloads the exact Minecraft-version client JAR,
-checks its size and SHA-256, and installs it before removing older client versions.
-New client releases do not require reinstalling the launcher. Disabled clients stay
-disabled. Verified cached or bundled clients remain available when GitHub is offline;
-Minecraft, loader and account setup can still require a network connection.
-
-`DAISY_UPDATE_MANIFEST_URL` overrides the manifest endpoint for development. Downloaded
-client JARs still must belong to this repository's matching versioned GitHub release.
-The local `update-manifest.json` is a development placeholder; production release
-metadata is generated from build outputs. See [client update behavior](docs/client-updates.md).
-
-Launcher application updates are separate from client JAR updates. In Settings > Maintenance,
-select **Check for updates** to see the installed and latest versions, then **Update to
-<version>** to download a newer launcher. Failed checks show an error and can be retried.
-The launcher checks
-GitHub manifests and verifies native distribution downloads. Installed Windows builds
-open the interactive installer; portable and Linux builds reveal the verified download
-for replacement. Installer handoff and in-game behavior require manual runtime testing.
-
-The optional `launcher/scripts/publish-update.js` path targets separate Cloudflare
-infrastructure and is not used by the GitHub release workflow.
-
-## Compatibility and audit scope
-
-See [docs/branding-audit.md](docs/branding-audit.md) for retained identifiers and blockers.
-The audit scans working-tree filenames and UTF-8 source/config/documentation, including
-untracked files, while pruning dependency caches and build outputs. Exact line exceptions
-have occurrence limits and reasons; immutable legal/history exceptions have SHA-256
-snapshots. Unexpected references exit nonzero. Use `--show-allowed` for file/line evidence.
-Run `python scripts/verify-project.py` for source/package/resource consistency.
-Run `python scripts/clean-build.py` for a clean client build, tests, staging and
-native launcher packaging (Windows or Linux). Use `--skip-install` to reuse npm
-dependencies. Generate the complete evidence inventory with
-`python scripts/audit-branding.py --report build/reports/branding.json`.
+CI builds the default target on ordinary changes. Compatibility builds are manual;
+releases build all targets. Beta tags such as `v1.0.0-beta.1` publish GitHub prereleases.
+Stable installations stay on stable releases; beta installations opt into beta discovery.
+See [releasing](docs/releasing.md) for coordinated versions, staging and checksums.
 
 ## License and attribution
 
-Daisy Client and Daisy Launcher are open source software licensed under the [MIT License](LICENSE).
-Copyright (c) realvoidgojo. All third-party libraries and font notices are acknowledged in
-[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+Daisy source and original generated artwork are [MIT licensed](LICENSE). Third-party
+fonts, Lucide icons, dependencies, Minecraft and independently installed mods retain
+their own licenses. [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) and
+[the asset inventory](assets/licenses.json) identify their provenance. CI checks
+notices, locked dependency license metadata and binary-asset hashes. This validation
+is evidence of recorded attribution, not a legal certification of external services.
+
+## Known limitations
+
+Local accounts cannot authenticate to Microsoft services or protected multiplayer
+servers. Optional Daisy Skin binaries have no buildable source in this repository and
+are excluded from releases. Linux installer replacement and in-game behavior still
+need platform/runtime testing; automated startup tests exercise Electron with isolated
+state and network access disabled. No screenshots of third-party game content are
+redistributed as promotional artwork.

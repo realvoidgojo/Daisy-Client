@@ -251,9 +251,9 @@ export function WardrobeView({ status, refresh, notify }) {
       <Page title={t("Wardrobe")} description={t("Skins.")}>
         <EmptyState
           icon={LogIn}
-          title={t("Sign in to use the wardrobe")}
-          description={t("Sign in to your Microsoft account.")}
-          action={<Button size="sm" onClick={() => guard(() => api()?.microsoftLogin())}>{t("Sign in")}</Button>}
+          title={t("Create a local account to use the wardrobe")}
+          description={t("Local skins are stored on this device.")}
+          action={<Button size="sm" onClick={() => guard(() => api()?.setOfflineAccount(status?.settings?.offlineName || "DaisyPlayer"))}>{t("Create local account")}</Button>}
         />
       </Page>
     );

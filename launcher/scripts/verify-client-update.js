@@ -7,7 +7,7 @@ const { createDaisyModUpdater, pickDaisyModEntry, installDaisyModJar } = require
 
 async function main() {
   const [tag, mcVersion = "1.21.11"] = process.argv.slice(2);
-  if (!/^v\d+(?:\.\d+){2,4}$/.test(tag || "")) throw new Error("Usage: node scripts/verify-client-update.js v<version> [minecraft]");
+  if (!require("../src/version.js").VERSION.test((tag || "").slice(1)) || !tag.startsWith("v")) throw new Error("Usage: node scripts/verify-client-update.js v<version> [minecraft]");
   const manifestUrl = `https://github.com/realvoidgojo/Daisy-Client/releases/download/${tag}/latest.json`;
   const get = async (url) => {
     const response = await fetch(url, { signal: AbortSignal.timeout(120000), headers: { "User-Agent": "Daisy-Release-Verification" } });

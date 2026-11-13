@@ -15,28 +15,19 @@ import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 import java.time.Duration
 
-/**
- * Update check for the standalone mod: Daisy installed as a plain Fabric mod, with no
- * launcher to keep it current. Started from Daisy's launcher the game is told so
- * (minecraft.launcher.brand) and this does nothing, since the launcher handles updates.
- *
- * Behind the latest release, the main menu says a new version is out. Too far behind
- * (below the server's minimum, see cloudflare-updates/src/update-policy.js), Daisy turns
- * its modules off and the main menu says why, the same rule that makes the launcher update.
- */
+/** Optional update notice for standalone installations. Network responses never disable local modules. */
 object ModUpdateCheck {
 
-    private const val URL = "http://127.0.0.1:25585/version-status.json"
+    private const val RELEASES = "https://github.com/realvoidgojo/Daisy-Client/releases"
 
-    private val standalone = System.getProperty("minecraft.launcher.brand") !in setOf("daisy-client", "daisy-client")
+    private val standalone = System.getProperty("minecraft.launcher.brand", "").lowercase() !in setOf("daisy", "daisy-client", "daisy-launcher")
 
     @Volatile private var latest = ""
     @Volatile private var behind = 0
     @Volatile private var maxBehind = 0
 
-    /** Below the oldest version still allowed: every module is off (Module.active). */
-    @Volatile var turnedOff = false
-        private set
+    /** Compatibility accessor: update availability never revokes local gameplay. */
+    val turnedOff: Boolean get() = false
 
     private var started = false
 
@@ -52,19 +43,30 @@ object ModUpdateCheck {
         Thread({
             runCatching {
                 val http = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5)).build()
-                val request = HttpRequest.newBuilder(URI.create(URL)).timeout(Duration.ofSeconds(8))
-                    .header("User-Agent", "DaisyClient-Mod/$ownVersion").GET().build()
-                val body = http.send(request, HttpResponse.BodyHandlers.ofString()).body()
+                fun fetch(url: String): String? {
+                    val request = HttpRequest.newBuilder(URI.create(url)).timeout(Duration.ofSeconds(8))
+                        .header("User-Agent", "DaisyClient-Mod/$ownVersion").GET().build()
+                    val response = http.send(request, HttpResponse.BodyHandlers.ofString())
+                    return response.body().takeIf { response.statusCode() in 200..299 }
+                }
+                val manifestUrl = if (ownVersion.contains('-')) {
+                    val listing = fetch("https://api.github.com/repos/realvoidgojo/Daisy-Client/releases?per_page=30")
+                        ?: return@runCatching
+                    val tag = JsonParser.parseString(listing).asJsonArray
+                        .map { it.asJsonObject }
+                        .filter { it.get("draft")?.asBoolean != true }
+                        .mapNotNull { it.get("tag_name")?.asString }
+                        .filter { it.matches(Regex("v[0-9]+\\.[0-9]+\\.[0-9]+(?:\\.[0-9]+){0,2}(?:-(?:alpha|beta|rc)\\.[0-9]+)?")) }
+                        .maxWithOrNull { a, b -> compare(a.removePrefix("v"), b.removePrefix("v")) }
+                        ?: return@runCatching
+                    "$RELEASES/download/$tag/latest.json"
+                } else "$RELEASES/latest/download/latest.json"
+                val body = fetch(manifestUrl) ?: return@runCatching
                 val json = JsonParser.parseString(body).asJsonObject
-                val newest = json.get("latest")?.asString.orEmpty()
-                val minimum = json.get("minimumVersion")?.asString.orEmpty()
-                val releases = json.getAsJsonArray("releases")?.map { it.asString }.orEmpty()
+                val newest = json.get("version")?.asString.orEmpty()
                 if (newest.isEmpty() || ownVersion.isEmpty()) return@runCatching
-                maxBehind = json.get("maxBehind")?.asInt ?: 0
-                behind = releases.count { compare(it, ownVersion) > 0 }
-                    .coerceAtLeast(if (compare(newest, ownVersion) > 0) 1 else 0)
+                behind = if (compare(newest, ownVersion) > 0) 1 else 0
                 latest = newest
-                turnedOff = minimum.isNotEmpty() && compare(minimum, ownVersion) > 0
             }
             // Offline or the server is down: nothing is shown and nothing is turned off.
         }, "daisy-mod-update-check").apply { isDaemon = true }.start()
@@ -84,12 +86,9 @@ object ModUpdateCheck {
 
     /** 1 when a is newer than b, -1 when older, 0 when the same; "0.2.5.1" is newer than "0.2.5". */
     private fun compare(a: String, b: String): Int {
-        val pa = a.split('.', '+', '-').map { it.toIntOrNull() ?: 0 }
-        val pb = b.split('.', '+', '-').map { it.toIntOrNull() ?: 0 }
-        for (i in 0 until maxOf(pa.size, pb.size)) {
-            val d = pa.getOrElse(i) { 0 } - pb.getOrElse(i) { 0 }
-            if (d != 0) return if (d > 0) 1 else -1
-        }
-        return 0
+        return runCatching {
+            net.fabricmc.loader.api.Version.parse(a.substringBefore('+'))
+                .compareTo(net.fabricmc.loader.api.Version.parse(b.substringBefore('+')))
+        }.getOrDefault(0)
     }
 }
