@@ -49,7 +49,8 @@ fs.mkdirSync(bundledOutput, { recursive: true });
 const { clientJarIdentity } = require("../src/version.js");
 for (const name of fs.readdirSync(bundled)) {
   const identity = clientJarIdentity(name);
-  if (identity?.version === packageInfo.daisyVersion || name === `daisy-bootstrap-${packageInfo.daisyVersion}.jar`) {
+  const skinVersion = name.match(/^daisy-skin-(.+)\+\d+(?:\.\d+)+\.jar$/)?.[1];
+  if (identity?.version === packageInfo.daisyVersion || skinVersion === packageInfo.daisyVersion || name === `daisy-bootstrap-${packageInfo.daisyVersion}.jar`) {
     fs.copyFileSync(path.join(bundled, name), path.join(bundledOutput, name));
   }
 }

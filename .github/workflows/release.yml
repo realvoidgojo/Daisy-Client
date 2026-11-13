@@ -175,3 +175,5 @@ jobs:
         run: |
           node launcher/scripts/verify-client-update.js "$RELEASE_TAG" 1.21.11
           node launcher/scripts/verify-client-update.js "$RELEASE_TAG" 26.2
+          node launcher/scripts/verify-client-update.js "$RELEASE_TAG" 1.21.11 skin
+          node launcher/scripts/verify-client-update.js "$RELEASE_TAG" 26.2 skin

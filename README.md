@@ -95,8 +95,8 @@ is evidence of recorded attribution, not a legal certification of external servi
 ## Known limitations
 
 Local accounts cannot authenticate to Microsoft services or protected multiplayer
-servers. Optional Daisy Skin binaries have no buildable source in this repository and
-are excluded from releases. Linux installer replacement and in-game behavior still
+servers. Source-built standalone local-skin JARs are available for plain Fabric instances;
+full Daisy includes the same support. Linux installer replacement and in-game behavior still
 need platform/runtime testing; automated startup tests exercise Electron with isolated
 state and network access disabled. No screenshots of third-party game content are
 redistributed as promotional artwork.

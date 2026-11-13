@@ -46,7 +46,10 @@ legacy executable entrypoint. It is not another client or launcher.
 
 The release pipeline builds real client/agent JARs, stages them into native launcher
 packages, and generates hashes from those bytes. `launcher/src/daisy-mod-cache.js`
-validates exact-target GitHub client downloads; `launcher-release.js` handles native
+validates exact-target GitHub client and standalone-skin downloads; `launcher-release.js` handles native
 launcher distribution checks. Version rules are shared in `version.js` and mirrored by
 release-script tests in `scripts/versioning.py`. Stable and beta discovery are separate.
 No credentials or opaque optional skin JARs are included in official packaging.
+
+Standalone skins reuse the compiled appearance subset through `scripts/skin_artifact.py`.
+See [local skins](daisy-skin.md) for the source and distribution contract.

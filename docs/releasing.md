@@ -11,7 +11,7 @@ release API; stable launchers use the latest stable manifest.
 Prepare synchronized client, Electron and bootstrap versions:
 
 ```sh
-python scripts/prepare-release.py 1.0.0-beta.2 --launcher-version 1.0.0-beta.2
+python scripts/prepare-release.py 1.0.0-beta.3 --launcher-version 1.0.0-beta.3
 ```
 
 The script updates Gradle, bootstrap, npm package/lock and build metadata. Add release
@@ -23,8 +23,8 @@ manifests are generated from produced bytes, not maintained as handwritten URLs/
 Commit on the reviewed branch. Only after checks pass, create and push its matching tag:
 
 ```sh
-git tag -a v1.0.0-beta.2 -m "Daisy Client 1.0.0-beta.2"
-git push origin HEAD v1.0.0-beta.2
+git tag -a v1.0.0-beta.3 -m "Daisy Client 1.0.0-beta.3"
+git push origin HEAD v1.0.0-beta.3
 ```
 
 The tag must match `daisyVersion`. Do not move existing tags or overwrite published
@@ -43,9 +43,9 @@ repair it through a new version rather than silently changing published bytes.
 ## Verification and responsibilities
 
 ```sh
-python scripts/verify-release.py --tag v1.0.0-beta.2
-node launcher/scripts/verify-client-update.js v1.0.0-beta.2 1.21.11
-node launcher/scripts/verify-client-update.js v1.0.0-beta.2 26.2
+python scripts/verify-release.py --tag v1.0.0-beta.3
+node launcher/scripts/verify-client-update.js v1.0.0-beta.3 1.21.11
+node launcher/scripts/verify-client-update.js v1.0.0-beta.3 26.2
 ```
 
 Use the corresponding source checkout. Record native installer, Linux runtime and
@@ -53,3 +53,8 @@ Minecraft session testing separately. Automated compilation/startup checks do no
 certify every gameplay module. Optional Cloudflare publishing scripts are retained
 for existing operators, require their own infrastructure/configuration, and are not
 part of GitHub release publication.
+
+Staging and collection also produce one deterministic standalone local-skin JAR per
+Minecraft target from the compiled client. The manifest includes a separate `skins`
+array, and publication verifies all 31 assets plus real skin downloads/cache/install
+checks for 1.21.11 and 26.2. No opaque local skin binaries are release inputs.

@@ -6,16 +6,23 @@ const path = require("node:path");
 
 const { VERSION, compareVersions, clientJarIdentity } = require("./version.js");
 const CLIENT_NAME = /^(?:daisy-client|clientcore)-(.+)\+(\d+(?:\.\d+)+)\.jar$/;
+const SKIN_NAME = /^daisy-skin-(.+)\+(\d+(?:\.\d+)+)\.jar$/;
+const artifactPattern = (kind) => {
+  if (kind === "client") return CLIENT_NAME;
+  if (kind === "skin") return SKIN_NAME;
+  throw new Error("Unknown Daisy artifact kind.");
+};
 
 /** Accept only the exact Minecraft target and immutable assets in this repository. */
-function pickDaisyModEntry(manifest, mcVersion) {
+function pickDaisyModEntry(manifest, mcVersion, kind = "client") {
   const wanted = String(mcVersion || "").trim();
   if (!wanted || !VERSION.test(String(manifest?.version || ""))) return null;
-  const mods = Array.isArray(manifest?.mods) ? manifest.mods : [];
+  const list = kind === "skin" ? manifest?.skins : manifest?.mods;
+  const mods = Array.isArray(list) ? list : [];
   const entries = mods.filter((mod) => mod && mod.minecraft === wanted);
   if (entries.length !== 1) return null;
   const entry = entries[0];
-  const match = String(entry.name || "").match(CLIENT_NAME);
+  const match = String(entry.name || "").match(artifactPattern(kind));
   if (!match || match[1] !== manifest.version || match[2] !== wanted
       || !/^[a-f0-9]{64}$/i.test(String(entry.sha256 || ""))
       || !Number.isSafeInteger(entry.size) || entry.size <= 0) return null;
@@ -50,8 +57,9 @@ async function fileMatchesSha256(filePath, expected) {
 
 // Callers already filter for the instance's exact Minecraft version. Compare the
 // Daisy version so a bundled older JAR cannot hide a freshly downloaded release.
-function newestClientJar(candidates) {
-  const version = (file) => clientJarIdentity(path.basename(file))?.version
+function newestClientJar(candidates, kind = "client") {
+  const version = (file) => path.basename(file).replace(/\.disabled$/, "").match(artifactPattern(kind))?.[1]
+    || (kind === "client" && clientJarIdentity(path.basename(file))?.version)
     || path.basename(file).match(/^(?:daisy-client|clientcore)-([\d.]+)/)?.[1] || "0.0.0";
   return [...candidates].sort((a, b) => compareVersions(version(b), version(a)))[0] || "";
 }
@@ -63,34 +71,36 @@ async function matchesEntry(file, entry) {
 }
 
 /** Coalesce concurrent requests; receipts let offline launches recheck cached bytes. */
-function createDaisyModUpdater() {
+function createDaisyModUpdater(kind = "client") {
+  const pattern = artifactPattern(kind);
+  const manifestKey = kind === "skin" ? "skins" : "mods";
   const pending = new Map();
   async function update({ mcVersion, cacheDir, existingJar = "", fetchManifest, download, onDownload = () => {} }) {
     const cached = [];
     fs.mkdirSync(cacheDir, { recursive: true });
     for (const name of fs.readdirSync(cacheDir)) {
-      const match = name.match(CLIENT_NAME);
+      const match = name.match(pattern);
       if (!match || match[2] !== mcVersion) continue;
       const file = path.join(cacheDir, name);
       try {
         const receipt = JSON.parse(fs.readFileSync(`${file}.verified.json`, "utf8"));
-        const entry = pickDaisyModEntry({ version: receipt.version, mods: [receipt] }, mcVersion);
+        const entry = pickDaisyModEntry({ version: receipt.version, [manifestKey]: [receipt] }, mcVersion, kind);
         if (entry && entry.name === name && await matchesEntry(file, entry)) cached.push(file);
       } catch { /* Unverified cache files are never launch candidates. */ }
     }
-    const fallback = newestClientJar([...cached, existingJar].filter(Boolean));
+    const fallback = newestClientJar([...cached, existingJar].filter(Boolean), kind);
     const useFallback = (error) => ({ path: fallback, source: cached.includes(fallback) ? "cache" : fallback ? "bundled" : "unavailable", error });
     let partial = "";
     try {
       const remote = await fetchManifest();
-      if (!remote) return useFallback("Could not reach GitHub Releases; using a local client if available.");
+      if (!remote) return useFallback(`Could not reach GitHub Releases; using a local ${kind} if available.`);
       const payload = remote.payload || remote;
-      const entry = pickDaisyModEntry(payload, mcVersion);
-      if (!entry) return useFallback("The latest release has no valid client for this Minecraft version.");
+      const entry = pickDaisyModEntry(payload, mcVersion, kind);
+      if (!entry) return useFallback(`The latest release has no valid ${kind} for this Minecraft version.`);
       const target = path.join(cacheDir, entry.name);
       // A local development build or previously verified release can be newer.
       if (fallback && path.basename(fallback) !== entry.name
-          && newestClientJar([target, fallback]) === fallback) return useFallback("");
+          && newestClientJar([target, fallback], kind) === fallback) return useFallback("");
       if (await matchesEntry(target, entry)) {
         fs.writeFileSync(`${target}.verified.json`, JSON.stringify({ ...entry, version: payload.version }));
         return { path: target, source: "cache", error: "" };
@@ -130,18 +140,19 @@ function createDaisyModUpdater() {
 }
 
 /** Install a replacement before removing old clients; preserve explicit disablement. */
-function installDaisyModJar(sourceJar, modsDir, mcVersion) {
+function installDaisyModJar(sourceJar, modsDir, mcVersion, kind = "client") {
+  const pattern = artifactPattern(kind);
   const name = path.basename(sourceJar);
-  const sourceMatch = name.match(CLIENT_NAME);
+  const sourceMatch = name.match(pattern);
   if (!sourceMatch || sourceMatch[2] !== mcVersion) throw new Error("Client JAR does not match this Minecraft version.");
   fs.mkdirSync(modsDir, { recursive: true });
   const installed = fs.readdirSync(modsDir).filter((file) => {
     const name = file.replace(/\.disabled$/, "");
-    const match = name.match(CLIENT_NAME);
+    const match = name.match(pattern);
     return match ? match[2] === mcVersion
-      : mcVersion === "1.21.11" && /^(?:daisy-client|clientcore)-\d+(?:\.\d+){2,4}\.jar$/.test(name);
+      : kind === "client" && mcVersion === "1.21.11" && /^(?:daisy-client|clientcore)-\d+(?:\.\d+){2,4}\.jar$/.test(name);
   }).map((file) => path.join(modsDir, file));
-  const latest = newestClientJar([sourceJar, ...installed]);
+  const latest = newestClientJar([sourceJar, ...installed], kind);
   if (latest !== sourceJar && path.basename(latest).replace(/\.disabled$/, "") !== name) {
     return { path: latest, disabled: latest.endsWith(".disabled"), removed: [] };
   }

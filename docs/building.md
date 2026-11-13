@@ -39,7 +39,8 @@ native packaging; `--default-only` selects the normal development target.
 
 Do not stage a partial client set for a release: release collection requires every
 configured target and both operating systems' distributions. The agent must have the
-expected premain manifest. Optional externally supplied skin/authentication-agent binaries are excluded.
+expected premain manifest. Staging also derives standalone local-skin JARs from the compiled
+appearance subset. Opaque externally supplied skin/authentication-agent binaries are excluded.
 
 ## Common failures
 

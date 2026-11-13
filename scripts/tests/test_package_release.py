@@ -11,6 +11,7 @@ from unittest.mock import patch
 SPEC = importlib.util.spec_from_file_location("package_release", Path(__file__).parents[1] / "package-release.py")
 release = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(release)
+from skin_artifact import CLASSES
 
 
 class PackageReleaseTests(unittest.TestCase):
@@ -31,7 +32,10 @@ class PackageReleaseTests(unittest.TestCase):
             with zipfile.ZipFile(jar, "w") as archive:
                 archive.writestr("fabric.mod.json", json.dumps({"id": "clientcore", "version": f"0.2.8.2+{mc}"}))
                 archive.writestr("dev/daisy/clientcore/ClientCore.class", b"fixture")
-        agent = self.root / "daisy-bootstrap/build/libs/daisy-bootstrap-0.1.9.0.jar"
+                archive.writestr("clientcore.mixins.json", json.dumps({"client": ["AvatarSkinMixin", "OtherMixin"], "package": "dev.daisy.clientcore.mixin"}))
+                for name in CLASSES:
+                    archive.writestr(name + ".class", b"fixture")
+        agent = self.root / "daisy-bootstrap/build/libs/daisy-bootstrap-0.2.8.2.jar"
         agent.parent.mkdir(parents=True)
         with zipfile.ZipFile(agent, "w") as archive:
             archive.writestr("META-INF/MANIFEST.MF", "Premain-Class: dev.daisy.bootstrap.Agent\n")
@@ -57,7 +61,7 @@ class PackageReleaseTests(unittest.TestCase):
         self.write("launcher/src/bundled/skin/manifest.json", "{}")
         self.run_mode("stage-client")
         bundled = self.root / "launcher/src/bundled"
-        self.assertEqual(len(list(bundled.glob("*.jar"))), 3)
+        self.assertEqual(len(list(bundled.glob("*.jar"))), 5)
         self.assertTrue((bundled / "skin/manifest.json").exists())
         self.assertEqual(list(bundled.glob("*/daisy-client-*.jar")), [])
 
@@ -66,7 +70,7 @@ class PackageReleaseTests(unittest.TestCase):
         other.unlink()
         self.run_mode("stage-client", "--minecraft", "1.21.11")
         names = {p.name for p in (self.root / "launcher/src/bundled").glob("*.jar")}
-        self.assertEqual(names, {"daisy-client-0.2.8.2+1.21.11.jar", "daisy-bootstrap-0.1.9.0.jar"})
+        self.assertEqual(names, {"daisy-client-0.2.8.2+1.21.11.jar", "daisy-bootstrap-0.2.8.2.jar", "daisy-skin-0.2.8.2+1.21.11.jar"})
 
     def test_missing_agent_does_not_destroy_staged_clients(self):
         agent = next((self.root / "daisy-bootstrap/build/libs").glob("*.jar"))
@@ -83,7 +87,7 @@ class PackageReleaseTests(unittest.TestCase):
         self.run_mode("collect", "--tag", "v0.2.8.2", "--artifacts", str(out))
         manifest = json.loads((out / "latest.json").read_text())
         self.assertEqual([m["minecraft"] for m in manifest["mods"]], release.versions())
-        for mod in manifest["mods"]:
+        for mod in manifest["mods"] + manifest["skins"]:
             self.assertEqual(mod["sha256"], hashlib.sha256((out / mod["name"]).read_bytes()).hexdigest())
             self.assertIn("/releases/download/v0.2.8.2/", mod["url"])
         for key in ["installer", "portable", "linux"]:
@@ -91,6 +95,25 @@ class PackageReleaseTests(unittest.TestCase):
             self.assertTrue(manifest[key + "Url"].endswith("/" + entry["name"]))
             self.assertEqual(entry["sha256"], hashlib.sha256((out / entry["name"]).read_bytes()).hexdigest())
         self.assertIn("latest.json", (out / "SHA256SUMS").read_text())
+
+    def test_skin_subset_is_deterministic_and_rejects_unbundled_dependencies(self):
+        client = self.root / "versions/1.21.11/build/libs/daisy-client-0.2.8.2+1.21.11.jar"
+        target = self.root / "skin.jar"
+        release.build_skin(client, target)
+        first = target.read_bytes()
+        release.build_skin(client, target)
+        self.assertEqual(first, target.read_bytes())
+        with zipfile.ZipFile(target) as archive:
+            metadata = json.loads(archive.read("fabric.mod.json"))
+            self.assertEqual(metadata["id"], "daisy_skin")
+            self.assertEqual(metadata["breaks"], {"clientcore": "*"})
+            self.assertNotIn("dev/daisy/clientcore/ClientCore.class", archive.namelist())
+            self.assertEqual(json.loads(archive.read("daisy-skin.mixins.json"))["client"], ["AvatarSkinMixin"])
+        with zipfile.ZipFile(client, "a") as archive:
+            archive.writestr("dev/daisy/clientcore/cosmetic/PlayerAppearance$Unexpected.class", b"dev/daisy/clientcore/NotBundled")
+        with self.assertRaisesRegex(ValueError, "external Daisy dependency"):
+            release.build_skin(client, target)
+        self.assertEqual(first, target.read_bytes())
 
     def test_collect_requires_every_distribution(self):
         with self.assertRaises(ValueError):

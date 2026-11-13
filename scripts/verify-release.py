@@ -34,6 +34,7 @@ def main():
         raise ValueError("Expected a published release in the matching channel")
     assets = {asset["name"]: asset for asset in release["assets"]}
     expected = {f"daisy-client-{version}+{mc}.jar" for mc in package.versions()}
+    expected.update(f"daisy-skin-{version}+{mc}.jar" for mc in package.versions())
     expected.update({"Daisy-Setup.exe", "Daisy-Portable.exe", "Daisy-Linux.tar.gz", "latest.json", "SHA256SUMS"})
     if set(assets) != expected:
         raise ValueError(f"Release asset inventory differs: {set(assets) ^ expected}")
@@ -52,15 +53,18 @@ def main():
             raise ValueError(f"Upload digest or state mismatch: {name}")
     if hashlib.sha256(manifest_bytes).hexdigest() != checksums["latest.json"] or manifest["version"] != version:
         raise ValueError("Release manifest digest or version mismatch")
-    entries = manifest["mods"] + list(manifest["files"].values())
+    entries = manifest["mods"] + manifest["skins"] + list(manifest["files"].values())
     if len(manifest["mods"]) != len(package.versions()) or {m["minecraft"] for m in manifest["mods"]} != set(package.versions()):
         raise ValueError("Client manifest does not cover every target exactly once")
+    if len(manifest["skins"]) != len(package.versions()) or {m["minecraft"] for m in manifest["skins"]} != set(package.versions()):
+        raise ValueError("Skin manifest does not cover every target exactly once")
     for entry in entries:
         asset = assets[entry["name"]]
         if entry["size"] != asset["size"] or entry["sha256"] != checksums[entry["name"]]:
             raise ValueError(f"Manifest metadata mismatch: {entry['name']}")
-    for entry in manifest["mods"]:
-        if entry["name"] != f"daisy-client-{version}+{entry['minecraft']}.jar":
+    for entry in manifest["mods"] + manifest["skins"]:
+        kind = "skin" if entry in manifest["skins"] else "client"
+        if entry["name"] != f"daisy-{kind}-{version}+{entry['minecraft']}.jar":
             raise ValueError("Client filename does not match its Minecraft target")
         if entry["url"] != assets[entry["name"]]["browser_download_url"]:
             raise ValueError(f"Wrong client download URL: {entry['name']}")

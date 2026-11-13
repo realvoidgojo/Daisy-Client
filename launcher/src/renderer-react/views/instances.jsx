@@ -319,7 +319,7 @@ function CreateInstanceDialog({ open, onOpenChange, onCreated, notify, versions 
         version,
         loader: loaderOption(loader).loader,
         daisy: loader === "daisy",
-        daisySkin: (loader === "daisy" || loader === "fabric") && daisySkin,
+        daisySkin: loader === "fabric" && daisySkin,
         loaderVersion: loader === "daisy" || loader === "vanilla" ? undefined : plainEntry?.loaderVersion
       });
       if (res && res.ok === false) {
@@ -418,12 +418,12 @@ function CreateInstanceDialog({ open, onOpenChange, onCreated, notify, versions 
                   <Label htmlFor="daisy-skin-toggle" className="text-xs font-bold">{t("Daisy Skin")}</Label>
                   <Badge variant="outline" className="text-[10px] text-primary border-primary/60 font-bold">{t("Client-side")}</Badge>
                 </div>
-                <p className="text-[11px] text-muted-foreground">{t("Use wardrobe skin in this instance. Works offline & on SMPs.")}</p>
+                <p className="text-[11px] text-muted-foreground">{t(loader === "daisy" ? "Local skins are included with Daisy." : "Use your wardrobe skin for the local player. Works offline after setup.")}</p>
               </div>
               <Switch
                 id="daisy-skin-toggle"
-                disabled={!(loader === "daisy" || loader === "fabric")}
-                checked={(loader === "daisy" || loader === "fabric") && daisySkin}
+                disabled={loader !== "fabric"}
+                checked={loader === "daisy" || (loader === "fabric" && daisySkin)}
                 onCheckedChange={setDaisySkin}
               />
             </div>

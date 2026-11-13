@@ -83,7 +83,9 @@ const { planRvrRestore } = require("./rvr-restore.js");
 const { newestClientJar, createDaisyModUpdater, installDaisyModJar, clientCacheDirectory } = require("./daisy-mod-cache.js");
 const { clientJarIdentity, latestChannelRelease } = require("./version.js");
 const { cachedMetadata } = require("./metadata-cache.js");
+const { syncLocalSkin } = require("./local-skin.js");
 const ensureLatestDaisyMod = createDaisyModUpdater();
+const ensureLatestDaisySkin = createDaisyModUpdater("skin");
 const verifiedDaisyModJars = new Map();
 const { RELEASES_URL, compareVersions, launcherReleaseState, downloadReleaseAsset } = require("./launcher-release.js");
 // Never bundle Daisy's CurseForge credential into a distributed launcher.
@@ -709,58 +711,52 @@ async function prefetchDaisyModJar(mcVersion) {
 }
 
 
-// --- DAISY SKIN SEPARATE OPTIONAL MOD MANAGEMENT ---
+// Standalone skin support for plain Fabric; full Daisy already contains these classes.
 function resolveDaisySkinJar(mcVersion) {
-  const v = String(mcVersion || DEFAULT_MC_VERSION).trim();
+  const name = `daisy-skin-${readBuildVersion()}+${String(mcVersion || DEFAULT_MC_VERSION).trim()}.jar`;
   const root = findClientRoot();
   const candidates = [
-    root ? path.join(root, "launcher", "src", "bundled", "skin", v, `daisy-skin-0.1.0+${v}.jar`) : "",
-    path.join(__dirname, "bundled", "skin", v, `daisy-skin-0.1.0+${v}.jar`),
-    process.resourcesPath ? path.join(process.resourcesPath, "bundled", "skin", v, `daisy-skin-0.1.0+${v}.jar`) : "",
-    path.join(app.getAppPath(), "bundled", "skin", v, `daisy-skin-0.1.0+${v}.jar`)
-  ].filter(Boolean);
-
-  for (const c of candidates) {
-    if (fs.existsSync(c)) return c;
-  }
-  return "";
+    root ? path.join(root, "launcher", "src", "bundled", name) : "",
+    path.join(__dirname, "bundled", name),
+    process.resourcesPath ? path.join(process.resourcesPath, "bundled", name) : "",
+    path.join(app.getAppPath(), "bundled", name)
+  ];
+  return candidates.find(isRealRuntimeJar) || "";
 }
 
-function ensureDaisySkinMod(instancePath, mcVersion, enableSkin = true) {
+async function ensureDaisySkinMod(instancePath, mcVersion, enableSkin = true) {
   try {
-    if (!instancePath || !fs.existsSync(instancePath)) return;
+    if (!instancePath || !fs.existsSync(instancePath)) throw new Error("Instance folder is missing.");
     const modsDir = path.join(instancePath, "mods");
     fs.mkdirSync(modsDir, { recursive: true });
-
-    const skinJarPattern = /^daisy-skin-[\w.+-]*\.jar(\.disabled)?$/i;
-    // If skin is disabled or should not be installed, remove it or rename to .disabled
-    if (!enableSkin) {
-      for (const file of fs.readdirSync(modsDir)) {
-        if (skinJarPattern.test(file)) {
-          try { fs.rmSync(path.join(modsDir, file), { force: true }); } catch { }
-        }
+    const files = fs.readdirSync(modsDir);
+    const fullClient = files.some(name => /^(?:daisy-client|clientcore)-.+\.jar$/.test(name));
+    if (!enableSkin || fullClient) {
+      for (const file of files.filter(name => /^daisy-skin-.+\.jar$/.test(name))) {
+        // Preserve the standalone JAR while preventing duplicate classes/mixins.
+        const disabled = path.join(modsDir, file + ".disabled");
+        if (fs.existsSync(disabled)) throw new Error(`Remove the duplicate active skin mod ${file} before launching.`);
+        fs.renameSync(path.join(modsDir, file), disabled);
       }
-      return;
+      return { ok: true, builtIn: fullClient };
     }
-
-    const source = resolveDaisySkinJar(mcVersion);
-    if (!source || !fs.existsSync(source)) return;
-
-    const targetName = path.basename(source);
-    const targetPath = path.join(modsDir, targetName);
-
-    // Clean up older skin jars
-    for (const file of fs.readdirSync(modsDir)) {
-      if (skinJarPattern.test(file) && file !== targetName) {
-        try { fs.rmSync(path.join(modsDir, file), { force: true }); } catch { }
-      }
-    }
-
-    if (!fs.existsSync(targetPath)) {
-      fs.copyFileSync(source, targetPath);
-    }
-  } catch (err) {
-    emit("launcher:log", `[daisy-skin] Error ensuring skin mod: ${err.message}`);
+    const version = String(mcVersion || DEFAULT_MC_VERSION).trim();
+    const result = await ensureLatestDaisySkin({
+      mcVersion: version,
+      cacheDir: path.join(app.getPath("userData"), readBuildVersion().includes("-") ? "daisy-skin-cache-beta" : "daisy-skin-cache"),
+      existingJar: resolveDaisySkinJar(version),
+      fetchManifest: fetchRemoteUpdateManifest,
+      download: downloadFile,
+      onDownload: entry => emitActivity({ title: "Updating local skins", detail: `Downloading ${entry.name}...`, current: 0, total: 1 })
+    });
+    if (!result.path) throw new Error(result.error || "No verified skin mod is available for this Minecraft version.");
+    const installed = installDaisyModJar(result.path, modsDir, version, "skin");
+    if (result.error) emit("launcher:log", `[daisy-skin] ${result.error}`);
+    emit("launcher:log", `[daisy-skin] Using ${path.basename(installed.path)} (${result.source}).`);
+    return { ok: true, ...installed };
+  } catch (error) {
+    emit("launcher:log", `[daisy-skin] ${error.message}`);
+    return { ok: false, message: error.message };
   }
 }
 
@@ -1943,13 +1939,8 @@ function syncOfflineSkinToInstance(instancePath, playerName) {
     const active = history.find(s => s.active) || history[0];
     if (!active || !active.path || !fs.existsSync(active.path)) return;
 
-    // CustomSkinLoader directory structure:
-    // .minecraft/CustomSkinLoader/LocalSkin/skins/<PlayerName>.png
-    const targetDir = path.join(instancePath, "CustomSkinLoader", "LocalSkin", "skins");
-    fs.mkdirSync(targetDir, { recursive: true });
-    const targetFile = path.join(targetDir, `${cleanName}.png`);
-    fs.copyFileSync(active.path, targetFile);
-    emit("launcher:log", `[skins] Synchronized offline skin for ${cleanName} to ${targetFile}`);
+    syncLocalSkin(instancePath, cleanName, offlineUuid(cleanName), active);
+    emit("launcher:log", `[skins] Synchronized local skin and model for ${cleanName}.`);
   } catch (err) {
     emit("launcher:log", `[skins] Could not sync offline skin to instance: ${err.message}`);
   }
@@ -4762,7 +4753,7 @@ function createInstance(request, options = {}) {
     loaderVersion,
     daisy,
     daisySkin,
-    daisySkinVersion: daisySkin ? "0.1.0" : undefined,
+    daisySkinVersion: daisySkin ? readBuildVersion() : undefined,
     path: instancePath,
     createdAt: now,
     updatedAt: now
@@ -4783,7 +4774,7 @@ function createInstance(request, options = {}) {
     ensureRequiredSupportMods(instancePath, version, "fabric", "daisy-support-create").catch(() => { });
   }
   if (daisySkin) {
-    ensureDaisySkinMod(instancePath, version, true);
+    ensureDaisySkinMod(instancePath, version, !daisy);
     // Automatically install Fabric API and Fabric Language Kotlin dependencies for the skin mod
     ensureRequiredSupportMods(instancePath, version, "fabric", "daisy-skin-support").catch(() => { });
   }
@@ -6076,7 +6067,7 @@ ipcMain.handle("launcher:launch-client", async (_event, opts = {}) => {
 
     emitActivity({ title: "Launching Daisy", detail: "Checking required dependencies...", current: 4, total: 6 });
     const supportInstall = await ensureRequiredSupportMods(status.instancePath, status.settings.selectedVersion || "1.21.11", "fabric", "daisy-support-launch");
-    if (!supportInstall.ok && !(supportInstall.installed || []).length) {
+    if (!supportInstall.ok) {
       return failLaunch(`Daisy could not prepare required support mods. ${supportInstall.message}`);
     }
 
@@ -6088,6 +6079,8 @@ ipcMain.handle("launcher:launch-client", async (_event, opts = {}) => {
       writeInstanceMeta(status.instancePath, { optimizationAppliedAt: new Date().toISOString() });
     }
 
+    const skinState = await ensureDaisySkinMod(status.instancePath, status.settings.selectedVersion || DEFAULT_MC_VERSION, false);
+    if (!skinState.ok) return failLaunch(skinState.message);
     emitActivity({ title: "Launching Daisy", detail: "Checking compatibility...", current: 5, total: 6 });
     const modCompatibility = analyzeInstanceModCompatibility(status.instancePath);
     if (modCompatibility.issues.length) {
@@ -6129,6 +6122,14 @@ async function launchStandaloneMinecraft(status, joinAddress = "", plainInstance
   }
   let launch;
   try {
+    if (plainInstance?.daisySkin && isDaisyLoader(plainInstance.loader)) {
+      const skinState = await ensureDaisySkinMod(plainInstance.path, plainInstance.version, true);
+      if (!skinState.ok) throw new Error(skinState.message);
+      const support = await ensureRequiredSupportMods(plainInstance.path, plainInstance.version, "fabric", "daisy-skin-launch");
+      if (!support.ok) throw new Error(support.message || "Skin mod dependencies could not be prepared.");
+      const compatibility = analyzeInstanceModCompatibility(plainInstance.path);
+      if (compatibility.issues.length) throw new Error("Resolve the skin instance's mod compatibility issues before launching.");
+    }
     launch = plainInstance
       ? await preparePlainMinecraftLaunch(status, freshAuth, authenticated, joinAddress, plainInstance)
       : await prepareStandaloneMinecraftLaunch(status, freshAuth, authenticated, joinAddress);
@@ -6181,8 +6182,6 @@ async function launchStandaloneMinecraft(status, joinAddress = "", plainInstance
     const launchInstPath = plainInstance ? plainInstance.path : status.instancePath;
     const launchPlayer = freshAuth?.profile?.name || status.settings?.offlineName || "DaisyPlayer";
     syncOfflineSkinToInstance(launchInstPath, launchPlayer);
-    const targetInst = plainInstance || launchInstance;
-    if (targetInst && targetInst.daisySkin) { ensureDaisySkinMod(launchInstPath, targetInst.version || DEFAULT_MC_VERSION, true); }
   } catch { }
 
   try {
@@ -12199,8 +12198,14 @@ async function ensureRequiredSupportMods(instancePath, gameVersion, loader = "fa
   const installed = [];
   const skipped = [];
   const visited = new Set();
+  const modsDir = path.join(instancePath, "mods");
+  const installedIds = new Set(fs.existsSync(modsDir) ? fs.readdirSync(modsDir)
+    .filter(file => file.endsWith(".jar"))
+    .map(file => readJarModInfo(path.join(modsDir, file)).id) : []);
   for (let index = 0; index < requiredSupportMods.length; index += 1) {
     const mod = requiredSupportMods[index];
+    // Reuse enabled dependencies locally; an offline launch must not query Modrinth.
+    if (installedIds.has(mod.slug)) continue;
     emitActivity({
       title: "Preparing Daisy support mods",
       detail: `Installing ${mod.name}...`,
@@ -12233,7 +12238,7 @@ async function ensureRequiredSupportMods(instancePath, gameVersion, loader = "fa
     }
   }
   return {
-    ok: skipped.length < requiredSupportMods.length,
+    ok: skipped.length === 0,
     installed,
     skipped,
     message: `Support mods installed ${installed.length} file${installed.length === 1 ? "" : "s"}${skipped.length ? ` with ${skipped.length} skipped item${skipped.length === 1 ? "" : "s"}` : ""}.`

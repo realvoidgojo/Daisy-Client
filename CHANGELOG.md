@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.0.0-beta.3 — 2026-11-13
+
+- Merged the validated foundation into main while retaining Git history.
+- Applied Daisy's ICO to Windows taskbar buttons and newly pinned shortcuts.
+- Automated source-built standalone local-skin JARs for all 13 Minecraft targets.
+- Published skin artifacts and hashes alongside clients and native launchers on GitHub Releases.
+- Added verified skin downloads, offline cache reuse, atomic updates and duplicate-mod prevention.
+- Synchronized local skin PNGs, hash-addressed caches and classic/slim appearance metadata before launch.
+- Reused installed Fabric support dependencies offline and blocked incomplete dependency setup.
+- Extended release verification to real client and skin download/install/cache checks.
+
 ## 1.0.0-beta.2 — 2026-11-13
 
 - Isolated native startup tests from real launcher instances by overriding all Electron data paths.
