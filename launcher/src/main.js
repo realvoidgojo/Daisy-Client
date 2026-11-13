@@ -87,7 +87,7 @@ const { syncLocalSkin } = require("./local-skin.js");
 const ensureLatestDaisyMod = createDaisyModUpdater();
 const ensureLatestDaisySkin = createDaisyModUpdater("skin");
 const verifiedDaisyModJars = new Map();
-const { RELEASES_URL, compareVersions, launcherReleaseState, downloadReleaseAsset } = require("./launcher-release.js");
+const { RELEASES_URL, compareVersions, launcherReleaseState, downloadReleaseAsset, startWindowsInstaller } = require("./launcher-release.js");
 // Never bundle Daisy's CurseForge credential into a distributed launcher.
 function effectiveCurseForgeKey(settings) { return String(settings?.curseForgeApiKey || ""); }
 const { app, BrowserWindow, ipcMain, shell, dialog, screen, nativeImage, globalShortcut, clipboard, Notification } = require("electron");
@@ -9336,17 +9336,28 @@ async function installLauncherUpdate() {
     }
     emitActivity({ title: "Downloading update", detail: `Daisy Client ${update.latestVersion}`, current: 0, total: update.asset.size, unit: "bytes" });
     const directory = path.join(app.getPath("userData"), "updates", update.latestVersion);
-    const target = await downloadReleaseAsset(update.asset, directory, downloadFileWithProgress);
-    // Full distributions avoid patching the running app. The installer remains interactive.
-    const installer = process.platform === "win32" && !process.env.PORTABLE_EXECUTABLE_FILE;
+    const target = await downloadReleaseAsset(update.asset, directory, downloadFileWithProgress, {
+      onProgress: ({ downloaded, total, speed, eta, cached }) => emitActivity({
+        title: cached ? "Update ready" : "Downloading update",
+        detail: cached ? "Using the verified cached update." : `${formatBytes(downloaded)} / ${formatBytes(total)} downloaded`,
+        current: downloaded, total, unit: "bytes", percent: total > 0 ? Math.min(100, downloaded / total * 100) : 0,
+        speed: speed > 0 ? `${formatBytes(speed)}/s` : "", eta: speed > 0 ? formatDuration(eta) : ""
+      }),
+      onVerifying: () => emitActivity({ title: "Verifying update", detail: "Checking the download size and SHA-256..." })
+    });
+    emitActivity({ title: "Update verified", detail: `Daisy Client ${update.latestVersion} is ready.`, current: 1, total: 1, percent: 100 });
+    // Only an installed/packaged Windows app hands off to NSIS automatically.
+    const installer = app.isPackaged && process.platform === "win32" && !process.env.PORTABLE_EXECUTABLE_FILE;
     if (installer) {
-      const error = await shell.openPath(target);
-      if (error) throw new Error(error);
+      emitActivity({ title: "Installing update", detail: "Daisy will close and reopen after the update.", current: 1, total: 1, percent: 100 });
+      // Allow the final verified state to paint before the existing process exits.
+      await new Promise(resolve => setTimeout(resolve, 600));
+      await startWindowsInstaller(target, path.dirname(app.getPath("exe")), spawn);
       app.quit();
     } else {
       shell.showItemInFolder(target);
     }
-    const message = installer ? "Verified installer opened. Follow its steps to update Daisy."
+    const message = installer ? "Installing the verified update. Daisy will reopen automatically."
       : "Verified update downloaded. Close Daisy and replace the application using this download.";
     emitActivity({ title: "Update downloaded", detail: message, done: true });
     return { ok: true, message };

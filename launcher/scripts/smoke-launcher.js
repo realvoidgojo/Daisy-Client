@@ -10,7 +10,12 @@ fs.mkdirSync(path.dirname(report), { recursive: true });
 const env = { ...process.env, DAISY_SMOKE_TEST: "1", DAISY_SMOKE_DIR: directory, DAISY_SMOKE_REPORT: report };
 delete env.ELECTRON_RUN_AS_NODE;
 const packaged = process.argv.includes("--packaged");
-const executable = packaged ? path.join(root, "dist", process.platform === "win32" ? "win-unpacked/Daisy.exe" : "linux-unpacked/daisy") : require("electron");
+const executableIndex = process.argv.indexOf("--executable");
+const executable = executableIndex >= 0 ? process.argv[executableIndex + 1]
+  : packaged ? path.join(root, "dist", process.platform === "win32" ? "win-unpacked/Daisy.exe" : "linux-unpacked/daisy") : require("electron");
+if (executableIndex >= 0 && (!packaged || !executable || !path.isAbsolute(executable) || !fs.existsSync(executable))) {
+  throw new Error("--executable requires --packaged and an existing absolute executable path.");
+}
 const args = packaged ? ["--smoke-test"] : [root, "--smoke-test"];
 // Match the Linux archive's real startup wrapper; the SUID helper is not installed.
 if (process.platform === "linux") args.push("--no-sandbox");

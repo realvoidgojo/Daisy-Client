@@ -5,7 +5,7 @@ const path = require("node:path");
 const os = require("node:os");
 const crypto = require("node:crypto");
 const vm = require("node:vm");
-const { RELEASES_URL, launcherReleaseState, downloadReleaseAsset } = require("../src/launcher-release.js");
+const { RELEASES_URL, launcherReleaseState, downloadReleaseAsset, startWindowsInstaller } = require("../src/launcher-release.js");
 const { newestClientJar } = require("../src/daisy-mod-cache.js");
 
 const bytes = Buffer.from("test distribution bytes");
@@ -90,19 +90,28 @@ test("launcher check uses the remote manifest and reports offline failure honest
   assert.match(offline.message, /Could not check/);
 });
 
-test("launcher installation rechecks the latest release and opens only a verified installer", async () => {
+test("launcher installation reports progress, verifies, then hands off silently before quitting", async () => {
   const source = fs.readFileSync(path.join(__dirname, "../src/main.js"), "utf8");
   const start = source.indexOf("let launcherInstallRunning = false;");
   const end = source.indexOf("/** Preview-only:", start);
   const events = [];
+  const activities = [];
+  let handoffFails = false;
   let update = { ...launcherReleaseState("0.2.8.1", manifest(), "win32", "x64"), checkFailed: true, message: "Offline" };
   const context = vm.createContext({
     path, RELEASES_URL, launchProcess: null, process: { platform: "win32", env: {} },
     checkLauncherUpdates: async () => { events.push("check"); return update; },
-    emitActivity: () => {}, downloadFileWithProgress: () => {},
-    downloadReleaseAsset: async (asset) => { events.push(`verified ${asset.version}`); return "Daisy-Setup.exe"; },
-    shell: { openPath: async () => { events.push("open installer"); return ""; } },
-    app: { getPath: () => os.tmpdir(), quit: () => events.push("quit") }
+    emitActivity: event => activities.push(event), downloadFileWithProgress: () => {},
+    formatBytes: value => `${value} B`, formatDuration: value => `${value}s`,
+    setTimeout: callback => { callback(); }, spawn: () => {},
+    downloadReleaseAsset: async (asset, directory, download, callbacks) => {
+      callbacks.onProgress({ downloaded: 10, total: asset.size, speed: 5, eta: 3 });
+      callbacks.onVerifying();
+      events.push(`verified ${asset.version}`); return path.join(os.tmpdir(), "Daisy-Setup.exe");
+    },
+    startWindowsInstaller: async () => { events.push("silent installer"); if (handoffFails) throw new Error("Cannot start installer"); },
+    shell: {},
+    app: { isPackaged: true, getPath: name => name === "exe" ? path.join(os.tmpdir(), "Daisy", "Daisy.exe") : os.tmpdir(), quit: () => events.push("quit") }
   });
   vm.runInContext(source.slice(start, end), context);
   const offline = await vm.runInContext("installLauncherUpdate()", context);
@@ -112,7 +121,15 @@ test("launcher installation rechecks the latest release and opens only a verifie
   update = launcherReleaseState("0.2.8.1", manifest(), "win32", "x64");
   const installed = await vm.runInContext("installLauncherUpdate()", context);
   assert.equal(installed.ok, true);
-  assert.deepEqual(events, ["check", "verified 0.2.8.2", "open installer", "quit"]);
+  assert.deepEqual(events, ["check", "verified 0.2.8.2", "silent installer", "quit"]);
+  assert.ok(activities.some(event => event.title === "Downloading update" && event.percent > 0 && event.percent < 100));
+  assert.ok(activities.some(event => event.title === "Verifying update"));
+  assert.ok(activities.some(event => event.title === "Update verified" && event.percent === 100));
+  events.length = 0;
+  handoffFails = true;
+  assert.equal((await vm.runInContext("installLauncherUpdate()", context)).ok, false);
+  assert.ok(!events.includes("quit"));
+  assert.equal(activities.at(-1).error, true);
 });
 
 test("an explicit development manifest overrides beta channel discovery", async () => {
@@ -150,4 +167,46 @@ test("stable upgrade CLI rejects a missing prepared release tag before any netwo
     { encoding: "utf8", env: { ...process.env, RELEASE_TAG: "" } });
   assert.equal(result.status, 1);
   assert.match(result.stderr, /export RELEASE_TAG from the prepared workflow output/);
+});
+
+
+test("release downloads forward live byte progress and cached downloads finish at 100 percent", async t => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "daisy-progress-"));
+  t.after(() => fs.rmSync(directory, { recursive: true, force: true }));
+  const asset = launcherReleaseState("0.2.8.1", manifest(), "win32", "x64").asset;
+  const progress = [], phases = [];
+  const options = { onProgress: value => progress.push(value), onVerifying: () => phases.push("verify") };
+  await downloadReleaseAsset(asset, directory, async (_url, target, downloadOptions) => {
+    assert.equal(downloadOptions.totalBytes, bytes.length);
+    downloadOptions.onProgress({ downloaded: 5, total: bytes.length, speed: 10, eta: 2 });
+    fs.writeFileSync(target, bytes);
+    downloadOptions.onProgress({ downloaded: bytes.length, total: bytes.length, speed: 10, eta: 0 });
+  }, options);
+  assert.equal(progress[0].downloaded, 5);
+  assert.equal(progress.at(-1).downloaded, bytes.length);
+  assert.deepEqual(phases, ["verify"]);
+  progress.length = 0;
+  await downloadReleaseAsset(asset, directory, async () => { throw new Error("Cached update downloaded again"); }, options);
+  assert.equal(progress.length, 1);
+  assert.equal(progress[0].cached, true);
+  assert.equal(progress[0].downloaded, progress[0].total);
+});
+
+test("Windows update handoff uses silent NSIS update flags and reports launch errors", async () => {
+  const { EventEmitter } = require("node:events");
+  const target = path.join(os.tmpdir(), "Daisy-Setup.exe"), directory = path.join(os.tmpdir(), "Daisy Launcher");
+  let detached = false;
+  await startWindowsInstaller(target, directory, (file, args, options) => {
+    assert.equal(file, target);
+    assert.deepEqual(args, ["--updated", "/S", "--force-run", `/D=${directory}`]);
+    assert.equal(options.windowsHide, true); assert.equal(options.detached, true);
+    const child = new EventEmitter(); child.unref = () => { detached = true; };
+    queueMicrotask(() => child.emit("spawn")); return child;
+  });
+  assert.equal(detached, true);
+  await assert.rejects(startWindowsInstaller(target, directory, () => {
+    const child = new EventEmitter(); child.unref = () => {};
+    queueMicrotask(() => child.emit("error", new Error("Access denied"))); return child;
+  }), /Access denied/);
+  await assert.rejects(startWindowsInstaller("unverified.exe", directory, () => { throw new Error("Should not spawn"); }), /Invalid verified/);
 });

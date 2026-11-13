@@ -75,3 +75,17 @@ GitHub redirect/CDN propagation delay. The workflow then retrieves the pinned or
 package download, SHA-256 and cached reuse. It also checks that beta.3 sees the stable
 upgrade and that the current installed version does not offer itself again. This smoke
 check never executes an installer or modifies launcher settings/instances.
+
+## Installed Windows update flow
+
+The installed launcher streams byte progress into the activity UI, shows SHA-256
+verification separately, and completes verified cache hits immediately. After a successful
+verification it starts NSIS in silent update mode with automatic restart, targeting the
+existing installation directory. A spawn failure leaves Daisy open with a retryable error.
+Portable/Linux downloads retain their explicit replacement flow. An older installed
+launcher still uses its old update UI for the transition to this release; subsequent
+updates use the corrected flow.
+
+Before publication the Windows package job silently installs into a temporary directory
+and starts that installed executable with isolated smoke data. This integration check is
+restricted to GitHub-hosted Windows runners so it cannot alter a developer's installation.

@@ -103,6 +103,10 @@ jobs:
         if: runner.os == 'Linux'
         run: xvfb-run -a node scripts/smoke-launcher.js --packaged
         working-directory: launcher
+      - name: Verify silent Windows installation and installed startup
+        if: runner.os == 'Windows'
+        run: node scripts/verify-windows-installer.js
+        working-directory: launcher
       - uses: actions/upload-artifact@v7
         with:
           name: electron-release-${{ runner.os }}

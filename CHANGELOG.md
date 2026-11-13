@@ -3,6 +3,9 @@
 ## 1.0.2 — 2026-11-13
 
 - Included the maintainer's updated normal and Halloween menu title logos.
+- Fixed launcher download progress, cached-update completion and explicit verification states.
+- Applied Windows updates silently to the existing installation and reopened Daisy automatically.
+- Kept the launcher open with a retryable error if the installer cannot start.
 - Recorded the supplied artwork in the asset inventory and excluded it from geometric asset regeneration.
 
 ## 1.0.1 — 2026-11-13

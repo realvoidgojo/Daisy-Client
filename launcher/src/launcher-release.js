@@ -34,7 +34,7 @@ function launcherReleaseState(currentVersion, payload, platform = process.platfo
   };
 }
 
-async function downloadReleaseAsset(asset, directory, download) {
+async function downloadReleaseAsset(asset, directory, download, { onProgress = () => {}, onVerifying = () => {} } = {}) {
   // Revalidate at the filesystem boundary; never accept a manifest path as a filename.
   if (!asset || !VERSION.test(asset.version)
       || !["Daisy-Setup.exe", "Daisy-Portable.exe", "Daisy-Linux.tar.gz"].includes(asset.name)
@@ -45,10 +45,17 @@ async function downloadReleaseAsset(asset, directory, download) {
   fs.mkdirSync(directory, { recursive: true });
   const target = path.join(directory, asset.name);
   const matches = async (file) => fs.existsSync(file) && fs.statSync(file).size === asset.size && await fileMatchesSha256(file, asset.sha256);
-  if (await matches(target)) return target;
+  if (fs.existsSync(target)) {
+    onVerifying();
+    if (await matches(target)) {
+      onProgress({ downloaded: asset.size, total: asset.size, speed: 0, eta: 0, cached: true });
+      return target;
+    }
+  }
   const partial = `${target}.partial`;
   try {
-    await download(asset.url, partial, { totalBytes: asset.size });
+    await download(asset.url, partial, { totalBytes: asset.size, onProgress });
+    onVerifying();
     if (!(await matches(partial))) throw new Error("Release download failed its size or SHA-256 check. Nothing was opened.");
     fs.rmSync(target, { force: true });
     fs.renameSync(partial, target);
@@ -59,4 +66,18 @@ async function downloadReleaseAsset(asset, directory, download) {
   }
 }
 
-module.exports = { RELEASES_URL, compareVersions, releaseAsset, launcherReleaseState, downloadReleaseAsset };
+// NSIS update flags match electron-builder's updater contract. /D must be last.
+function startWindowsInstaller(target, installDirectory, spawnProcess) {
+  if (!path.isAbsolute(target) || path.basename(target) !== "Daisy-Setup.exe" || !path.isAbsolute(installDirectory)) {
+    return Promise.reject(new Error("Invalid verified installer location."));
+  }
+  return new Promise((resolve, reject) => {
+    const child = spawnProcess(target, ["--updated", "/S", "--force-run", `/D=${installDirectory}`], {
+      detached: true, stdio: "ignore", windowsHide: true
+    });
+    child.once("error", reject);
+    child.once("spawn", () => { child.unref(); resolve(); });
+  });
+}
+
+module.exports = { RELEASES_URL, compareVersions, releaseAsset, launcherReleaseState, downloadReleaseAsset, startWindowsInstaller };
