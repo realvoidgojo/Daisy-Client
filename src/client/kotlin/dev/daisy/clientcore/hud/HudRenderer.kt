@@ -1,5 +1,6 @@
 package dev.daisy.clientcore.hud
 
+import dev.daisy.clientcore.perf.RuntimeProfile
 import dev.daisy.clientcore.module.ModuleRegistry
 import dev.daisy.clientcore.perf.PerfStats
 import dev.daisy.clientcore.ui.screen.DaisyHudEditorScreen
@@ -14,6 +15,8 @@ object HudRenderer {
     fun initialize() = Unit
 
     fun render(client: Minecraft, graphics: GuiGraphics, tickDelta: Float) {
+        val profileSample = RuntimeProfile.begin("hud.render")
+        try {
 //? if >=26.2 {
 /*        if (client.level == null || client.player == null || client.gui.hud.isHidden()) return
 *///?} else {
@@ -29,5 +32,6 @@ object HudRenderer {
         HudLayout.apply(client)
         ModuleRegistry.render(client, graphics, tickDelta)
         PerfStats.recordHudRender(System.nanoTime() - start)
+        } finally { RuntimeProfile.end(profileSample) }
     }
 }

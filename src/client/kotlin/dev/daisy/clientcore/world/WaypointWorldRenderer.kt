@@ -1,5 +1,6 @@
 package dev.daisy.clientcore.world
 
+import dev.daisy.clientcore.perf.RuntimeProfile
 import com.mojang.blaze3d.vertex.PoseStack
 import com.mojang.blaze3d.vertex.VertexConsumer
 import dev.daisy.clientcore.config.WaypointData
@@ -216,6 +217,8 @@ object WaypointWorldRenderer {
         quads: VertexConsumer,
         cameraPos: Vec3
     ) {
+        val profileSample = RuntimeProfile.begin("waypoints.geometry")
+        try {
         waypoints.forEach { wp ->
             val color = WaypointsModule.colorOf(wp)
             val fade = fadeAt(blockDistance(wp, cameraPos))
@@ -238,6 +241,7 @@ object WaypointWorldRenderer {
             }
             drawBlockOutline(pose, quads, bx, by, bz, color)
         }
+        } finally { RuntimeProfile.end(profileSample) }
     }
 
     /** Pass 2: labels. */
@@ -249,6 +253,8 @@ object WaypointWorldRenderer {
         waypoints: List<WaypointData>,
         text: TextSink
     ) {
+        val profileSample = RuntimeProfile.begin("waypoints.labels")
+        try {
         val font = client.font
         waypoints.forEach { wp ->
             val fade = fadeAt(blockDistance(wp, cameraPos))
@@ -287,6 +293,7 @@ object WaypointWorldRenderer {
             text.draw(xStart + nameW + 5, -10f, distText, withAlpha(0xE6E9F2, crisp), Font.DisplayMode.NORMAL, 0)
             poseStack.popPose()
         }
+        } finally { RuntimeProfile.end(profileSample) }
     }
 
     /** Four translucent faces rising from the base, fading out toward the top. */

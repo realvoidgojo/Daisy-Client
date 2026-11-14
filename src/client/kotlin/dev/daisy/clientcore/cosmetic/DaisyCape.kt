@@ -1,5 +1,6 @@
 package dev.daisy.clientcore.cosmetic
 
+import dev.daisy.clientcore.perf.RuntimeProfile
 import com.mojang.blaze3d.platform.NativeImage
 import dev.daisy.clientcore.module.ModuleRegistry
 import dev.daisy.clientcore.module.impl.CapeModule
@@ -107,6 +108,8 @@ object DaisyCape {
      *  remote players come from the presence roster. */
     @JvmStatic
     fun capeStyleFor(uuid: UUID): String? {
+        val profileSample = RuntimeProfile.begin("cosmetics.capeLookup")
+        try {
         val self = Minecraft.getInstance().user.profileId
         if (uuid == self) {
             val module = ModuleRegistry.get<CapeModule>("cape") ?: return null
@@ -117,11 +120,14 @@ object DaisyCape {
         // the roster for anyone who did not earn it.
         if (!dev.daisy.clientcore.module.impl.CosmeticsModule.showOthersCapes()) return null
         return EffectRoster.remoteCapeStyle(uuid)?.takeIf { it in STYLES }
+        } finally { RuntimeProfile.end(profileSample) }
     }
 
     /** Returns a copy of the skin with the given cape style patched in. */
     @JvmStatic
     fun applyCape(skin: PlayerSkin, style: String): PlayerSkin {
+        val profileSample = RuntimeProfile.begin("cosmetics.applyCape")
+        try {
         ensureTexture(style)
 //? if >=1.21.9 {
         val patch = PlayerSkin.Patch.create(Optional.empty(), Optional.of(assetFor(style)), Optional.empty(), Optional.empty())
@@ -129,5 +135,6 @@ object DaisyCape {
 //?} else {
 /*        return PlayerSkin(skin.texture(), skin.textureUrl(), textureId(style), skin.elytraTexture(), skin.model(), skin.secure())
 *///?}
+        } finally { RuntimeProfile.end(profileSample) }
     }
 }

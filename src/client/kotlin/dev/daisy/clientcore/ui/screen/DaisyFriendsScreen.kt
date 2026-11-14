@@ -433,7 +433,7 @@ class DaisyFriendsScreen(
 
         // Search, which is also where a name is typed to add someone.
         val fieldY = y + HEADER_H + 8
-        drawField(
+        fields.draw(
             g, x + 8, fieldY, w - 16, 20, mx, my,
             text = search,
             placeholder = if (tab == Tab.FRIENDS) "Search or add by name" else "Search",
@@ -470,20 +470,7 @@ class DaisyFriendsScreen(
 
     private fun matches(name: String) = search.isBlank() || name.contains(search.trim(), ignoreCase = true)
 
-    private class Groups(val inGame: List<DaisySocial.Friend>, val online: List<DaisySocial.Friend>, val offline: List<DaisySocial.Friend>) {
-        val all: List<DaisySocial.Friend> get() = inGame + online + offline
-    }
-
-    /** The friends matching the search, in the order they are listed. */
-    private fun groups(): Groups {
-        val shown = DaisySocial.friends.filter { matches(it.name) }
-        val byName = compareBy<DaisySocial.Friend> { it.name.lowercase() }
-        return Groups(
-            inGame = shown.filter { it.online && it.server.isNotEmpty() }.sortedWith(byName),
-            online = shown.filter { it.online && it.server.isEmpty() }.sortedWith(byName),
-            offline = shown.filter { !it.online }.sortedWith(byName)
-        )
-    }
+    private fun groups() = dev.daisy.clientcore.ui.widget.FriendRosterModel.groups(DaisySocial.friends, search)
 
     /** Returns the content height. */
     private fun drawFriendsList(g: GuiGraphics, x: Int, top: Int, w: Int, bottom: Int, mx: Int, my: Int): Int {
@@ -748,7 +735,7 @@ class DaisyFriendsScreen(
 
         val fieldX = x + 10
         val fieldW = w - 20
-        drawField(
+        fields.draw(
             g, fieldX, composerY, fieldW, composerH, mx, my,
             text = composer,
             placeholder = "Message ${friend.name}",
@@ -1179,45 +1166,7 @@ class DaisyFriendsScreen(
 
     private fun fieldBg(): Int = if (ClientUi.glassFrame) ClientUi.alpha(0xFF000000.toInt(), 0.38f) else ClientUi.over(ClientUi.alpha(0xFF000000.toInt(), 0.32f), ClientUi.PANEL)
 
-    private fun drawField(
-        g: GuiGraphics, x: Int, y: Int, w: Int, h: Int, mx: Int, my: Int,
-        text: String, placeholder: String, focused: Boolean, icon: String?, key: String,
-        limit: Int = 0, reserve: Int = 0, onFocus: () -> Unit
-    ) {
-        val hovered = inside(mx, my, x, y, w, h)
-        val anim = ClientUi.hover(key, hovered || focused)
-        g.fill(x, y, x + w, y + h, fieldBg())
-        val border = if (focused) ClientUi.alpha(ClientUi.ACCENT_B, 0.85f)
-            else ClientUi.mix(ClientUi.BORDER, ClientUi.over(ClientUi.alpha(0xFFFFFFFF.toInt(), 0.14f), ClientUi.BORDER), anim)
-        ClientUi.drawRoundedBorder(g, x, y, w, h, 0, border)
-
-        var tx = x + 7
-        if (icon != null) {
-            DaisyIcons.draw(g, icon, x + 6, y + (h - 9) / 2, 9, if (focused) ClientUi.ACCENT_B else ClientUi.DIM)
-            tx = x + 20
-        }
-        val ty = y + (h - 8) / 2
-        val counter = if (limit > 0 && text.length > limit - 56) "${text.length}/$limit" else ""
-        val counterW = if (counter.isNotEmpty()) font.width(counter) + 8 else 0
-        val room = x + w - 6 - reserve - counterW - tx
-        if (text.isEmpty() && !focused) {
-            g.drawString(font, trim(placeholder, room), tx, ty, ClientUi.DIM, false)
-        } else if (text.isEmpty()) {
-            g.drawString(font, trim(placeholder, room), tx, ty, ClientUi.alpha(ClientUi.DIM, 0.6f), false)
-        }
-        // A long message shows its end, where the typing is happening.
-        val visible = tail(text, room - 2)
-        if (visible.isNotEmpty()) g.drawString(font, visible, tx, ty, ClientUi.TEXT, false)
-        if (focused && ((System.currentTimeMillis() - focusChangedAt) / 530) % 2 == 0L) {
-            val cx = tx + font.width(visible) + 1
-            g.fill(cx, ty - 1, cx + 1, ty + 9, ClientUi.TEXT)
-        }
-        if (counter.isNotEmpty()) {
-            val over = text.length >= limit
-            g.drawString(font, counter, x + w - 6 - reserve - font.width(counter), ty, if (over) ClientUi.DANGER else ClientUi.DIM, false)
-        }
-        hit(x, y, w, h, onFocus)
-    }
+    private val fields = dev.daisy.clientcore.ui.widget.FriendsFieldRenderer(::fieldBg, { focusChangedAt }, ::hit)
 
     private fun iconButton(
         g: GuiGraphics, icon: String, x: Int, y: Int, size: Int, mx: Int, my: Int, key: String,

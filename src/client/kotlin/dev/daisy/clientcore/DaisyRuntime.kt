@@ -1,5 +1,6 @@
 package dev.daisy.clientcore
 
+import dev.daisy.clientcore.perf.RuntimeProfile
 import dev.daisy.clientcore.config.ClientCoreConfig
 import dev.daisy.clientcore.config.ConfigService
 import dev.daisy.clientcore.hud.HudRenderer
@@ -141,12 +142,14 @@ object DaisyRuntime {
         PresenceService.update(client)
         // Friends presence has to tick while you play, not only while the menu is open,
         // or everyone actually in a game shows as offline to their friends.
-        dev.daisy.clientcore.net.DaisySocial.tick(client)
+        val socialSample = RuntimeProfile.begin("social.tick")
+        try { dev.daisy.clientcore.net.DaisySocial.tick(client) } finally { RuntimeProfile.end(socialSample) }
         dev.daisy.clientcore.ui.SeasonEvent.tick(client)
         dev.daisy.clientcore.ui.FriendMessageToasts.tick(client)
         dev.daisy.clientcore.ui.tooltip.ContainerTooltips.tick(client)
         ModuleRegistry.tick(client)
-        dev.daisy.clientcore.media.MediaSession.tick()
+        val mediaSample = RuntimeProfile.begin("media.tick")
+        try { dev.daisy.clientcore.media.MediaSession.tick() } finally { RuntimeProfile.end(mediaSample) }
     }
 
     fun renderHud(client: Minecraft, graphics: GuiGraphics, tickDelta: Float) {
