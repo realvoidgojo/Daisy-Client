@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.0.3 — 2026-11-14
+
+- Secured RVR and modpack imports against path traversal, linked files, unsafe ZIP entries and oversized expansion.
+- Restricted launcher IPC to trusted local windows and approved file, folder and HTTPS destinations.
+- Enabled the renderer sandbox and retained copy buttons through a bounded clipboard-write bridge.
+- Bounded Minecraft NBT parsing and moved world metadata, decompression and storage scans to asynchronous operations.
+- Streamed downloads, file hashes and native JAR extraction, and preserved existing files when replacement fails.
+- Kept Windows installer arguments literal and preserved Minecraft-compatible local player identities.
+- Extracted launcher and client UI components and added opt-in JFR runtime profiling.
+- Added CodeQL, secret scanning, dependency update automation and Windows/Linux startup CI checks.
+
 ## 1.0.2 — 2026-11-13
 
 - Included the maintainer's updated normal and Halloween menu title logos.

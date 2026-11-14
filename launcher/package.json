@@ -1,7 +1,7 @@
 {
   "name": "daisy-launcher",
-  "version": "1.0.2",
-  "daisyVersion": "1.0.2",
+  "version": "1.0.3",
+  "daisyVersion": "1.0.3",
   "description": "Daisy Minecraft Launcher",
   "author": "realvoidgojo",
   "main": "app/main.js",
