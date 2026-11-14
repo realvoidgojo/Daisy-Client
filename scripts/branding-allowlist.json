@@ -515,7 +515,7 @@
   },
   {
     "path": "launcher/src/main.js",
-    "text": "ipcMain.handle(\"launcher:daisy-social\", handleDaisySocial);",
+    "text": "handleIpc(\"launcher:daisy-social\", handleDaisySocial);",
     "count": 1,
     "reason": "Existing serialized/wire format, HTTP header or socket protocol; external readers must continue to recognize it."
   },
@@ -1271,7 +1271,7 @@
   },
   {
     "path": "launcher/src/main.js",
-    "text": "ipcMain.handle(\"launcher:river-social\", handleDaisySocial);",
+    "text": "handleIpc(\"launcher:river-social\", handleDaisySocial);",
     "count": 1,
     "reason": "Existing serialized/wire format, HTTP header or socket protocol; external readers must continue to recognize it."
   },

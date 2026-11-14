@@ -12,10 +12,10 @@ test("current and compatibility social bridges reach the same working handler", 
   const end = main.indexOf("/** Username to", start);
   assert.ok(start >= 0 && end > start);
   vm.runInNewContext(main.slice(start, end), {
-    ipcMain: { handle: (channel, handler) => {
+    handleIpc: (channel, handler) => {
       assert.equal(handlers.has(channel), false, `Duplicate IPC handler: ${channel}`);
       handlers.set(channel, handler);
-    } },
+    },
     readSettings: () => ({ socialStatus: "online" }),
     daisySocialCall: async (route, payload) => { calls.push({ route, payload }); return { ok: true }; }
   });

@@ -39,7 +39,7 @@ test("cached game metadata works without contacting a network service", async (t
 test("local account readiness does not call Microsoft or require ownership services", async () => {
   const source = fs.readFileSync(path.join(__dirname, "../src/main.js"), "utf8");
   const start = source.indexOf("async function ensureFreshAuth() {");
-  const end = source.indexOf('ipcMain.handle("launcher:set-offline-account"', start);
+  const end = source.indexOf('handleIpc("launcher:set-offline-account"', start);
   let localCreated = false;
   const context = vm.createContext({
     readAuth: () => ({}), readSettings: () => ({ offlineName: "LocalPlayer" }),

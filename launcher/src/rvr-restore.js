@@ -7,6 +7,14 @@ const SECTIONS = [
   ["resourcepacks", "resourcepack"],
   ["shaders", "shader"]
 ];
+const { archiveRelativePath } = require("./archive-safety.js");
+
+function requireContentFilename(file) {
+  const name = archiveRelativePath(file);
+  if (name.includes("/") || ["__proto__", "constructor", "prototype"].includes(name)) {
+    throw new Error("RVR content entries must use a single safe filename.");
+  }
+}
 
 function objectOf(value) {
   return value && typeof value === "object" && !Array.isArray(value) ? value : {};
@@ -61,6 +69,7 @@ function planRvrRestore(manifest, contentIndex, hasFile, isCore = () => false) {
   for (const [section, contentType] of SECTIONS) {
     for (const [file, meta] of Object.entries(objectOf(manifest?.[section]))) {
       if (!meta || typeof meta !== "object") continue;
+      requireContentFilename(file);
       handled.add(`${section}:${file}`);
       if (hasFile(contentType, file)) {
         keep[section][file] = meta;
@@ -74,7 +83,9 @@ function planRvrRestore(manifest, contentIndex, hasFile, isCore = () => false) {
     const indexed = Array.isArray(contentIndex?.[section]) ? contentIndex[section] : [];
     for (const entry of indexed) {
       const file = entry?.file;
-      if (!file || handled.has(`${section}:${file}`) || hasFile(contentType, file) || isCore(file)) continue;
+      if (!file) continue;
+      requireContentFilename(file);
+      if (handled.has(`${section}:${file}`) || hasFile(contentType, file) || isCore(file)) continue;
       handled.add(`${section}:${file}`);
       if (fromModrinth(entry)) addRestore(contentType, file, entry);
       else local.push({ contentType, file, title: entry.title || file });

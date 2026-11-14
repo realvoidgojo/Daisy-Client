@@ -24,17 +24,10 @@ const folderName = "Daisy-Linux";
 
 const EXECUTABLES = new Set(["daisy", "daisy-bin", "chrome-sandbox", "chrome_crashpad_handler"]);
 
-/*
-  "./daisy" is a small script that starts the real binary (daisy-bin) with
-  --no-sandbox. Chromium's sandbox needs either chrome-sandbox owned by root with the setuid
-  bit - which a tar extracted by a normal user can never have - or unprivileged user
-  namespaces, which Ubuntu 24.04+ blocks through AppArmor. Without one of them Electron
-  aborts before a single line of Daisy runs, so the switch in main.js comes too late; it
-  has to be on the command line.
-*/
+// Keep the production Chromium sandbox enabled. See the bundled Linux notes.
 const START_SCRIPT = `#!/bin/sh
 HERE="$(dirname "$(readlink -f "$0")")"
-exec "$HERE/daisy-bin" --no-sandbox "$@"
+exec "$HERE/daisy-bin" "$@"
 `;
 
 const README = `Daisy Client for Linux (experimental)
@@ -45,6 +38,10 @@ Run it:
     tar -xzf Daisy-Linux.tar.gz
     cd Daisy-Linux
     ./daisy
+
+Chromium sandboxing requires unprivileged user namespaces permitted by your distribution
+or an administrator-configured chrome-sandbox helper. Do not disable the sandbox to
+work around a host policy; ask your administrator to configure the supported mechanism.
 
 If it will not start, run it from a terminal and send us what it prints. It is usually a
 missing system library. On Debian and Ubuntu:

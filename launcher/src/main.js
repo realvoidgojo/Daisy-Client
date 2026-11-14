@@ -59,7 +59,7 @@ async function installMinecraftVersionFull(request) {
     if (native && native.url && native.path) {
       const target = path.join(librariesDir, native.path);
       await downloadIfMissing(native.url, target, native.sha1);
-      extractNativesJar(target, nativesDir);
+      await extractNativesJar(target, nativesDir);
     }
     fetched++;
     if (fetched % 5 === 0 || fetched === libraries.length) {
@@ -84,6 +84,11 @@ const { newestClientJar, createDaisyModUpdater, installDaisyModJar, clientCacheD
 const { clientJarIdentity, latestChannelRelease } = require("./version.js");
 const { cachedMetadata } = require("./metadata-cache.js");
 const { syncLocalSkin } = require("./local-skin.js");
+const { archiveRelativePath, archiveTarget, assertNoArchiveLinks, planRvrSettings, writeRvrSettings, validateArchivePaths, extractArchive, readArchiveEntry } = require("./archive-safety.js");
+const { externalUrl, contentPath, approvedPath, ensureApprovedDirectory, createIpcRegistrar, hardenWindow } = require("./ipc-security.js");
+const { hashFile, downloadToFile } = require("./downloads.js");
+const { directorySize, invalidateStorageScans, readBoundedFile } = require("./storage.js");
+const { parseNbtFileAsync } = require("./nbt.js");
 const ensureLatestDaisyMod = createDaisyModUpdater();
 const ensureLatestDaisySkin = createDaisyModUpdater("skin");
 const verifiedDaisyModJars = new Map();
@@ -140,6 +145,8 @@ try {
 
 let mainWindow = null;
 let logWindow = null;
+const selectedFolders = new Set();
+const handleIpc = createIpcRegistrar(ipcMain, () => [mainWindow, logWindow], path.join(__dirname, "renderer"));
 let launchProcess = null;
 let launchState = "idle";
 let launchStateTimer = null;
@@ -292,7 +299,7 @@ function launchDedicatedUpdaterProcess(update) {
     const target = IS_WINDOWS
       ? (update?.portableUrl || update?.installerUrl || DAISY_WEBSITE_URL)
       : (update?.linuxUrl || DAISY_WEBSITE_URL);
-    shell.openExternal(target).catch(() => { });
+    shell.openExternal(externalUrl(target)).catch(() => { });
     const message = (IS_WINDOWS
       ? `Daisy ${update?.latestVersion || ""} is ready. The portable build can't update itself, so the download has been opened in your browser - replace your current Daisy.exe with it.`
       : `Daisy ${update?.latestVersion || ""} is ready. Daisy on Linux can't update itself yet, so the download has been opened in your browser - replace your current copy with it.`
@@ -1006,39 +1013,6 @@ function parseOptionsTxt(instancePath) {
  * Longs come back as Numbers - every field Daisy reads from NBT is either a string or a
  * timestamp in ms, both of which sit comfortably inside a double.
  */
-function parseNbtFile(filePath) {
-  try {
-    const raw = fs.readFileSync(filePath);
-    // 0x1f8b is the gzip magic; world/server files are usually gzipped but not always.
-    const data = raw[0] === 0x1f && raw[1] === 0x8b ? zlib.gunzipSync(raw) : raw;
-    let offset = 0;
-    const readU8 = () => data.readUInt8(offset++);
-    const readI16 = () => { const v = data.readInt16BE(offset); offset += 2; return v; };
-    const readU16 = () => { const v = data.readUInt16BE(offset); offset += 2; return v; };
-    const readI32 = () => { const v = data.readInt32BE(offset); offset += 4; return v; };
-    const readStr = () => { const l = readU16(); const s = data.toString("utf8", offset, offset + l); offset += l; return s; };
-    function readPayload(type) {
-      switch (type) {
-        case 1: return readU8();
-        case 2: return readI16();
-        case 3: return readI32();
-        case 4: { const v = data.readBigInt64BE(offset); offset += 8; return Number(v); }
-        case 5: { const v = data.readFloatBE(offset); offset += 4; return v; }
-        case 6: { const v = data.readDoubleBE(offset); offset += 8; return v; }
-        case 7: { const l = readI32(); offset += l; return null; }
-        case 8: return readStr();
-        case 9: { const t = readU8(); const n = readI32(); const a = []; for (let i = 0; i < n; i++) a.push(readPayload(t)); return a; }
-        case 10: { const o = {}; for (; ;) { const t = readU8(); if (!t) break; const k = readStr(); o[k] = readPayload(t); } return o; }
-        case 11: { const l = readI32(); offset += l * 4; return null; }
-        case 12: { const l = readI32(); offset += l * 8; return null; }
-        default: return null;
-      }
-    }
-    const rootType = readU8();
-    readStr();
-    return readPayload(rootType);
-  } catch { return null; }
-}
 
 /**
  * Turns whatever a server icon arrives as into something an <img> can show.
@@ -1057,9 +1031,9 @@ function normalizeServerIcon(value) {
   return `data:image/png;base64,${compact}`;
 }
 
-function parseServersDat(filePath) {
+async function parseServersDat(filePath) {
   try {
-    const root = parseNbtFile(filePath);
+    const root = await parseNbtFileAsync(filePath);
     if (!root || !Array.isArray(root.servers)) return [];
     // servers.dat stores the icon as bare base64 PNG bytes with no data: prefix,
     // so feeding it straight to an <img src> renders nothing. Most saved servers
@@ -1352,7 +1326,7 @@ const IS_LINUX = process.platform === "linux";
 // An AppImage or an unpacked tar.gz cannot give Chromium's setuid sandbox helper the root
 // ownership it insists on, and without it the launcher does not start at all on many
 // distros. The window only ever loads Daisy's own bundled pages, so run without it.
-if (IS_LINUX) app.commandLine.appendSwitch("no-sandbox");
+
 const appIcon = process.platform === "win32"
   ? (app.isPackaged ? path.join(process.resourcesPath, "icon.ico") : path.join(__dirname, "assets", "icon.ico"))
   : path.join(__dirname, "assets", "daisy-client.png");
@@ -1372,6 +1346,7 @@ if (process.platform === "win32") app.setAppUserModelId("dev.daisy.launcher");
 // Explorer cannot read an ICO inside app.asar. Supply a real file for taskbar
 // buttons and new pinned shortcuts, including development runs of electron.exe.
 app.on("browser-window-created", (_event, window) => {
+  hardenWindow(window, path.join(__dirname, "renderer"));
   if (process.platform !== "win32") return;
   const executable = process.env.PORTABLE_EXECUTABLE_FILE || process.execPath;
   const command = app.isPackaged ? `"${executable}"` : `"${process.execPath}" "${app.getAppPath()}"`;
@@ -1558,7 +1533,7 @@ function createWindow() {
       preload: path.join(__dirname, "preload.js"),
       contextIsolation: true,
       nodeIntegration: false,
-      sandbox: false
+      sandbox: true
     }
   });
   if (devPlacement) mainWindow.showInactive();
@@ -2738,10 +2713,16 @@ function resolveInstancePath(request = {}) {
   if (instanceId) {
     const byId = findInstanceById(instanceId);
     if (byId?.path) return byId.path;
+    throw new Error("That instance is not registered with Daisy.");
   }
 
   const explicitPath = String(request?.instancePath || "").trim();
-  if (explicitPath) return explicitPath;
+  if (explicitPath) {
+    const known = [...readInstances().map(instance => instance.path), readSettings().instancePath].filter(Boolean);
+    const selected = known.find(value => path.resolve(value) === path.resolve(explicitPath));
+    if (!selected) throw new Error("That instance folder is not registered with Daisy.");
+    return selected;
+  }
 
   return readSettings().instancePath;
 }
@@ -3643,7 +3624,7 @@ function getCrashInfo(instancePath) {
 
 function getLogFiles(instancePath) {
   const candidates = [
-    path.join(findClientRoot() || "", "run", "logs"),
+    findClientRoot() && path.join(findClientRoot(), "run", "logs"),
     path.join(instancePath, "logs")
   ].filter(Boolean);
   const entries = [];
@@ -3674,30 +3655,18 @@ function getLogFiles(instancePath) {
 }
 
 function readCrashReport(filePath) {
-  const status = getStatus();
-  const allowedRoots = [
-    path.join(status.instancePath, "crash-reports"),
-    path.join(status.instancePath, "logs"),
-    path.join(findClientRoot() || "", "run", "crash-reports"),
-    path.join(findClientRoot() || "", "run", "logs")
-  ]
-    .filter(Boolean)
-    .map((value) => path.resolve(value));
-
-  const target = path.resolve(String(filePath || ""));
-  if (!target || !fs.existsSync(target)) return { ok: false, message: "Crash report file was not found." };
-  if (!allowedRoots.some((root) => target.startsWith(root + path.sep) || target === root)) {
-    return { ok: false, message: "That file is outside the allowed crash and log folders." };
-  }
-
-  const stat = fs.statSync(target);
-  return {
-    ok: true,
-    file: path.basename(target),
-    path: target,
-    modifiedAt: stat.mtimeMs,
-    text: fs.readFileSync(target, "utf8").slice(0, 50000)
-  };
+  try {
+    const root = findClientRoot();
+    const instance = readSettings().instancePath || defaultInstancePath();
+    const roots = [path.join(instance, "crash-reports"), path.join(instance, "logs"), root && path.join(root, "run", "crash-reports"), root && path.join(root, "run", "logs")].filter(Boolean);
+    const target = approvedPath(filePath, roots, { extensions: [".log", ".txt"] });
+    const fd = fs.openSync(target, "r");
+    try {
+      const bytes = Buffer.alloc(50000);
+      const count = fs.readSync(fd, bytes, 0, bytes.length, 0);
+      return { ok: true, file: path.basename(target), path: target, modifiedAt: fs.fstatSync(fd).mtimeMs, text: bytes.toString("utf8", 0, count) };
+    } finally { fs.closeSync(fd); }
+  } catch { return { ok: false, message: "That file is unavailable or outside the permitted crash and log folders." }; }
 }
 
 function readModManifest(instancePath) {
@@ -3985,25 +3954,7 @@ async function compressPathsToDaisyArchive(sourcePaths, destinationRvrPath) {
 }
 
 async function extractDaisyArchive(archivePath, destinationDir) {
-  const needsTempCopy = archivePath.toLowerCase().endsWith(".rvr");
-  const extractSource = needsTempCopy
-    ? path.join(os.tmpdir(), `daisy-import-${Date.now()}.zip`)
-    : archivePath;
-  try {
-    if (needsTempCopy) {
-      fs.copyFileSync(archivePath, extractSource);
-    }
-    await runPowerShell([
-      "-NoProfile",
-      "-ExecutionPolicy", "Bypass",
-      "-Command",
-      `Expand-Archive -LiteralPath '${escapePowerShell(extractSource)}' -DestinationPath '${escapePowerShell(destinationDir)}' -Force`
-    ]);
-  } finally {
-    if (needsTempCopy) {
-      try { fs.rmSync(extractSource, { force: true }); } catch { }
-    }
-  }
+  await extractArchive(archivePath, destinationDir);
 }
 
 function emitBoot(step, detail, done = false, error = false) {
@@ -4055,9 +4006,9 @@ function emitStatus() {
   scheduleDiscordPresenceRefresh();
 }
 
-ipcMain.handle("launcher:get-status", () => getStatus());
+handleIpc("launcher:get-status", () => getStatus());
 
-ipcMain.handle("launcher:get-lan-info", () => {
+handleIpc("launcher:get-lan-info", () => {
   try {
     const nets = os.networkInterfaces();
     const addresses = [];
@@ -4074,7 +4025,7 @@ ipcMain.handle("launcher:get-lan-info", () => {
   }
 });
 
-ipcMain.handle("launcher:refresh-versions", async () => {
+handleIpc("launcher:refresh-versions", async () => {
   const offline = await offlineResult("Version refresh");
   if (offline) return offline;
   const result = await refreshMojangVersions();
@@ -4082,23 +4033,23 @@ ipcMain.handle("launcher:refresh-versions", async () => {
   return result;
 });
 
-ipcMain.handle("launcher:check-network", async () => {
+handleIpc("launcher:check-network", async () => {
   const result = await checkNetwork();
   emitStatus();
   return result;
 });
 
-ipcMain.handle("launcher:check-launcher-updates", async () => {
+handleIpc("launcher:check-launcher-updates", async () => {
   const result = await checkLauncherUpdates();
   emitStatus();
   return result;
 });
 
-ipcMain.handle("launcher:install-launcher-update", async () => {
+handleIpc("launcher:install-launcher-update", async () => {
   return installLauncherUpdate();
 });
 
-ipcMain.handle("launcher:refresh-auth", async () => {
+handleIpc("launcher:refresh-auth", async () => {
   const auth = await ensureFreshAuth();
   emitStatus();
   if (!hasUsableMinecraftToken(auth) && auth.refreshError) {
@@ -4107,25 +4058,33 @@ ipcMain.handle("launcher:refresh-auth", async () => {
   return { ok: true, message: auth.signedIn ? "Local account ready." : "Create a local account.", auth };
 });
 
-ipcMain.handle("launcher:update-settings", (_event, patch) => {
-  const next = writeSettings({ ...readSettings(), ...patch });
+handleIpc("launcher:update-settings", (_event, patch) => {
+  if (!patch || typeof patch !== "object" || Array.isArray(patch)) throw new Error("Invalid settings.");
+  const current = readSettings();
+  if (patch.instancePath && patch.instancePath !== current.instancePath) {
+    const registered = readInstances().map((instance) => path.resolve(instance.path));
+    const requested = path.resolve(String(patch.instancePath));
+    if (!selectedFolders.has(requested) && !registered.includes(requested)) throw new Error("Select the game folder using the folder picker.");
+  }
+  const next = writeSettings({ ...current, ...patch });
   syncLoginItem(next);
   if (Object.prototype.hasOwnProperty.call(patch || {}, "uiScale")) applyUiScale(mainWindow, next);
   emitStatus();
   return next;
 });
 
-ipcMain.handle("launcher:pick-folder", async (_event, options = {}) => {
+handleIpc("launcher:pick-folder", async (_event, options = {}) => {
   const result = await dialog.showOpenDialog(mainWindow, {
     title: options.title || "Select folder",
     defaultPath: options.defaultPath || app.getPath("documents"),
     properties: ["openDirectory", "createDirectory"]
   });
   if (result.canceled || !result.filePaths?.[0]) return "";
+  selectedFolders.add(path.resolve(result.filePaths[0]));
   return result.filePaths[0];
 });
 
-ipcMain.handle("launcher:pick-file", async (_event, options = {}) => {
+handleIpc("launcher:pick-file", async (_event, options = {}) => {
   const result = await dialog.showOpenDialog(mainWindow, {
     title: options.title || "Select file",
     defaultPath: options.defaultPath || app.getPath("documents"),
@@ -4607,7 +4566,7 @@ async function importExternalMinecraftInstance(entry = {}) {
   };
 }
 
-ipcMain.handle("launcher:detect-external-instances", () => {
+handleIpc("launcher:detect-external-instances", () => {
   try {
     return { ok: true, instances: detectExternalMinecraftInstances() };
   } catch (error) {
@@ -4615,7 +4574,7 @@ ipcMain.handle("launcher:detect-external-instances", () => {
   }
 });
 
-ipcMain.handle("launcher:import-external-instance", async (_event, entry) => {
+handleIpc("launcher:import-external-instance", async (_event, entry) => {
   try {
     if (entry?.migrateToDaisy === true) {
       const found = detectExternalMinecraftInstances().some((item) => path.resolve(item.gameDir).toLowerCase() === path.resolve(String(entry.gameDir || "")).toLowerCase());
@@ -4627,7 +4586,7 @@ ipcMain.handle("launcher:import-external-instance", async (_event, entry) => {
   }
 });
 
-ipcMain.handle("launcher:migrate-folder", async (_event, targetVersion) => {
+handleIpc("launcher:migrate-folder", async (_event, targetVersion) => {
   const selected = await dialog.showOpenDialog(mainWindow, {
     title: "Choose a Minecraft game folder to bring to Daisy",
     properties: ["openDirectory"]
@@ -4645,7 +4604,7 @@ ipcMain.handle("launcher:migrate-folder", async (_event, targetVersion) => {
   }
 });
 
-ipcMain.handle("launcher:get-performance-stats", async () => {
+handleIpc("launcher:get-performance-stats", async () => {
   const systemMemoryMb = getSystemMemoryMb();
   const freeMemoryMb = Math.floor(os.freemem() / (1024 * 1024));
   let vramUsedMb = null;
@@ -4668,13 +4627,13 @@ ipcMain.handle("launcher:get-performance-stats", async () => {
   };
 });
 
-ipcMain.handle("launcher:select-profile", (_event, profileId) => {
+handleIpc("launcher:select-profile", (_event, profileId) => {
   const next = writeSettings({ ...readSettings(), selectedProfile: profileId });
   emitStatus();
   return next;
 });
 
-ipcMain.handle("launcher:select-version", (_event, versionId) => {
+handleIpc("launcher:select-version", (_event, versionId) => {
   const settings = readSettings();
   const next = writeSettings({
     ...settings,
@@ -4688,7 +4647,7 @@ ipcMain.handle("launcher:select-version", (_event, versionId) => {
   return next;
 });
 
-ipcMain.handle("launcher:select-instance", (_event, instanceId) => {
+handleIpc("launcher:select-instance", (_event, instanceId) => {
   const instances = readInstances();
   const instance = instances.find((item) => item.id === instanceId);
   if (!instance) return { ok: false, message: "Instance was not found." };
@@ -4797,7 +4756,7 @@ function createInstance(request, options = {}) {
   return { ok: true, message: `Created ${rawName}.`, instance };
 }
 
-ipcMain.handle("launcher:create-instance", (_event, request) => {
+handleIpc("launcher:create-instance", (_event, request) => {
   const result = createInstance(request);
   // New Daisy instances start with the performance mods. They install in the background so
   // the new instance shows up straight away.
@@ -4829,7 +4788,7 @@ async function installPerformanceMods(instance) {
   return { ok: result.ok, message: result.ok ? message : result.message, skipped: result.skipped || [] };
 }
 
-ipcMain.handle("launcher:install-performance-mods", async (_event, request) => {
+handleIpc("launcher:install-performance-mods", async (_event, request) => {
   const offline = await offlineResult("Performance mods");
   if (offline) return offline;
   const instance = readInstances().find((item) => item.id === String(request && request.instanceId || ""));
@@ -4843,7 +4802,7 @@ ipcMain.handle("launcher:install-performance-mods", async (_event, request) => {
   }
 });
 
-ipcMain.handle("launcher:duplicate-instance", (_event, request) => {
+handleIpc("launcher:duplicate-instance", (_event, request) => {
   const instanceId = typeof request === "string" ? request : String(request && request.instanceId || "");
   const requestedName = String(request && request.name || "").trim();
   const source = readInstances().find((item) => item.id === instanceId);
@@ -4872,7 +4831,7 @@ ipcMain.handle("launcher:duplicate-instance", (_event, request) => {
   return { ok: true, message: `Duplicated ${source.name} as ${baseName}.`, instance: duplicate };
 });
 
-ipcMain.handle("launcher:create-preset-instance", async (_event, request) => {
+handleIpc("launcher:create-preset-instance", async (_event, request) => {
   const offline = await offlineResult("Preset instance setup");
   if (offline) return offline;
   const presetId = String(request && request.presetId || "pvp");
@@ -4891,7 +4850,7 @@ ipcMain.handle("launcher:create-preset-instance", async (_event, request) => {
   }
 });
 
-ipcMain.handle("launcher:delete-instance", async (_event, request) => {
+handleIpc("launcher:delete-instance", async (_event, request) => {
   const instanceId = typeof request === "string" ? request : String(request && request.instanceId || "");
   const deleteFiles = typeof request === "object" && Boolean(request.deleteFiles);
   const instances = readInstances();
@@ -4950,7 +4909,7 @@ ipcMain.handle("launcher:delete-instance", async (_event, request) => {
   return { ok: true, message: `Deleted ${instance.name}. ${fileMessage}` };
 });
 
-ipcMain.handle("launcher:repair-instance", async (_event, request) => {
+handleIpc("launcher:repair-instance", async (_event, request) => {
   const instanceId = typeof request === "string" ? request : String(request && request.instanceId || "");
   const instances = readInstances();
   // Callers that are already operating on "the current instance" (the crash panel, for one)
@@ -5056,10 +5015,10 @@ ipcMain.handle("launcher:repair-instance", async (_event, request) => {
  * failures are collected instead of aborting the run, so one broken step can't
  * stop the rest from healing the install.
  */
-ipcMain.handle("launcher:repair-all", async () => runFullRepair());
+handleIpc("launcher:repair-all", async () => runFullRepair());
 
 /** Renderer-side crashes (React error boundaries) so they reach the Logs view. */
-ipcMain.handle("logs:window", (_event, action) => {
+handleIpc("logs:window", (_event, action) => {
   if (!logWindow || logWindow.isDestroyed()) return false;
   if (action === "minimize") logWindow.minimize();
   else if (action === "maximize") logWindow.isMaximized() ? logWindow.unmaximize() : logWindow.maximize();
@@ -5067,28 +5026,29 @@ ipcMain.handle("logs:window", (_event, action) => {
   return true;
 });
 
-ipcMain.handle("logs:ready", () => {
+handleIpc("logs:ready", () => {
   if (logWindow && !logWindow.isDestroyed()) logWindow.webContents.send("logs:maximized", logWindow.isMaximized());
   return { language: readSettings().launcherLanguage || "en" };
 });
 
-ipcMain.handle("logs:copy", (_event, text) => {
+handleIpc("logs:copy", (_event, text) => {
   clipboard.writeText(String(text || ""));
   return true;
 });
 
-ipcMain.handle("logs:open-folder", () => {
-  const target = getStatus().instancePath || app.getPath("userData");
-  shell.openPath(path.join(target, "logs"));
-  return true;
+handleIpc("logs:open-folder", async () => {
+  try {
+    const target = path.join(readSettings().instancePath || defaultInstancePath(), "logs");
+    return !(await shell.openPath(await ensureApprovedDirectory(target, approvedLocalRoots())));
+  } catch { return false; }
 });
 
-ipcMain.handle("logs:open", () => {
+handleIpc("logs:open", () => {
   openLogWindow({ focus: true });
   return true;
 });
 
-ipcMain.handle("launcher:report-renderer-error", (_event, payload) => {
+handleIpc("launcher:report-renderer-error", (_event, payload) => {
   const message = String(payload?.message || "Unknown renderer error");
   const stack = String(payload?.stack || "").split("\n").slice(0, 6).join("\n");
   emit("launcher:log", `[launcher] UI error: ${message}${stack ? `\n${stack}` : ""}`);
@@ -5347,14 +5307,14 @@ async function ensureFreshAuth() {
   return setOfflineAccount(curName);
 }
 
-ipcMain.handle("launcher:set-offline-account", async (_event, username, skinDataUrl) => {
+handleIpc("launcher:set-offline-account", async (_event, username, skinDataUrl) => {
   const auth = setOfflineAccount(username, skinDataUrl);
   emitStatus();
   emit("launcher:log", "[auth] Offline account set to " + auth.profile.name);
   return { ok: true, message: "Active offline account: " + auth.profile.name, auth };
 });
 
-ipcMain.handle("launcher:pick-skin-file", async () => {
+handleIpc("launcher:pick-skin-file", async () => {
   const selection = await dialog.showOpenDialog(mainWindow, {
     title: "Select Minecraft Skin PNG",
     properties: ["openFile"],
@@ -5372,7 +5332,7 @@ ipcMain.handle("launcher:pick-skin-file", async () => {
   }
 });
 
-ipcMain.handle("launcher:install-instance-version", async (_event, request) => {
+handleIpc("launcher:install-instance-version", async (_event, request) => {
   try {
     return await installMinecraftVersionFull(request);
   } catch (error) {
@@ -5381,19 +5341,19 @@ ipcMain.handle("launcher:install-instance-version", async (_event, request) => {
   }
 });
 
-ipcMain.handle("launcher:microsoft-login", async () => {
+handleIpc("launcher:microsoft-login", async () => {
   const result = await signInLocalAccount();
   emitStatus();
   return result;
 });
 
-ipcMain.handle("launcher:microsoft-logout", () => {
+handleIpc("launcher:microsoft-logout", () => {
   const auth = clearAuth();
   emitStatus();
   return { ok: true, message: "Signed out.", auth };
 });
 
-ipcMain.handle("launcher:choose-skin", async (_event, variant) => {
+handleIpc("launcher:choose-skin", async (_event, variant) => {
   const auth = await ensureFreshAuth();
 
   const selection = await dialog.showOpenDialog(mainWindow, {
@@ -5412,7 +5372,7 @@ ipcMain.handle("launcher:choose-skin", async (_event, variant) => {
   }
 });
 
-ipcMain.handle("launcher:equip-skin", async (_event, skinId) => {
+handleIpc("launcher:equip-skin", async (_event, skinId) => {
   const auth = await ensureFreshAuth();
 
   const history = readSkinHistory();
@@ -5452,7 +5412,7 @@ ipcMain.handle("launcher:equip-skin", async (_event, skinId) => {
   }
 });
 
-ipcMain.handle("launcher:remove-skin", (_event, skinId) => {
+handleIpc("launcher:remove-skin", (_event, skinId) => {
   const history = readSkinHistory();
   const entry = history.find((skin) => skin.id === skinId);
   if (!entry) return { ok: false, message: "Skin entry not found." };
@@ -5462,7 +5422,7 @@ ipcMain.handle("launcher:remove-skin", (_event, skinId) => {
   return { ok: true, message: `Removed ${entry.name} from saved skins.` };
 });
 
-ipcMain.handle("launcher:update-skin-entry", async (_event, patch = {}) => {
+handleIpc("launcher:update-skin-entry", async (_event, patch = {}) => {
   const skinId = String(patch.skinId || "").trim();
   const history = readSkinHistory();
   const index = history.findIndex((skin) => skin.id === skinId);
@@ -5506,7 +5466,7 @@ ipcMain.handle("launcher:update-skin-entry", async (_event, patch = {}) => {
   }
 });
 
-ipcMain.handle("launcher:export-skin", async (_event, skinId) => {
+handleIpc("launcher:export-skin", async (_event, skinId) => {
   const entry = readSkinHistory().find((skin) => skin.id === skinId);
   if (!entry || !fs.existsSync(entry.path)) return { ok: false, message: "That skin file is not available anymore." };
   const { filePath } = await dialog.showSaveDialog(mainWindow, {
@@ -5520,7 +5480,7 @@ ipcMain.handle("launcher:export-skin", async (_event, skinId) => {
   return { ok: true, message: `Exported ${path.basename(target)}.` };
 });
 
-ipcMain.handle("launcher:equip-cape", async (_event, capeId) => {
+handleIpc("launcher:equip-cape", async (_event, capeId) => {
   const auth = await ensureFreshAuth();
   if (!hasUsableMinecraftToken(auth)) return { ok: false, message: auth.refreshError || "Online cape changes are unavailable in local-account mode." };
   const offline = await offlineResult("Cape equip");
@@ -5538,7 +5498,7 @@ ipcMain.handle("launcher:equip-cape", async (_event, capeId) => {
   }
 });
 
-ipcMain.handle("launcher:clear-cape", async () => {
+handleIpc("launcher:clear-cape", async () => {
   const auth = await ensureFreshAuth();
   if (!hasUsableMinecraftToken(auth)) return { ok: false, message: auth.refreshError || "Online cape changes are unavailable in local-account mode." };
   const offline = await offlineResult("Cape clear");
@@ -5556,7 +5516,7 @@ ipcMain.handle("launcher:clear-cape", async () => {
   }
 });
 
-ipcMain.handle("launcher:window", (_event, action) => {
+handleIpc("launcher:window", (_event, action) => {
   if (!mainWindow) return false;
   if (action === "minimize") mainWindow.minimize();
   if (action === "maximize") {
@@ -5567,7 +5527,7 @@ ipcMain.handle("launcher:window", (_event, action) => {
   return true;
 });
 
-ipcMain.handle("launcher:get-session-history", () => {
+handleIpc("launcher:get-session-history", () => {
   return readSessionHistory();
 });
 
@@ -5576,7 +5536,7 @@ ipcMain.handle("launcher:get-session-history", () => {
  * launcher's save folders on disk is comparatively slow, so it lives behind its own
  * on-demand call instead of being folded into the frequently-polled getStatus() payload.
  */
-ipcMain.handle("launcher:get-playtime-summary", async () => {
+handleIpc("launcher:get-playtime-summary", async () => {
   const daisyMs = readTotalPlaytimeMs();
   const externalMs = await new Promise((resolve) => {
     setImmediate(() => resolve(getExternalPlaytimeMs()));
@@ -5596,7 +5556,7 @@ ipcMain.handle("launcher:get-playtime-summary", async () => {
  * lastServer is still read, but only to sort the server you most recently played to
  * the top. It cannot introduce a row that is not in servers.dat.
  */
-ipcMain.handle("launcher:get-recent-servers", async () => {
+handleIpc("launcher:get-recent-servers", async () => {
   const settings = readSettings();
   const instancePath = settings.instancePath;
   if (!instancePath) return [];
@@ -5605,7 +5565,7 @@ ipcMain.handle("launcher:get-recent-servers", async () => {
   const lastServer = String(options.lastServer || "").trim();
 
   const datPath = path.join(instancePath, "servers.dat");
-  let saved = parseServersDat(datPath)
+  let saved = (await parseServersDat(datPath))
     .map((srv) => ({
       name: srv.name || srv.ip || "",
       ip: String(srv.ip || "").trim(),
@@ -5644,7 +5604,7 @@ ipcMain.handle("launcher:get-recent-servers", async () => {
   return mapWithConcurrency(limited, SERVER_STATUS_CONCURRENCY, fetchServerStatus);
 });
 
-ipcMain.handle("launcher:get-news", async () => {
+handleIpc("launcher:get-news", async () => {
   try {
     const controller = new AbortController();
     setTimeout(() => controller.abort(), 4000);
@@ -5658,7 +5618,7 @@ ipcMain.handle("launcher:get-news", async () => {
   } catch { return []; }
 });
 
-ipcMain.handle("launcher:read-crash-report", (_event, filePath) => {
+handleIpc("launcher:read-crash-report", (_event, filePath) => {
   return readCrashReport(filePath);
 });
 
@@ -5683,7 +5643,7 @@ function scrubCrashLog(raw) {
     .replace(/\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b/g, "[email removed]");
 }
 
-ipcMain.handle("launcher:upload-crash-report", async (_event, options = {}) => {
+handleIpc("launcher:upload-crash-report", async (_event, options = {}) => {
   // Same allow-list as reading one, so this cannot be pointed at an arbitrary file.
   const report = readCrashReport(options?.path);
   if (!report.ok) return report;
@@ -5833,7 +5793,7 @@ async function buildUpdateStuckReport() {
   return text;
 }
 
-ipcMain.handle("launcher:report-update-stuck", async () => {
+handleIpc("launcher:report-update-stuck", async () => {
   // One press sends one report; mashing the button while it freezes should not send ten.
   if (Date.now() - lastStuckReportAt < 60000) {
     return { ok: false, message: "A report was just sent. Give it a minute before sending another." };
@@ -5866,82 +5826,72 @@ ipcMain.handle("launcher:report-update-stuck", async () => {
   }
 });
 
-ipcMain.handle("launcher:get-log-files", () => {
+handleIpc("launcher:get-log-files", () => {
   const status = getStatus();
   return getLogFiles(status.instancePath);
 });
 
-ipcMain.handle("launcher:reset-settings", () => {
+handleIpc("launcher:reset-settings", () => {
   const next = writeSettings({ ...defaults });
   emitStatus();
   return { ok: true, message: "Settings reset to defaults.", settings: next };
 });
 
-ipcMain.handle("launcher:get-storage-info", () => {
+handleIpc("launcher:get-storage-info", async () => {
   const status = getStatus();
-  function dirSize(dir) {
-    if (!dir || !fs.existsSync(dir)) return 0;
-    let total = 0;
-    function walk(d) {
-      let entries;
-      try { entries = fs.readdirSync(d); } catch { return; }
-      for (const e of entries) {
-        const full = path.join(d, e);
-        let stat;
-        try { stat = fs.statSync(full); } catch { continue; }
-        if (stat.isDirectory()) walk(full);
-        else total += stat.size;
-      }
-    }
-    walk(dir);
-    return total;
-  }
-  const userData = app.getPath("userData");
   const logsDir = status.root ? path.join(status.root, "run", "logs") : null;
-  const cacheDir = path.join(userData, "cache");
-  return {
-    logsPath: logsDir,
-    instancePath: status.instancePath,
-    cachePath: cacheDir,
-    logsSize: dirSize(logsDir),
-    instanceSize: dirSize(status.instancePath),
-    cacheSize: dirSize(cacheDir)
-  };
+  const cacheDir = path.join(app.getPath("userData"), "cache");
+  const [logsSize, instanceSize, cacheSize] = await Promise.all([logsDir, status.instancePath, cacheDir].map(directorySize));
+  return { logsPath: logsDir, instancePath: status.instancePath, cachePath: cacheDir, logsSize, instanceSize, cacheSize };
 });
 
-ipcMain.handle("launcher:clear-logs", () => {
-  const status = getStatus();
-  const logsDir = status.root ? path.join(status.root, "run", "logs") : null;
-  if (!logsDir || !fs.existsSync(logsDir)) return { ok: false, message: "Logs folder not found." };
+handleIpc("launcher:clear-logs", async () => {
   let cleared = 0;
-  for (const file of fs.readdirSync(logsDir)) {
-    if (/\.(log|gz|txt)$/.test(file)) {
-      try { fs.unlinkSync(path.join(logsDir, file)); cleared++; } catch { }
+  for (const root of approvedLogRoots()) {
+    let files;
+    try { files = await fsp.readdir(root); } catch { continue; }
+    for (const file of files) {
+      try {
+        const target = approvedPath(path.join(root, file), [root], { extensions: [".log", ".gz", ".txt"] });
+        await fsp.unlink(target);
+        cleared++;
+      } catch { /* Skip non-logs and linked files. */ }
     }
   }
+  invalidateStorageScans();
   return { ok: true, message: `Cleared ${cleared} log file${cleared !== 1 ? "s" : ""}.` };
 });
 
-ipcMain.handle("launcher:delete-log-file", (_event, filePath) => {
-  const target = String(filePath || "");
-  if (!target || !fs.existsSync(target)) return { ok: false, message: "Log file not found." };
-  fs.rmSync(target, { force: true });
-  return { ok: true, message: `${path.basename(target)} deleted.` };
+function approvedLogRoots() {
+  const root = findClientRoot();
+  return [root && path.join(root, "run", "logs"), path.join(readSettings().instancePath || defaultInstancePath(), "logs")].filter(Boolean);
+}
+
+function approvedLocalRoots() {
+  return [app.getPath("userData"), instancesRootPath(), findClientRoot(), readSettings().instancePath, ...readInstances().map((instance) => instance.path)].filter(Boolean);
+}
+
+handleIpc("launcher:delete-log-file", async (_event, filePath) => {
+  try {
+    const target = approvedPath(filePath, approvedLogRoots(), { extensions: [".log", ".txt", ".gz"] });
+    await fsp.unlink(target);
+    invalidateStorageScans();
+    return { ok: true, message: `${path.basename(target)} deleted.` };
+  } catch { return { ok: false, message: "That log is outside the permitted log folders or cannot be deleted." }; }
 });
 
-ipcMain.handle("launcher:export-log-file", async (_event, filePath) => {
-  const target = String(filePath || "");
-  if (!target || !fs.existsSync(target)) return { ok: false, message: "Log file not found." };
-  const selection = await dialog.showSaveDialog(mainWindow, {
-    title: "Export log file",
-    defaultPath: path.basename(target)
-  });
-  if (selection.canceled || !selection.filePath) return { ok: false, message: "Export cancelled." };
-  fs.copyFileSync(target, selection.filePath);
-  return { ok: true, message: `Saved to ${selection.filePath}.` };
+handleIpc("launcher:export-log-file", async (_event, filePath) => {
+  try {
+    const target = approvedPath(filePath, approvedLogRoots(), { extensions: [".log", ".txt", ".gz"] });
+    const selection = await dialog.showSaveDialog(mainWindow, { title: "Export log file", defaultPath: path.basename(target) });
+    if (selection.canceled || !selection.filePath) return { ok: false, message: "Export cancelled." };
+    approvedPath(target, approvedLogRoots(), { extensions: [".log", ".txt", ".gz"] });
+    await fsp.copyFile(target, selection.filePath);
+    return { ok: true, message: `Saved to ${selection.filePath}.` };
+  } catch { return { ok: false, message: "That log is outside the permitted log folders or cannot be exported." }; }
 });
 
-ipcMain.handle("launcher:clear-cache", () => {
+handleIpc("launcher:clear-cache", () => {
   const cacheDir = path.join(app.getPath("userData"), "cache");
   let cleared = 0;
   if (fs.existsSync(cacheDir)) {
@@ -5949,15 +5899,16 @@ ipcMain.handle("launcher:clear-cache", () => {
       try { fs.rmSync(path.join(cacheDir, entry), { recursive: true, force: true }); cleared++; } catch { }
     }
   }
+  invalidateStorageScans();
   return { ok: true, message: `Cleared ${cleared} cache item${cleared !== 1 ? "s" : ""}.` };
 });
 
-ipcMain.handle("launcher:open-folder", async (_event, folder) => {
+handleIpc("launcher:open-folder", async (_event, folder) => {
   const status = getStatus();
   const targets = {
     root: status.root,
     appdata: app.getPath("userData"),
-    mods: status.root ? path.join(status.root, "build", "libs") : path.dirname(status.jarPath || ""),
+    mods: status.root ? path.join(status.root, "build", "libs") : (status.jarPath ? path.dirname(status.jarPath) : null),
     instance: status.instancePath,
     logs: status.root ? path.join(status.root, "run", "logs") : null,
     resourcepacks: path.join(status.instancePath, "resourcepacks"),
@@ -5967,19 +5918,19 @@ ipcMain.handle("launcher:open-folder", async (_event, folder) => {
 
   const target = targets[folder];
   if (!target) return false;
-  fs.mkdirSync(target, { recursive: true });
-  await shell.openPath(target);
-  return true;
+  try { return !(await shell.openPath(await ensureApprovedDirectory(target, approvedLocalRoots()))); }
+  catch { return false; }
 });
 
-ipcMain.handle("launcher:open-path", async (_event, targetPath) => {
-  const target = String(targetPath || "");
-  if (!target || !fs.existsSync(target)) return false;
-  await shell.openPath(target);
-  return true;
+handleIpc("launcher:open-path", async (_event, targetPath) => {
+  try {
+    const target = approvedPath(targetPath, approvedLocalRoots());
+    if (!fs.statSync(target).isDirectory() && ![".log", ".txt"].includes(path.extname(target).toLowerCase())) return false;
+    return !(await shell.openPath(target));
+  } catch { return false; }
 });
 
-ipcMain.handle("launcher:launch-client", async (_event, opts = {}) => {
+handleIpc("launcher:launch-client", async (_event, opts = {}) => {
   const joinAddress = opts && typeof opts.joinAddress === "string" ? opts.joinAddress.trim() : "";
   if (launchProcess) return { ok: false, message: "Minecraft is already launching." };
   const failLaunch = (message, extra = {}) => {
@@ -6106,7 +6057,7 @@ ipcMain.handle("launcher:launch-client", async (_event, opts = {}) => {
   }
 });
 
-ipcMain.handle("launcher:stop-client", async () => {
+handleIpc("launcher:stop-client", async () => {
   if (!launchProcess) return { ok: false, message: "No Daisy process is running." };
   launchProcess.kill();
   launchProcess = null;
@@ -6282,12 +6233,12 @@ function attachLaunchProcess(status) {
 }
 
 // Legacy channel retained for older renderers; local accounts have no OAuth setup.
-ipcMain.handle("launcher:microsoft-status", () => ({
+handleIpc("launcher:microsoft-status", () => ({
   available: false, clientConfigured: false, mode: "local", auth: readAuth(),
   message: "Daisy uses local accounts. Microsoft sign-in is not required."
 }));
 
-ipcMain.handle("launcher:search-mods", async (_event, request) => {
+handleIpc("launcher:search-mods", async (_event, request) => {
   const offline = await offlineResult("Mod search");
   if (offline) return { ...offline, results: [] };
 
@@ -6316,7 +6267,7 @@ function selectedInstanceTarget() {
   };
 }
 
-ipcMain.handle("launcher:get-modrinth-project", async (_event, request) => {
+handleIpc("launcher:get-modrinth-project", async (_event, request) => {
   const offline = await offlineResult("Modrinth project");
   if (offline) return { ...offline, project: null, versions: [] };
 
@@ -6329,13 +6280,13 @@ ipcMain.handle("launcher:get-modrinth-project", async (_event, request) => {
   });
 });
 
-ipcMain.handle("launcher:install-publisher-cert", async () => {
+handleIpc("launcher:install-publisher-cert", async () => {
   const result = await installBundledPublisherCertIfNeeded();
   emitStatus();
   return result;
 });
 
-ipcMain.handle("launcher:download-mod", async (_event, mod) => {
+handleIpc("launcher:download-mod", async (_event, mod) => {
   try {
     const offline = await offlineResult("Mod download");
     if (offline) return offline;
@@ -6423,7 +6374,7 @@ ipcMain.handle("launcher:download-mod", async (_event, mod) => {
   }
 });
 
-ipcMain.handle("launcher:set-mod-enabled", (_event, request, enabledArg) => {
+handleIpc("launcher:set-mod-enabled", (_event, request, enabledArg) => {
   const payload = typeof request === "object" && request !== null
     ? request
     : { file: request, enabled: enabledArg };
@@ -6436,12 +6387,12 @@ ipcMain.handle("launcher:set-mod-enabled", (_event, request, enabledArg) => {
   const instancePath = resolveInstancePath(payload);
   if (!instancePath) return { ok: false, message: "Instance path was not found." };
   const modsDir = path.join(instancePath, "mods");
-  const current = path.join(modsDir, file);
+  const current = contentPath(instancePath, "mods", file);
   if (!fs.existsSync(current)) return { ok: false, message: "Mod file was not found." };
   const targetName = enabled
     ? path.basename(current).replace(/\.disabled$/i, "")
     : `${path.basename(current).replace(/\.disabled$/i, "")}.disabled`;
-  const target = path.join(modsDir, targetName);
+  const target = contentPath(instancePath, "mods", targetName);
   if (current !== target) fs.renameSync(current, target);
 
   const manifest = readModManifest(instancePath);
@@ -6466,14 +6417,14 @@ ipcMain.handle("launcher:set-mod-enabled", (_event, request, enabledArg) => {
   return { ok: true, message: `${targetName} ${enabled ? "enabled" : "disabled"}.` };
 });
 
-ipcMain.handle("launcher:remove-mod", (_event, request) => {
+handleIpc("launcher:remove-mod", (_event, request) => {
   const payload = typeof request === "object" && request !== null ? request : { file: request };
   const file = String(payload.file || "").trim();
   // clientcore removal allowed by user request
   const instancePath = resolveInstancePath(payload);
   if (!instancePath) return { ok: false, message: "Instance path was not found." };
   const modsDir = path.join(instancePath, "mods");
-  const target = path.join(modsDir, file);
+  const target = contentPath(instancePath, "mods", file);
   if (!fs.existsSync(target)) return { ok: false, message: "Mod file was not found." };
   fs.rmSync(target, { force: true });
   const manifest = readModManifest(instancePath);
@@ -6485,7 +6436,7 @@ ipcMain.handle("launcher:remove-mod", (_event, request) => {
   return { ok: true, message: `Removed ${file}.` };
 });
 
-ipcMain.handle("launcher:remove-content", (_event, request = {}) => {
+handleIpc("launcher:remove-content", (_event, request = {}) => {
   const contentType = normalizeContentType(request.contentType || "mod");
   const info = contentTypeInfo(contentType);
   const file = String(request.file || "").trim();
@@ -6493,7 +6444,7 @@ ipcMain.handle("launcher:remove-content", (_event, request = {}) => {
   // clientcore mod removal allowed by user request
   const instancePath = resolveInstancePath(request);
   if (!instancePath) return { ok: false, message: "Instance path was not found." };
-  const target = path.join(instancePath, info.folder, file);
+  const target = contentPath(instancePath, info.folder, file);
   if (!fs.existsSync(target)) return { ok: false, message: `${info.label} file was not found.` };
   fs.rmSync(target, { force: true });
   const manifest = readModManifest(instancePath);
@@ -6505,7 +6456,7 @@ ipcMain.handle("launcher:remove-content", (_event, request = {}) => {
   return { ok: true, message: `Removed ${file}.` };
 });
 
-ipcMain.handle("launcher:sync-client-settings", () => {
+handleIpc("launcher:sync-client-settings", () => {
   const settings = readSettings();
   const configDir = path.join(settings.instancePath, "config");
   fs.mkdirSync(configDir, { recursive: true });
@@ -6536,7 +6487,7 @@ async function importModrinthProfileFromFilePicker() {
   if (selection.canceled || !selection.filePaths.length) return { ok: false, message: "Modrinth import cancelled." };
 
   try {
-    const profile = readModrinthProfileExport(selection.filePaths[0]);
+    const profile = await readModrinthProfileExport(selection.filePaths[0]);
     emitActivity({ title: "Importing profile", detail: `Reading ${profile.name}...`, current: 0, total: profile.files.length });
     const targetVersion = profile.minecraftVersion || settings.selectedVersion;
     let installVersion = settings.selectedVersion;
@@ -6589,7 +6540,7 @@ async function importModrinthProfileFromFilePicker() {
   }
 }
 
-ipcMain.handle("launcher:import-modrinth-profile", importModrinthProfileFromFilePicker);
+handleIpc("launcher:import-modrinth-profile", importModrinthProfileFromFilePicker);
 /*
   Modpacks: a Modrinth .mrpack or a CurseForge .zip becomes a new instance on the pack's own
   Minecraft version and loader (Forge, NeoForge, Fabric, Quilt), without Daisy in game, since
@@ -6597,62 +6548,19 @@ ipcMain.handle("launcher:import-modrinth-profile", importModrinthProfileFromFile
   options, resource packs) unpacked into the instance folder.
 */
 
-/** Every entry of a zip, from its central directory. */
-function zipEntriesOf(buffer) {
-  let eocd = -1;
-  for (let index = buffer.length - 22; index >= Math.max(0, buffer.length - 66000); index -= 1) {
-    if (buffer.readUInt32LE(index) === 0x06054b50) { eocd = index; break; }
-  }
-  if (eocd < 0) throw new Error("That file is not a zip archive.");
-  const count = buffer.readUInt16LE(eocd + 10);
-  let offset = buffer.readUInt32LE(eocd + 16);
-  const entries = [];
-  for (let entry = 0; entry < count && offset + 46 <= buffer.length; entry += 1) {
-    if (buffer.readUInt32LE(offset) !== 0x02014b50) break;
-    const nameLength = buffer.readUInt16LE(offset + 28);
-    entries.push({
-      name: buffer.slice(offset + 46, offset + 46 + nameLength).toString("utf8").replace(/\\/g, "/"),
-      method: buffer.readUInt16LE(offset + 10),
-      compressedSize: buffer.readUInt32LE(offset + 20),
-      localOffset: buffer.readUInt32LE(offset + 42)
-    });
-    offset += 46 + nameLength + buffer.readUInt16LE(offset + 30) + buffer.readUInt16LE(offset + 32);
-  }
-  return entries;
-}
-
-function zipEntryData(buffer, entry) {
-  const local = entry.localOffset;
-  if (buffer.readUInt32LE(local) !== 0x04034b50) return null;
-  const start = local + 30 + buffer.readUInt16LE(local + 26) + buffer.readUInt16LE(local + 28);
-  const compressed = buffer.slice(start, start + entry.compressedSize);
-  if (entry.method === 0) return compressed;
-  if (entry.method === 8) return zlib.inflateRawSync(compressed);
-  return null;
-}
-
-/** A path from inside a pack, or null when it would land outside the instance folder. */
-function safePackPath(relative) {
-  const clean = String(relative || "").replace(/\\/g, "/").replace(/^\/+/, "");
-  if (!clean || clean.split("/").some((part) => part === ".." || part === "") || /^[a-z]:/i.test(clean)) return null;
-  return clean;
-}
-
 const PACK_LOADERS = { forge: "forge", neoforge: "neoforge", fabric: "fabric", quilt: "quilt" };
 
-function readModpackArchive(filePath) {
-  const buffer = fs.readFileSync(filePath);
-  const entries = zipEntriesOf(buffer);
+async function readModpackArchive(filePath) {
+  const entries = await validateArchivePaths(filePath);
   const entry = (name) => entries.find((item) => item.name === name);
-  const json = (item) => JSON.parse(zipEntryData(buffer, item).toString("utf8").replace(/^\uFEFF/, ""));
+  const json = async (item) => JSON.parse((await readArchiveEntry(filePath, item.name)).toString("utf8").replace(/^\uFEFF/, ""));
 
   const modrinth = entry("modrinth.index.json");
   if (modrinth) {
-    const index = json(modrinth);
+    const index = await json(modrinth);
     const deps = index.dependencies || {};
     const loader = deps.neoforge ? "neoforge" : deps.forge ? "forge" : deps["quilt-loader"] ? "quilt" : deps["fabric-loader"] ? "fabric" : "vanilla";
     return {
-      buffer,
       entries,
       name: String(index.name || path.basename(filePath, path.extname(filePath))),
       version: String(deps.minecraft || ""),
@@ -6661,7 +6569,7 @@ function readModpackArchive(filePath) {
       files: (index.files || [])
         .filter((file) => file && file.path && file.env?.client !== "unsupported")
         .map((file) => ({
-          path: safePackPath(file.path),
+          path: archiveRelativePath(file.path),
           urls: Array.isArray(file.downloads) ? file.downloads.filter(Boolean).map(String) : [],
           sha1: String(file.hashes?.sha1 || "")
         }))
@@ -6672,13 +6580,12 @@ function readModpackArchive(filePath) {
 
   const curse = entry("manifest.json");
   if (curse) {
-    const manifest = json(curse);
+    const manifest = await json(curse);
     if (!manifest.minecraft) throw new Error("That zip is not a CurseForge modpack.");
     const loaders = manifest.minecraft.modLoaders || [];
     const primary = loaders.find((item) => item.primary) || loaders[0];
     const [loaderId, ...rest] = String(primary?.id || "").split("-");
     return {
-      buffer,
       entries,
       name: String(manifest.name || path.basename(filePath, path.extname(filePath))),
       version: String(manifest.minecraft.version || ""),
@@ -6725,7 +6632,7 @@ async function runPool(items, limit, worker) {
 }
 
 async function importModpackArchive(filePath) {
-  const pack = readModpackArchive(filePath);
+  const pack = await readModpackArchive(filePath);
   if (!pack.version) throw new Error("That modpack does not say which Minecraft version it is for.");
   if (!LAUNCHABLE_LOADERS.includes(pack.loader)) throw new Error(`That modpack uses ${loaderLabel(pack.loader)}, which Daisy cannot launch.`);
 
@@ -6752,7 +6659,7 @@ async function importModpackArchive(filePath) {
         let lastError = null;
         for (const url of file.urls) {
           try {
-            await downloadIfMissing(url, path.join(instancePath, file.path), file.sha1, { timeoutMs: 180000 });
+            await downloadIfMissing(url, archiveTarget(instancePath, file.path), file.sha1, { timeoutMs: 180000 });
             lastError = null;
             break;
           } catch (error) {
@@ -6770,19 +6677,13 @@ async function importModpackArchive(filePath) {
   });
 
   emitActivity({ title: `Importing ${pack.name}`, detail: "Unpacking configs and settings...", current: total, total });
-  let unpacked = 0;
-  for (const entry of pack.entries) {
-    const prefix = pack.overrides.find((item) => entry.name.startsWith(item));
-    if (!prefix || entry.name.endsWith("/")) continue;
-    const relative = safePackPath(entry.name.slice(prefix.length));
-    if (!relative) continue;
-    const data = zipEntryData(pack.buffer, entry);
-    if (!data) continue;
-    const target = path.join(instancePath, relative);
-    fs.mkdirSync(path.dirname(target), { recursive: true });
-    fs.writeFileSync(target, data);
-    unpacked += 1;
-  }
+  const prefixFor = (name) => pack.overrides.find((prefix) => name.startsWith(prefix));
+  const unpacked = pack.entries.filter((entry) => !entry.directory && prefixFor(entry.name)).length;
+  await extractArchive(filePath, instancePath, {
+    filter: (name) => Boolean(prefixFor(name)),
+    mapName: (name) => name.slice(prefixFor(name).length),
+    overwrite: true
+  });
   emit("launcher:log", `[modpack] ${pack.name}: ${total - failed.length} of ${total} files downloaded, ${unpacked} override files unpacked.`);
   emitActivity({ title: `Imported ${pack.name}`, detail: `${loaderLabel(pack.loader)} ${pack.version}`, current: total, total, done: true });
   emitStatus();
@@ -6812,7 +6713,7 @@ async function importModpackFromFilePicker() {
   }
 }
 
-ipcMain.handle("launcher:import-modpack-file", importModpackFromFilePicker);
+handleIpc("launcher:import-modpack-file", importModpackFromFilePicker);
 
 /*
   Copying mods between instances. A jar built for one Minecraft version or loader rarely
@@ -6888,7 +6789,7 @@ async function transferMods({ fromInstanceId, toInstanceId } = {}) {
   const byHash = new Map();
   for (const mod of mods) {
     if (manifest.mods[mod.file]?.projectId) continue;
-    try { byHash.set(fileSha1(mod.path), mod); } catch { }
+    try { byHash.set(await fileSha1(mod.path), mod); } catch { }
   }
   let known = {};
   if (byHash.size) {
@@ -6969,7 +6870,7 @@ async function transferMods({ fromInstanceId, toInstanceId } = {}) {
     : { ok: true, message, copied: count };
 }
 
-ipcMain.handle("launcher:transfer-mods", async (_event, request) => {
+handleIpc("launcher:transfer-mods", async (_event, request) => {
   const offline = await offlineResult("Copying mods");
   if (offline) return offline;
   try {
@@ -6980,7 +6881,7 @@ ipcMain.handle("launcher:transfer-mods", async (_event, request) => {
   }
 });
 
-ipcMain.handle("launcher:check-mod-updates", async (_event, request = {}) => {
+handleIpc("launcher:check-mod-updates", async (_event, request = {}) => {
   const offline = await offlineResult("Mod update check");
   if (offline) return offline;
 
@@ -6991,7 +6892,7 @@ ipcMain.handle("launcher:check-mod-updates", async (_event, request = {}) => {
   return result;
 });
 
-ipcMain.handle("launcher:update-all-mods", async (_event, request = {}) => {
+handleIpc("launcher:update-all-mods", async (_event, request = {}) => {
   const offline = await offlineResult("Update all");
   if (offline) return offline;
 
@@ -7028,12 +6929,12 @@ ipcMain.handle("launcher:update-all-mods", async (_event, request = {}) => {
   return result;
 });
 
-ipcMain.handle("launcher:open-external", async (_event, url) => {
-  await shell.openExternal(url);
+handleIpc("launcher:open-external", async (_event, url) => {
+  await shell.openExternal(externalUrl(url));
   return true;
 });
 
-ipcMain.handle("launcher:update-instance", (_event, patch) => {
+handleIpc("launcher:update-instance", (_event, patch) => {
   const instances = readInstances();
   const idx = instances.findIndex(i => i.id === patch.id);
   if (idx < 0) return { ok: false, message: "Instance not found." };
@@ -7334,6 +7235,13 @@ function resolveRvrRootPath(extractedPath) {
 }
 
 function importRvrArchive(rootPath, manifest, fallbackName) {
+  assertNoArchiveLinks(rootPath);
+  const settingsSnapshotPath = path.join(rootPath, "instance-settings.json");
+  let settingsPlan = [];
+  if (fs.existsSync(settingsSnapshotPath)) {
+    if (fs.statSync(settingsSnapshotPath).size > 4 * 1024 * 1024) throw new Error("Instance settings snapshot exceeds 4 MiB.");
+    settingsPlan = planRvrSettings(JSON.parse(fs.readFileSync(settingsSnapshotPath, "utf8")));
+  }
   const instanceMetaPath = path.join(rootPath, "instance.json");
   let instanceMeta = manifest?.instance || {};
   if (fs.existsSync(instanceMetaPath)) {
@@ -7343,9 +7251,10 @@ function importRvrArchive(rootPath, manifest, fallbackName) {
   }
 
   const baseName = sanitizeFilename(instanceMeta.name || fallbackName || "Imported Daisy");
-  const destId = `imported-${baseName.toLowerCase().replace(/\s+/g, "-")}-${Date.now()}`;
+  const destId = `imported-${baseName.toLowerCase().replace(/\s+/g, "-")}-${crypto.randomUUID()}`;
   const destPath = path.join(instancesRootPath(), destId);
-  fs.mkdirSync(destPath, { recursive: true });
+  fs.mkdirSync(instancesRootPath(), { recursive: true });
+  fs.mkdirSync(destPath);
 
   for (const contentType of ["mod", "resourcepack", "shader"]) {
     const info = contentTypeInfo(contentType);
@@ -7393,18 +7302,7 @@ function importRvrArchive(rootPath, manifest, fallbackName) {
   }, null, 2));
 
   fs.mkdirSync(path.join(destPath, "config"), { recursive: true });
-  const settingsSnapshotPath = path.join(rootPath, "instance-settings.json");
-  if (fs.existsSync(settingsSnapshotPath)) {
-    try {
-      const snapshot = JSON.parse(fs.readFileSync(settingsSnapshotPath, "utf8"));
-      for (const [relativePath, content] of Object.entries(snapshot || {})) {
-        if (typeof content !== "string") continue;
-        const targetPath = path.join(destPath, relativePath);
-        fs.mkdirSync(path.dirname(targetPath), { recursive: true });
-        fs.writeFileSync(targetPath, content, "utf8");
-      }
-    } catch { }
-  }
+  writeRvrSettings(destPath, settingsPlan);
   // .rvr archives are Daisy exports, so fabric/1.21.11 is a safe fallback for older files
   // written before instances carried a version - but flag support the same way external
   // imports do, so an archive from a version Daisy no longer ships is still called out.
@@ -7488,39 +7386,18 @@ async function restoreRvrContent(instance, restore) {
   return failed;
 }
 
-/** Total bytes under a folder. Bounded so a huge world can never stall the UI. */
-function directorySizeBytes(dir, budget = { files: 20000 }) {
-  let total = 0;
-  const walk = (current) => {
-    if (budget.files <= 0) return;
-    let entries = [];
-    try { entries = fs.readdirSync(current, { withFileTypes: true }); } catch { return; }
-    for (const entry of entries) {
-      if (budget.files <= 0) return;
-      const full = path.join(current, entry.name);
-      if (entry.isDirectory()) walk(full);
-      else {
-        budget.files -= 1;
-        try { total += fs.statSync(full).size; } catch { }
-      }
-    }
-  };
-  walk(dir);
-  return total;
-}
-
 /**
  * The worlds in an instance, as the launcher can present them without opening the game:
  * the real in-game name (from level.dat, which is not always the folder name), when it was
  * last played, how big it is, and the world icon Minecraft renders in its own world list.
  */
-function getInstanceWorlds(instancePath) {
+async function getInstanceWorlds(instancePath) {
   const savesDir = path.join(String(instancePath || ""), "saves");
   let entries = [];
-  try { entries = fs.readdirSync(savesDir, { withFileTypes: true }); } catch { return []; }
+  try { entries = await fsp.readdir(savesDir, { withFileTypes: true }); } catch { return []; }
   const worlds = [];
   for (const entry of entries) {
-    if (!entry.isDirectory()) continue;
+    if (entry.isSymbolicLink() || !entry.isDirectory()) continue;
     const folder = entry.name;
     const worldPath = path.join(savesDir, folder);
     const levelDat = path.join(worldPath, "level.dat");
@@ -7528,7 +7405,7 @@ function getInstanceWorlds(instancePath) {
     let lastPlayed = 0;
     let gameMode = "";
     let hardcore = false;
-    const root = fs.existsSync(levelDat) ? parseNbtFile(levelDat) : null;
+    const root = await parseNbtFileAsync(levelDat);
     const data = root && root.Data ? root.Data : null;
     if (data) {
       if (data.LevelName) name = String(data.LevelName);
@@ -7538,15 +7415,15 @@ function getInstanceWorlds(instancePath) {
       if (typeof data.GameType === "number") gameMode = modes[data.GameType] || "";
     }
     if (!lastPlayed) {
-      try { lastPlayed = fs.statSync(fs.existsSync(levelDat) ? levelDat : worldPath).mtimeMs; } catch { }
+      try { lastPlayed = (await fsp.stat(root ? levelDat : worldPath)).mtimeMs; } catch { }
     }
     let icon = "";
     const iconPath = path.join(worldPath, "icon.png");
     try {
-      const stat = fs.statSync(iconPath);
+      const stat = await fsp.stat(iconPath);
       // World icons are 64x64 thumbnails, so inlining them is cheap. Guard anyway.
       if (stat.size > 0 && stat.size < 512 * 1024) {
-        icon = "data:image/png;base64," + fs.readFileSync(iconPath).toString("base64");
+        icon = "data:image/png;base64," + (await readBoundedFile(iconPath, 512 * 1024)).toString("base64");
       }
     } catch { }
     worlds.push({
@@ -7557,7 +7434,7 @@ function getInstanceWorlds(instancePath) {
       gameMode,
       hardcore,
       icon,
-      sizeBytes: directorySizeBytes(worldPath)
+      sizeBytes: await directorySize(worldPath)
     });
   }
   return worlds.sort((a, b) => b.lastPlayed - a.lastPlayed);
@@ -7570,7 +7447,7 @@ const INSTANCE_SUBFOLDERS = ["", "mods", "saves", "config", "resourcepacks", "sh
  * Everything the instance page needs, for ANY instance - not just the selected one, so
  * browsing an instance never forces the user to switch to it first.
  */
-ipcMain.handle("launcher:get-instance-details", (_event, request) => {
+handleIpc("launcher:get-instance-details", async (_event, request) => {
   const instanceId = typeof request === "string" ? request : String((request && request.instanceId) || "");
   const instance = readInstances().find((item) => item.id === instanceId);
   if (!instance) return { ok: false, message: "Instance was not found." };
@@ -7591,7 +7468,7 @@ ipcMain.handle("launcher:get-instance-details", (_event, request) => {
     mods: getInstalledMods(instance.path),
     resourcepacks: getInstalledContent(instance.path, "resourcepack"),
     shaders: getInstalledContent(instance.path, "shader"),
-    worlds: getInstanceWorlds(instance.path),
+    worlds: await getInstanceWorlds(instance.path),
     counts: {
       screenshots: countFiles("screenshots"),
       crashReports: countFiles("crash-reports")
@@ -7652,7 +7529,7 @@ function countFolderEntries(dir, accept) {
   try { return fs.readdirSync(dir, { withFileTypes: true }).filter(accept).length; } catch { return 0; }
 }
 
-ipcMain.handle("launcher:get-instance-cards", () => {
+handleIpc("launcher:get-instance-cards", () => {
   const cards = {};
   for (const instance of readInstances()) {
     const screenshot = instanceScreenshotArt(instance.path);
@@ -7667,19 +7544,20 @@ ipcMain.handle("launcher:get-instance-cards", () => {
   return cards;
 });
 
-ipcMain.handle("launcher:open-instance-path", (_event, request) => {
+handleIpc("launcher:open-instance-path", async (_event, request) => {
   const instanceId = String((request && request.instanceId) || "");
   const sub = String((request && request.sub) || "");
   if (!INSTANCE_SUBFOLDERS.includes(sub)) return { ok: false, message: "Unknown folder." };
   const instance = readInstances().find((item) => item.id === instanceId);
   if (!instance) return { ok: false, message: "Instance was not found." };
   const target = sub ? path.join(instance.path, sub) : instance.path;
-  try { fs.mkdirSync(target, { recursive: true }); } catch { }
-  shell.openPath(target);
-  return { ok: true };
+  try {
+    const error = await shell.openPath(await ensureApprovedDirectory(target, approvedLocalRoots()));
+    return { ok: !error, ...(error ? { message: error } : {}) };
+  } catch { return { ok: false, message: "That folder is outside the permitted instance folders." }; }
 });
 
-ipcMain.handle("launcher:delete-world", (_event, request) => {
+handleIpc("launcher:delete-world", (_event, request) => {
   const instanceId = String((request && request.instanceId) || "");
   const folder = String((request && request.folder) || "");
   const instance = readInstances().find((item) => item.id === instanceId);
@@ -7687,7 +7565,7 @@ ipcMain.handle("launcher:delete-world", (_event, request) => {
   // Resolve and re-check containment: the folder name arrives from the renderer, so it
   // must not be able to point anywhere outside this instance's saves directory.
   const savesDir = path.resolve(instance.path, "saves");
-  const target = path.resolve(savesDir, folder);
+  const target = contentPath(instance.path, "saves", folder);
   if (!target.startsWith(savesDir + path.sep) || !fs.existsSync(target)) {
     return { ok: false, message: "That world was not found." };
   }
@@ -7777,7 +7655,7 @@ function disableContentFile(instancePath, contentType, file) {
 }
 
 /** What changing an instance to another Minecraft version would do. Read-only. */
-ipcMain.handle("launcher:preview-version-change", async (_event, request) => {
+handleIpc("launcher:preview-version-change", async (_event, request) => {
   const offline = await offlineResult("Version change check");
   if (offline) return offline;
   const instanceId = String((request && request.instanceId) || "");
@@ -7798,7 +7676,7 @@ ipcMain.handle("launcher:preview-version-change", async (_event, request) => {
  * disables (never deletes) the ones that do not, and swaps Daisy's own jar to the
  * matching build.
  */
-ipcMain.handle("launcher:change-instance-version", async (_event, request) => {
+handleIpc("launcher:change-instance-version", async (_event, request) => {
   const offline = await offlineResult("Version change");
   if (offline) return offline;
   const instanceId = String((request && request.instanceId) || "");
@@ -7891,7 +7769,7 @@ ipcMain.handle("launcher:change-instance-version", async (_event, request) => {
 
 
 // Instance export / import
-ipcMain.handle("launcher:export-instance", async (_event, instanceId) => {
+handleIpc("launcher:export-instance", async (_event, instanceId) => {
   const instances = readInstances();
   const instance = instances.find(i => i.id === instanceId);
   if (!instance) return { ok: false, message: "Instance not found." };
@@ -7937,9 +7815,7 @@ async function importRvrArchiveFromFile(archivePath) {
     return { ok: false, message: "That file is not a valid Daisy .rvr export." };
   }
   const baseName = path.basename(archivePath, path.extname(archivePath));
-  const extractRoot = path.join(os.tmpdir(), `daisy-import-${Date.now()}`);
-
-  fs.mkdirSync(extractRoot, { recursive: true });
+  const extractRoot = await fsp.mkdtemp(path.join(os.tmpdir(), "daisy-import-"));
   emitActivity({ title: "Importing instance", detail: "Unpacking Daisy archive...", current: 0, total: 1 });
   try {
     await extractDaisyArchive(archivePath, extractRoot);
@@ -7995,7 +7871,7 @@ async function importRvrArchiveFromFile(archivePath) {
   }
 }
 
-ipcMain.handle("launcher:import-instance", async () => {
+handleIpc("launcher:import-instance", async () => {
   const { filePaths } = await dialog.showOpenDialog(mainWindow, {
     title: "Import Daisy instance",
     filters: [{ name: "Daisy Instance", extensions: ["rvr"] }],
@@ -8006,7 +7882,7 @@ ipcMain.handle("launcher:import-instance", async () => {
 });
 
 // Java auto-installer
-ipcMain.handle("launcher:install-java", async (_event, majorVersion = 21) => installJavaRuntime(majorVersion));
+handleIpc("launcher:install-java", async (_event, majorVersion = 21) => installJavaRuntime(majorVersion));
 
 /**
  * Reads the major version of a Java executable (0 when it can't be run).
@@ -8226,12 +8102,12 @@ function writeProfiles(profiles) {
   fs.writeFileSync(profilesPath(), JSON.stringify(profiles, null, 2));
 }
 
-ipcMain.handle("launcher:get-profiles", () => {
+handleIpc("launcher:get-profiles", () => {
   const auth = readAuth();
   return { profiles: readProfiles(), activeId: auth.profileId || null };
 });
 
-ipcMain.handle("launcher:save-profile", async () => {
+handleIpc("launcher:save-profile", async () => {
   const auth = readAuth();
   if (!auth.profile?.id) return { ok: false, message: "Not signed in." };
   const profiles = readProfiles();
@@ -8250,7 +8126,7 @@ ipcMain.handle("launcher:save-profile", async () => {
   return { ok: true, message: `Saved profile for ${auth.profile.name}.` };
 });
 
-ipcMain.handle("launcher:switch-profile", async (_event, profileId) => {
+handleIpc("launcher:switch-profile", async (_event, profileId) => {
   const profiles = readProfiles();
   const profile = profiles.find(p => p.id === profileId);
   if (!profile) return { ok: false, message: "Profile not found." };
@@ -8266,7 +8142,7 @@ ipcMain.handle("launcher:switch-profile", async (_event, profileId) => {
   return { ok: true, message: `Switched to ${profile.name}.` };
 });
 
-ipcMain.handle("launcher:remove-profile", async (_event, profileId) => {
+handleIpc("launcher:remove-profile", async (_event, profileId) => {
   const profiles = readProfiles().filter(p => p.id !== profileId);
   writeProfiles(profiles);
 
@@ -8292,7 +8168,7 @@ ipcMain.handle("launcher:remove-profile", async (_event, profileId) => {
 });
 
 // Quick launch
-ipcMain.handle("launcher:quick-launch", async () => {
+handleIpc("launcher:quick-launch", async () => {
   // Select the most recently used instance, then launch
   const history = readSessionHistory();
   const instances = readInstances();
@@ -8515,8 +8391,8 @@ async function handleDaisySocial(_event, request = {}) {
     default: return { ok: false, message: `Unknown social action: ${action}` };
   }
 }
-ipcMain.handle("launcher:daisy-social", handleDaisySocial);
-ipcMain.handle("launcher:river-social", handleDaisySocial);
+handleIpc("launcher:daisy-social", handleDaisySocial);
+handleIpc("launcher:river-social", handleDaisySocial);
 
 /** Username to {id, name} via Mojang. Cached alongside skins; reachable from the user's PC. */
 async function resolveMojangProfile(name) {
@@ -8936,15 +8812,15 @@ function startStatusHeartbeat() {
 // The social-address feature was fully implemented (checkSocialAddressAvailability /
 // saveSocialAddressName) and exposed in preload, but these two handlers were never
 // registered - so every call from the UI would have rejected with "No handler registered".
-ipcMain.handle("launcher:check-social-address", (_event, name) => {
+handleIpc("launcher:check-social-address", (_event, name) => {
   return checkSocialAddressAvailability(String(name || ""));
 });
 
-ipcMain.handle("launcher:set-social-address", (_event, name) => {
+handleIpc("launcher:set-social-address", (_event, name) => {
   return saveSocialAddressName(String(name || ""));
 });
 
-ipcMain.handle("launcher:set-social-status", async (_event, status) => {
+handleIpc("launcher:set-social-status", async (_event, status) => {
   const next = writeSettings({ ...readSettings(), socialStatus: String(status || "online") });
   const result = await announceSocialStatus(next);
   emitStatus();
@@ -8960,7 +8836,7 @@ ipcMain.handle("launcher:set-social-status", async (_event, status) => {
 const skinUrlCache = new Map();
 const SKIN_CACHE_MS = 60 * 60 * 1000;
 
-ipcMain.handle("launcher:get-player-skin", async (_event, name) => {
+handleIpc("launcher:get-player-skin", async (_event, name) => {
   const key = String(name || "").trim().toLowerCase();
   if (!key) return { ok: false, url: "" };
 
@@ -8991,7 +8867,7 @@ ipcMain.handle("launcher:get-player-skin", async (_event, name) => {
   }
 });
 
-ipcMain.handle("launcher:get-friend-presence", async () => {
+handleIpc("launcher:get-friend-presence", async () => {
   const friends = readSettings().friends || [];
   if (!friends.length) return { ok: true, players: [], reachable: true };
 
@@ -9032,7 +8908,7 @@ ipcMain.handle("launcher:get-friend-presence", async () => {
   }
 });
 
-ipcMain.handle("launcher:analyze-crash", async () => {
+handleIpc("launcher:analyze-crash", async () => {
   const status = getStatus();
   const info = status.crashInfo;
   if (!info || !info.latest) return null;
@@ -9054,7 +8930,7 @@ ipcMain.handle("launcher:analyze-crash", async () => {
   }
 });
 
-ipcMain.handle("launcher:get-partners", async () => {
+handleIpc("launcher:get-partners", async () => {
   const partners = await fetchPartnerServers();
   if (!partners.length) return [];
   // Resolve live status too: the raw feed carries no online/player data, so without
@@ -9331,7 +9207,7 @@ async function installLauncherUpdate() {
     if (update.checkFailed) return { ok: false, message: update.message };
     if (!update.available) return { ok: false, message: update.message };
     if (!update.asset) {
-      await shell.openExternal(update.url || RELEASES_URL);
+      await shell.openExternal(externalUrl(update.url || RELEASES_URL));
       return { ok: true, message: "Opened the release page. Choose a download for your platform." };
     }
     emitActivity({ title: "Downloading update", detail: `Daisy Client ${update.latestVersion}`, current: 0, total: update.asset.size, unit: "bytes" });
@@ -9468,7 +9344,7 @@ function describeUpdateError(error) {
   return raw.replace(/\\\\\?\\/g, "").replace(/\s*'[^']*'\s*$/, "").trim() || "Updater failed before install could start.";
 }
 
-ipcMain.handle("launcher:retry-updater", async () => {
+handleIpc("launcher:retry-updater", async () => {
   if (!isUpdaterMode) return { ok: false };
   await runUpdaterMode();
   return { ok: true };
@@ -9781,7 +9657,7 @@ async function downloadChangedUpdateFiles(plan, extractDir, targetVersion) {
         });
       }
     });
-    if (file.sha256) verifyFileSha256(target, file.sha256);
+    if (file.sha256) await verifyFileSha256(target, file.sha256);
     downloadedBase += Number(file.size || 0);
   }
 }
@@ -9836,7 +9712,7 @@ async function downloadUpdatePackageParts(parts, target, version) {
         });
       }
     });
-    if (part.sha256) verifyFileSha256(partFile, part.sha256);
+    if (part.sha256) await verifyFileSha256(partFile, part.sha256);
     await appendFileStreaming(partFile, target);
     ofs.rmSync(partFile, { force: true });
     done += Number(part.size || 0);
@@ -9862,91 +9738,7 @@ function appendFileStreaming(source, target) {
 const DOWNLOAD_STALL_MS = 45000;
 
 async function downloadFileWithProgress(url, target, options = {}) {
-  // The file name matters here: this same download serves the package, its parts and
-  // every changed file of a smart update, and "package download failed" on a jar sent
-  // the wrong person looking in the wrong place.
-  const name = path.basename(String(url).split("?")[0]) || "update file";
-  const controller = new AbortController();
-  let stallTimer = null;
-  const armStallTimer = () => {
-    clearTimeout(stallTimer);
-    stallTimer = setTimeout(() => controller.abort(), DOWNLOAD_STALL_MS);
-  };
-  const stalled = (error) => controller.signal.aborted
-    ? new Error(`Download of ${name} stopped receiving data for ${DOWNLOAD_STALL_MS / 1000} seconds. Check your connection, then click Retry.`)
-    : error;
-
-  armStallTimer();
-  let response;
-  try {
-    response = await fetch(url, {
-      headers: { "User-Agent": `DaisyClientLauncher/${clientModVersion} (realvoidgojo)` },
-      signal: controller.signal
-    });
-  } catch (error) {
-    clearTimeout(stallTimer);
-    throw stalled(error);
-  }
-  if (!response.ok || !response.body) {
-    clearTimeout(stallTimer);
-    throw new Error(`Download of ${name} failed with ${response.status}.`);
-  }
-  const temp = `${target}.download`;
-  ofs.rmSync(temp, { force: true });
-
-  const total = Number(options.totalBytes || response.headers.get("content-length") || 0);
-  const startedAt = Date.now();
-  let downloaded = 0;
-  let lastEmit = 0;
-  const reader = response.body.getReader();
-  const output = ofs.createWriteStream(temp);
-
-  try {
-    for (; ;) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      armStallTimer();
-      downloaded += value.byteLength;
-      if (!output.write(Buffer.from(value))) {
-        await new Promise((resolve) => output.once("drain", resolve));
-      }
-
-      const now = Date.now();
-      if (now - lastEmit >= 250 || (total && downloaded >= total)) {
-        lastEmit = now;
-        const elapsedSeconds = Math.max(0.001, (now - startedAt) / 1000);
-        const bytesPerSecond = downloaded / elapsedSeconds;
-        const remaining = total > 0 ? Math.max(0, total - downloaded) : 0;
-        const etaSeconds = total > 0 && bytesPerSecond > 0 ? remaining / bytesPerSecond : 0;
-        options.onProgress?.({
-          downloaded,
-          total,
-          speed: bytesPerSecond,
-          eta: etaSeconds
-        });
-      }
-    }
-    await new Promise((resolve, reject) => {
-      const handleError = (error) => {
-        output.off("close", handleClose);
-        reject(error);
-      };
-      const handleClose = () => {
-        output.off("error", handleError);
-        resolve();
-      };
-      output.once("error", handleError);
-      output.once("close", handleClose);
-      output.end();
-    });
-  } catch (error) {
-    output.destroy();
-    ofs.rmSync(temp, { force: true });
-    throw stalled(error);
-  } finally {
-    clearTimeout(stallTimer);
-  }
-  await finalizeDownloadedTempFile(temp, target);
+  return downloadToFile(url, target, { ...options, filesystem: ofs, headers: { "User-Agent": launcherUserAgent }, timeoutMs: DOWNLOAD_STALL_MS, finalize: finalizeDownloadedTempFile });
 }
 
 async function finalizeDownloadedTempFile(temp, target) {
@@ -9999,8 +9791,8 @@ function formatDuration(seconds) {
   return minuteRemainder ? `${hours}h ${minuteRemainder}m` : `${hours}h`;
 }
 
-function verifyFileSha256(file, expected) {
-  const actual = crypto.createHash("sha256").update(ofs.readFileSync(file)).digest("hex");
+async function verifyFileSha256(file, expected) {
+  const actual = await hashFile(file, "sha256", ofs);
   if (actual.toLowerCase() !== String(expected).toLowerCase()) {
     ofs.rmSync(file, { force: true });
     throw new Error("Update package checksum did not match. The download was deleted.");
@@ -10477,7 +10269,7 @@ async function listForgeVersions() {
   return list;
 }
 
-ipcMain.handle("launcher:get-game-versions", async (_event, loader) => {
+handleIpc("launcher:get-game-versions", async (_event, loader) => {
   try {
     const kind = String(loader || "").toLowerCase();
     if (kind === "forge") return { ok: true, versions: await listForgeVersions() };
@@ -10544,44 +10336,12 @@ function plainNativeClassifier(library) {
   return raw ? String(raw).replace("${arch}", process.arch === "ia32" ? "32" : "64") : "";
 }
 
-/**
- * Unpacks a natives jar. PowerShell's Expand-Archive only accepts files named .zip, so it
- * cannot open these at all; Fabric's newer versions never needed this, older versions do.
- */
-function extractNativesJar(jarFile, nativesDir) {
-  const buffer = fs.readFileSync(jarFile);
-  let eocd = -1;
-  for (let index = buffer.length - 22; index >= Math.max(0, buffer.length - 66000); index -= 1) {
-    if (buffer.readUInt32LE(index) === 0x06054b50) { eocd = index; break; }
-  }
-  if (eocd < 0) throw new Error(`${path.basename(jarFile)} is not a valid jar.`);
-  const count = buffer.readUInt16LE(eocd + 10);
-  let offset = buffer.readUInt32LE(eocd + 16);
-  for (let entry = 0; entry < count && offset + 46 <= buffer.length; entry += 1) {
-    if (buffer.readUInt32LE(offset) !== 0x02014b50) break;
-    const method = buffer.readUInt16LE(offset + 10);
-    const compressedSize = buffer.readUInt32LE(offset + 20);
-    const nameLength = buffer.readUInt16LE(offset + 28);
-    const extraLength = buffer.readUInt16LE(offset + 30);
-    const commentLength = buffer.readUInt16LE(offset + 32);
-    const localOffset = buffer.readUInt32LE(offset + 42);
-    const name = buffer.slice(offset + 46, offset + 46 + nameLength).toString("utf8").replace(/\\/g, "/");
-    offset += 46 + nameLength + extraLength + commentLength;
-    if (!name || name.endsWith("/") || name.startsWith("META-INF/") || name.includes("..")) continue;
-    if (buffer.readUInt32LE(localOffset) !== 0x04034b50) continue;
-    const dataStart = localOffset + 30 + buffer.readUInt16LE(localOffset + 26) + buffer.readUInt16LE(localOffset + 28);
-    const compressed = buffer.slice(dataStart, dataStart + compressedSize);
-    const data = method === 0 ? compressed : method === 8 ? zlib.inflateRawSync(compressed) : null;
-    if (!data) continue;
-    const target = path.join(nativesDir, name);
-    try {
-      if (fs.existsSync(target) && fs.statSync(target).size === data.length) continue;
-      fs.mkdirSync(path.dirname(target), { recursive: true });
-      fs.writeFileSync(target, data);
-    } catch {
-      // A native already loaded by a running game is locked; the copy on disk is the same file.
-    }
-  }
+/** Stream verified native entries; reuse existing files only when size and CRC match. */
+async function extractNativesJar(jarFile, nativesDir) {
+  await extractArchive(jarFile, nativesDir, {
+    filter: name => !name.startsWith("META-INF/"), overwrite: true, skipExisting: true,
+    maxEntryBytes: 128 * 1024 * 1024, maxTotalBytes: 512 * 1024 * 1024
+  });
 }
 
 /** A version that inherits from another, merged the way Mojang's launcher merges them. */
@@ -10818,7 +10578,7 @@ async function preparePlainMinecraftLaunch(status, auth, authenticated, joinAddr
     if (native?.url && native.path) {
       const target = path.join(librariesDir, native.path);
       await downloadIfMissing(native.url, target, native.sha1);
-      extractNativesJar(target, nativesDir);
+      await extractNativesJar(target, nativesDir);
     }
   }
   classpath.push(gameJar);
@@ -11091,14 +10851,14 @@ async function downloadIfMissing(url, target, sha1 = "", options = {}) {
   // set (Minecraft ships ~4500+ objects) means synchronously reading and hashing every
   // single already-present file on every launch, which is slow enough to look like a
   // hang even though nothing is actually being downloaded.
-  if (fs.existsSync(target) && (options.trustExisting || !sha1 || fileSha1(target) === sha1)) return;
+  if (fs.existsSync(target) && (options.trustExisting || !sha1 || (await fileSha1(target)) === sha1)) return;
   fs.mkdirSync(path.dirname(target), { recursive: true });
   const attempts = Math.max(1, Number(options.attempts || 3));
   let lastError = null;
   for (let attempt = 1; attempt <= attempts; attempt += 1) {
     try {
       await downloadFile(url, target, options);
-      if (sha1 && fileSha1(target) !== sha1) {
+      if (sha1 && (await fileSha1(target)) !== sha1) {
         fs.rmSync(target, { force: true });
         throw new Error(`Downloaded file failed checksum: ${path.basename(target)}`);
       }
@@ -11119,8 +10879,8 @@ function removeQuietly(file) {
   } catch { }
 }
 
-function fileSha1(file) {
-  return crypto.createHash("sha1").update(fs.readFileSync(file)).digest("hex");
+async function fileSha1(file) {
+  return hashFile(file, "sha1");
 }
 
 /**
@@ -11210,12 +10970,7 @@ function ruleMatches(rule) {
 }
 
 async function expandNativeJar(jarFile, nativesDir) {
-  await runPowerShell([
-    "-NoProfile",
-    "-ExecutionPolicy", "Bypass",
-    "-Command",
-    `Expand-Archive -LiteralPath '${escapePowerShell(jarFile)}' -DestinationPath '${escapePowerShell(nativesDir)}' -Force`
-  ]);
+  await extractNativesJar(jarFile, nativesDir);
 }
 
 async function prepareAssets(assetIndex, assetsDir) {
@@ -11959,7 +11714,7 @@ function readZipEntryBufferFromBuffer(buffer, wantedName) {
     const dataStart = localOffset + 30 + localNameLength + localExtraLength;
     const compressed = buffer.slice(dataStart, dataStart + compressedSize);
     if (method === 0) return compressed;
-    if (method === 8) return zlib.inflateRawSync(compressed);
+    if (method === 8) return zlib.inflateRawSync(compressed, { maxOutputLength: 16 * 1024 * 1024 });
     throw new Error(`Unsupported zip compression method ${method}`);
   }
   return null;
@@ -12367,8 +12122,8 @@ async function installModrinthVersion({ projectIdOrSlug, title, version, gameVer
     if (reason !== "dependency") return { ok: true, message: `${title} stays disabled.`, installed: [] };
     const [disabledFile, disabledMetadata] = existingProjectEntry;
     const enabledFile = disabledFile.replace(/\.disabled$/i, "");
-    const disabledPath = path.join(instancePath, resolvedInfo.folder, disabledFile);
-    const enabledPath = path.join(instancePath, resolvedInfo.folder, enabledFile);
+    const disabledPath = contentPath(instancePath, resolvedInfo.folder, disabledFile);
+    const enabledPath = contentPath(instancePath, resolvedInfo.folder, enabledFile);
     if (fs.existsSync(disabledPath) && disabledPath !== enabledPath) {
       if (fs.existsSync(enabledPath)) fs.rmSync(enabledPath, { force: true });
       fs.renameSync(disabledPath, enabledPath);
@@ -12488,11 +12243,11 @@ async function installModrinthVersion({ projectIdOrSlug, title, version, gameVer
   return { ok: true, message: `Installed ${installed.length} file${installed.length === 1 ? "" : "s"} including dependencies.`, installed };
 }
 
-function readModrinthProfileExport(filePath) {
+async function readModrinthProfileExport(filePath) {
   const ext = path.extname(filePath).toLowerCase();
   const raw = ext === ".mrpack"
-    ? readZipTextFile(filePath, "modrinth.index.json")
-    : fs.readFileSync(filePath, "utf8");
+    ? (await readArchiveEntry(filePath, "modrinth.index.json"))?.toString("utf8")
+    : (await readBoundedFile(filePath, 4 * 1024 * 1024)).toString("utf8");
   const index = JSON.parse(raw);
   if (!index || !Array.isArray(index.files)) throw new Error("That file is not a valid Modrinth profile export.");
 
@@ -12514,43 +12269,6 @@ function readModrinthProfileExport(filePath) {
   };
 }
 
-function readZipTextFile(filePath, wantedName) {
-  const buffer = fs.readFileSync(filePath);
-  const end = findEndOfCentralDirectory(buffer);
-  if (end < 0) throw new Error("Could not read Modrinth pack archive.");
-
-  const entryCount = buffer.readUInt16LE(end + 10);
-  const centralSize = buffer.readUInt32LE(end + 12);
-  const centralOffset = buffer.readUInt32LE(end + 16);
-  let offset = centralOffset;
-  const centralEnd = centralOffset + centralSize;
-
-  for (let i = 0; i < entryCount && offset < centralEnd; i += 1) {
-    if (buffer.readUInt32LE(offset) !== 0x02014b50) break;
-    const method = buffer.readUInt16LE(offset + 10);
-    const compressedSize = buffer.readUInt32LE(offset + 20);
-    const nameLength = buffer.readUInt16LE(offset + 28);
-    const extraLength = buffer.readUInt16LE(offset + 30);
-    const commentLength = buffer.readUInt16LE(offset + 32);
-    const localHeaderOffset = buffer.readUInt32LE(offset + 42);
-    const name = buffer.subarray(offset + 46, offset + 46 + nameLength).toString("utf8");
-
-    if (name === wantedName) {
-      if (buffer.readUInt32LE(localHeaderOffset) !== 0x04034b50) throw new Error("Modrinth pack archive has an invalid local header.");
-      const localNameLength = buffer.readUInt16LE(localHeaderOffset + 26);
-      const localExtraLength = buffer.readUInt16LE(localHeaderOffset + 28);
-      const dataStart = localHeaderOffset + 30 + localNameLength + localExtraLength;
-      const compressed = buffer.subarray(dataStart, dataStart + compressedSize);
-      if (method === 0) return compressed.toString("utf8");
-      if (method === 8) return zlib.inflateRawSync(compressed).toString("utf8");
-      throw new Error("Modrinth pack uses an unsupported ZIP compression method.");
-    }
-
-    offset += 46 + nameLength + extraLength + commentLength;
-  }
-
-  throw new Error("This archive does not contain modrinth.index.json.");
-}
 
 function findEndOfCentralDirectory(buffer) {
   const min = Math.max(0, buffer.length - 0xffff - 22);
@@ -12614,7 +12332,7 @@ async function importModrinthProfile(profile, options) {
       continue;
     }
 
-    const target = path.join(options.instancePath, sanitizeProfilePath(file.path));
+    const target = archiveTarget(options.instancePath, sanitizeProfilePath(file.path));
     fs.mkdirSync(path.dirname(target), { recursive: true });
     emit("launcher:log", `[mods] Importing ${filename} from ${profile.name}...`);
     emitActivity({ title: "Importing profile", detail: `Downloading ${filename}...`, current: index + 1, total: files.length });
@@ -12642,12 +12360,8 @@ function isModrinthVersionCompatible(version, gameVersion, loader) {
 }
 
 function sanitizeProfilePath(profilePath) {
-  const parts = String(profilePath || "")
-    .replaceAll("\\", "/")
-    .split("/")
-    .filter((part) => part && part !== "." && part !== "..")
-    .map(sanitizeFilename);
-  if (!parts.length || parts[0] !== "mods") parts.unshift("mods");
+  const parts = archiveRelativePath(profilePath).split("/");
+  if (parts[0] !== "mods") parts.unshift("mods");
   return path.join(...parts);
 }
 
@@ -12880,7 +12594,7 @@ async function installCurseForgeMod({ mod, instancePath, apiKey, visited = new S
   // Replace any older file from the same project so versions don't stack up.
   for (const [existingFile, item] of Object.entries(section)) {
     if (item && item.source === "curseforge" && String(item.projectId) === String(mod.id) && existingFile !== targetFile) {
-      fs.rmSync(path.join(contentDir, existingFile), { force: true });
+      fs.rmSync(contentPath(instancePath, info.folder, existingFile), { force: true });
       delete section[existingFile];
       delete manifest.updates[updateKey(contentType, existingFile)];
     }
@@ -12996,35 +12710,7 @@ async function fetchWithTimeout(url, options = {}, timeoutMs = 45000) {
 }
 
 async function downloadFile(url, target, options = {}) {
-  const temp = `${target}.download`;
-  removeQuietly(temp);
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), Number(options.timeoutMs || 45000));
-  try {
-    const response = await fetch(url, {
-      headers: {
-        "User-Agent": launcherUserAgent
-      },
-      signal: controller.signal
-    });
-    if (!response.ok) throw new Error(`Download failed with ${response.status}`);
-    const buffer = Buffer.from(await response.arrayBuffer());
-    fs.writeFileSync(temp, buffer);
-    try {
-      await finalizeDownloadedTempFile(temp, target);
-    } catch (error) {
-      if (error?.code === "EPERM") {
-        throw new Error(`Daisy could not replace ${path.basename(target)} because Windows is still using it.`);
-      }
-      throw error;
-    }
-  } catch (error) {
-    removeQuietly(temp);
-    if (error?.name === "AbortError") throw new Error(`Download timed out: ${url}`);
-    throw error;
-  } finally {
-    clearTimeout(timer);
-  }
+  return downloadToFile(url, target, { ...options, filesystem: ofs, headers: { "User-Agent": launcherUserAgent }, finalize: finalizeDownloadedTempFile });
 }
 
 function sanitizeFilename(value) {

@@ -160,7 +160,20 @@ function installDaisyModJar(sourceJar, modsDir, mcVersion, kind = "client") {
   const target = path.join(modsDir, name + (disabled ? ".disabled" : ""));
   const targetExisted = fs.existsSync(target);
   const partial = `${target}.${crypto.randomUUID()}.install`;
-  const digest = (file) => crypto.createHash("sha256").update(fs.readFileSync(file)).digest("hex");
+  // This API is still synchronous for instance setup; keep its memory bounded.
+  // Network/update verification uses the asynchronous streaming helper above.
+  const digest = (file) => {
+    const hash = crypto.createHash("sha256");
+    const descriptor = fs.openSync(file, "r");
+    try {
+      const chunk = Buffer.alloc(64 * 1024);
+      for (;;) {
+        const count = fs.readSync(descriptor, chunk, 0, chunk.length, null);
+        if (!count) return hash.digest("hex");
+        hash.update(chunk.subarray(0, count));
+      }
+    } finally { fs.closeSync(descriptor); }
+  };
   try {
     if (!fs.existsSync(target) || digest(target) !== digest(sourceJar)) {
       fs.copyFileSync(sourceJar, partial);
