@@ -10,7 +10,7 @@ pluginManagement {
 plugins {
     // Multi-version source preprocessing. One source tree, version-conditional
     // comments, one jar per entry in the version list below.
-    id("dev.kikugie.stonecutter") version "0.9.7"
+    id("dev.kikugie.stonecutter") version "0.10"
 }
 
 dependencyResolutionManagement {
