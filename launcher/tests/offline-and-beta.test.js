@@ -8,6 +8,17 @@ const { VERSION, compareVersions, clientJarIdentity, latestChannelRelease } = re
 const { cachedMetadata } = require("../src/metadata-cache.js");
 const { pickDaisyModEntry } = require("../src/daisy-mod-cache.js");
 
+test("offline player identities match independently verified JDK UUIDv3 results", () => {
+  const source = fs.readFileSync(path.join(__dirname, "../src/main.js"), "utf8");
+  const start = source.indexOf("function offlineUuid(");
+  const end = source.indexOf("\nasync function ", start);
+  const context = vm.createContext({ crypto: require("node:crypto") });
+  vm.runInContext(source.slice(start, end), context);
+  // UUID.nameUUIDFromBytes(UTF_8("OfflinePlayer:" + name)), checked on JDK 21.
+  assert.equal(context.offlineUuid("LocalPlayer"), "c6d762506d42328ebfce7a3312675f70");
+  assert.equal(context.offlineUuid("Notch"), "b50ad385829d3141a2167e7d7539ba7f");
+});
+
 test("beta ordering preserves stable and legacy update compatibility", () => {
   assert.ok(VERSION.test("1.0.0-beta.1"));
   assert.ok(compareVersions("1.0.0-beta.10", "1.0.0-beta.2") > 0);

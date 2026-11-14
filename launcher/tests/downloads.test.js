@@ -65,3 +65,20 @@ test("storage scanning skips cyclic junctions and shares concurrent scans", asyn
   assert.equal(first, directorySize(root));
   assert.equal(await first, 8);
 });
+
+test("actual launcher finalization preserves the old file when Windows refuses replacement", async (t) => {
+  const { root, target } = setup(t);
+  fs.writeFileSync(target, "working");
+  const source = fs.readFileSync(path.join(__dirname, "../src/main.js"), "utf8");
+  const start = source.indexOf("async function finalizeDownloadedTempFile(");
+  let attempts = 0;
+  const context = require("node:vm").createContext({
+    ofs: { rename: (_from, _to, callback) => { attempts++; callback(Object.assign(new Error("locked"), { code: "EBUSY" })); } },
+    sleep: async () => {}, Math, Error
+  });
+  require("node:vm").runInContext(source.slice(start, source.indexOf("\nfunction formatBytes", start)), context);
+  await assert.rejects(downloadToFile("https://example.test/file", target, { fetchImpl: response("replacement"), finalize: context.finalizeDownloadedTempFile }), /locked/);
+  assert.equal(attempts, 8);
+  assert.equal(fs.readFileSync(target, "utf8"), "working");
+  assert.deepEqual(fs.readdirSync(root), ["artifact.jar"]);
+});

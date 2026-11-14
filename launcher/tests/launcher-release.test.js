@@ -200,6 +200,7 @@ test("Windows update handoff uses silent NSIS update flags and reports launch er
     assert.equal(file, target);
     assert.deepEqual(args, ["--updated", "/S", "--force-run", `/D=${directory}`]);
     assert.equal(options.windowsHide, true); assert.equal(options.detached, true);
+    assert.equal(options.shell, false); assert.equal(options.windowsVerbatimArguments, false);
     const child = new EventEmitter(); child.unref = () => { detached = true; };
     queueMicrotask(() => child.emit("spawn")); return child;
   });
@@ -209,4 +210,13 @@ test("Windows update handoff uses silent NSIS update flags and reports launch er
     queueMicrotask(() => child.emit("error", new Error("Access denied"))); return child;
   }), /Access denied/);
   await assert.rejects(startWindowsInstaller("unverified.exe", directory, () => { throw new Error("Should not spawn"); }), /Invalid verified/);
+  await assert.rejects(startWindowsInstaller(target, `${directory}\ncommand`, () => { throw new Error("Should not spawn"); }), /Invalid verified/);
+  const literalDirectory = path.join(os.tmpdir(), "Daisy & literal $(command)");
+  await startWindowsInstaller(target, literalDirectory, (file, args, options) => {
+    assert.equal(file, target);
+    assert.equal(args.at(-1), `/D=${literalDirectory}`);
+    assert.equal(options.shell, false);
+    const child = new EventEmitter(); child.unref = () => {};
+    queueMicrotask(() => child.emit("spawn")); return child;
+  });
 });

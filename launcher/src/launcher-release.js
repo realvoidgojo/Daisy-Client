@@ -67,13 +67,17 @@ async function downloadReleaseAsset(asset, directory, download, { onProgress = (
 }
 
 // NSIS update flags match electron-builder's updater contract. /D must be last.
+// Only main's verified download handoff calls this function. The executable has a
+// fixed asset name and GitHub repository URL, and its size/SHA-256 are checked by
+// downloadReleaseAsset. Paths and arguments are passed directly, without a shell.
 function startWindowsInstaller(target, installDirectory, spawnProcess) {
-  if (!path.isAbsolute(target) || path.basename(target) !== "Daisy-Setup.exe" || !path.isAbsolute(installDirectory)) {
+  if (typeof target !== "string" || typeof installDirectory !== "string" || /[\x00-\x1f"]/.test(target + installDirectory)
+      || !path.isAbsolute(target) || path.basename(target) !== "Daisy-Setup.exe" || !path.isAbsolute(installDirectory)) {
     return Promise.reject(new Error("Invalid verified installer location."));
   }
   return new Promise((resolve, reject) => {
     const child = spawnProcess(target, ["--updated", "/S", "--force-run", `/D=${installDirectory}`], {
-      detached: true, stdio: "ignore", windowsHide: true
+      detached: true, stdio: "ignore", windowsHide: true, shell: false, windowsVerbatimArguments: false
     });
     child.once("error", reject);
     child.once("spawn", () => { child.unref(); resolve(); });

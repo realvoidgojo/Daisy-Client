@@ -9742,32 +9742,19 @@ async function downloadFileWithProgress(url, target, options = {}) {
 }
 
 async function finalizeDownloadedTempFile(temp, target) {
-  let lastError = null;
-  for (let attempt = 1; attempt <= 8; attempt += 1) {
+  let lastError;
+  for (let attempt = 1; attempt <= 8; attempt++) {
     try {
-      if (ofs.existsSync(target)) ofs.rmSync(target, { force: true });
-      ofs.renameSync(temp, target);
+      // rename replaces files atomically. Never delete a working destination first
+      // or fall back to an in-place copy that can expose a partial file.
+      await new Promise((resolve, reject) => ofs.rename(temp, target, error => error ? reject(error) : resolve()));
       return;
     } catch (error) {
       lastError = error;
-      if (!["EPERM", "EBUSY", "EACCES", "ENOTEMPTY", "UNKNOWN"].includes(String(error?.code || ""))) break;
-      await sleep(Math.min(1200, 150 * attempt));
+      if (!["EPERM", "EBUSY", "EACCES", "UNKNOWN"].includes(String(error?.code || ""))) break;
+      if (attempt < 8) await sleep(Math.min(1200, 150 * attempt));
     }
   }
-
-  for (let attempt = 1; attempt <= 4; attempt += 1) {
-    try {
-      if (ofs.existsSync(target)) ofs.rmSync(target, { force: true });
-      ofs.copyFileSync(temp, target);
-      ofs.rmSync(temp, { force: true });
-      return;
-    } catch (error) {
-      lastError = error;
-      if (!["EPERM", "EBUSY", "EACCES", "ENOTEMPTY", "UNKNOWN"].includes(String(error?.code || ""))) break;
-      await sleep(Math.min(1500, 250 * attempt));
-    }
-  }
-
   throw lastError || new Error(`Could not move downloaded file into place: ${target}`);
 }
 
@@ -11114,6 +11101,9 @@ function replaceVariables(value, replacements) {
 }
 
 function offlineUuid(name) {
+  // Minecraft-compatible UUIDv3 identity, equivalent to Java nameUUIDFromBytes.
+  // MD5 here is neither a password hash nor an authenticity/integrity check.
+  // Replacing it changes existing local players' identities and world ownership.
   const hash = crypto.createHash("md5").update("OfflinePlayer:" + name).digest();
   // Set version to 3 (UUIDv3 name-based MD5)
   hash[6] = (hash[6] & 0x0f) | 0x30;
