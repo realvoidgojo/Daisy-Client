@@ -4006,6 +4006,12 @@ function emitStatus() {
   scheduleDiscordPresenceRefresh();
 }
 
+handleIpc("launcher:copy-text", (_event, text) => {
+  if (typeof text !== "string" || Buffer.byteLength(text, "utf8") > 256 * 1024) return false;
+  clipboard.writeText(text);
+  return true;
+});
+
 handleIpc("launcher:get-status", () => getStatus());
 
 handleIpc("launcher:get-lan-info", () => {

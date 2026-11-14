@@ -11,7 +11,7 @@ not evidence that every reported failure remains reproducible.
 | 2. Log deletion/export | Fixed | Both operations require a regular, unlinked log file under approved log directories. Tests exercise the actual deletion handler with an outside canary. |
 | 3. Arbitrary OS path opening | Fixed | File opening requires approved application/instance roots and permits directories or `.log`/`.txt` files. Folder creation checks its existing ancestor and its resulting destination. Content mutations also reject path-shaped filenames; explicit instance paths must identify registered instances. |
 | 4. Arbitrary external protocols | Fixed | OS links require HTTPS, an exact approved product/service hostname, no credentials and the standard HTTPS port. Protocol, hostname suffix, credential and localhost tricks are rejected. New partner domains require a deliberate policy change. |
-| 5. Renderer sandbox | Enabled | All three windows use `sandbox: true`; preloads require only Electron's supported bridge APIs. Every IPC handler checks the known window, main frame, exact local page and page capability. New windows, webviews, remote navigation and permission requests are denied. The isolated Windows startup smoke passed. Production Linux startup no longer disables Chromium's sandbox. Ubuntu CI smoke passed; distribution-specific sandbox policy still needs native testing. |
+| 5. Renderer sandbox | Enabled | All three windows use `sandbox: true`; preloads require only Electron's supported bridge APIs. Every IPC handler checks the known window, main frame, exact local page and page capability. New windows, webviews, remote navigation and permission requests are denied. Existing copy buttons use a bounded write-only clipboard IPC capability; clipboard read remains denied. The isolated Windows startup smoke passed. Production Linux startup no longer disables Chromium's sandbox. Ubuntu CI smoke passed; distribution-specific sandbox policy still needs native testing. |
 | 6. Unbounded NBT | Fixed | Input 8 MiB, expanded data 32 MiB, depth 64, 100,000 nodes/elements and 65,535-byte strings; reads and offsets are bounded. Negative/truncated arrays, invalid tags, compression bombs and prototype-looking keys have tests. File reads and decompression in world/server loading are asynchronous; unchanged metadata has a bounded cache. |
 
 Archive compatibility is intentionally limited to single-disk, non-ZIP64 stored or
@@ -49,7 +49,7 @@ another malicious process running as the same operating-system user.
 - Branding audit: zero unexpected references. Only existing compatibility-handler
   justifications changed to match the secured IPC registrar.
 - Python regression suite: 20 passed.
-- Launcher regression suite: 83 passed.
+- Launcher regression suite: 84 passed.
 - Launcher bundle and isolated sandboxed Windows startup: passed.
 - Gradle default client/bootstrap checks: passed.
 - Gradle `build check` across all 13 configured Minecraft targets: passed,

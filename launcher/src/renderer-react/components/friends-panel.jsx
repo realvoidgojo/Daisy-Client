@@ -456,7 +456,7 @@ export function FriendsPanel({ status, refresh, notify, variant = "aside" }) {
           <div className="text-[11px] text-muted-foreground">{t("Your friend code")}</div>
           <button
             onClick={() => {
-              navigator.clipboard?.writeText(status.settings.friendCode);
+              api()?.copyText?.(status.settings.friendCode);
               notify(t("Friend code copied."), "info");
             }}
             className="mt-0.5 w-full truncate text-left font-mono text-xs transition-colors hover:text-primary"

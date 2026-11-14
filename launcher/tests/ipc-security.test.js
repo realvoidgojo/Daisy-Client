@@ -106,3 +106,18 @@ test("windows deny remote navigation, new windows, webviews and permissions", ()
   assert.equal(callbacks.get("permission")(), false);
   callbacks.get("request")(contents, "geolocation", allowed => assert.equal(allowed, false));
 });
+
+test("existing copy buttons use a bounded IPC write without granting clipboard read permission", () => {
+  const source = fs.readFileSync(path.join(__dirname, "../src/main.js"), "utf8");
+  const start = source.indexOf('handleIpc("launcher:copy-text"');
+  const copied = [];
+  let handler;
+  require("node:vm").runInNewContext(source.slice(start, source.indexOf('handleIpc("launcher:get-status"', start)), {
+    handleIpc: (_channel, callback) => { handler = callback; }, Buffer,
+    clipboard: { writeText: text => copied.push(text) }
+  });
+  assert.equal(handler(null, "friend-code"), true);
+  assert.equal(handler(null, "x".repeat(256 * 1024 + 1)), false);
+  assert.equal(handler(null, {}), false);
+  assert.deepEqual(copied, ["friend-code"]);
+});

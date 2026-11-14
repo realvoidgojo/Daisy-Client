@@ -1,6 +1,7 @@
 const { contextBridge, ipcRenderer } = require("electron");
 
 contextBridge.exposeInMainWorld("clientcore", {
+  copyText: (text) => ipcRenderer.invoke("launcher:copy-text", text),
   getStatus: () => ipcRenderer.invoke("launcher:get-status"),
   refreshVersions: () => ipcRenderer.invoke("launcher:refresh-versions"),
   checkNetwork: () => ipcRenderer.invoke("launcher:check-network"),

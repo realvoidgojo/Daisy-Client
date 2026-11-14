@@ -232,7 +232,7 @@ export function CrashReport({ status, refresh, notify }) {
                 : "",
               ...analysis.findings.map((f) => `${f.title}: ${f.detail}`)
             ].filter(Boolean);
-            navigator.clipboard?.writeText(lines.join("\n"));
+            api()?.copyText?.(lines.join("\n"));
             notify(t("Crash summary copied - paste it when asking for help."), "info");
           }}
         >
