@@ -85,9 +85,13 @@ jobs:
             build/reports/
             versions/*/build/reports/
   launcher:
-    name: Launcher tests and native startup
+    name: Launcher tests and native startup (${{ matrix.os }})
     needs: client
-    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -110,11 +114,15 @@ jobs:
       - run: npm run build:app
         working-directory: launcher
       - run: npm run test:startup
+        if: runner.os == 'Windows'
+        working-directory: launcher
+      - run: xvfb-run -a npm run test:startup
+        if: runner.os == 'Linux'
         working-directory: launcher
       - uses: actions/upload-artifact@v7
         if: failure()
         with:
-          name: launcher-diagnostics
+          name: launcher-diagnostics-${{ runner.os }}
           path: |
             build/reports/
             launcher/*.log
