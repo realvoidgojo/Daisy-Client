@@ -54,3 +54,15 @@ appearance subset. Opaque externally supplied skin/authentication-agent binaries
   successful compilation does not demonstrate every mixin's behavior in game.
 - Startup smoke failure: inspect `build/reports/launcher-smoke.png` and process output.
   The smoke uses a temporary user-data directory and disables network requests.
+  On headless Linux, run `cd launcher && xvfb-run -a npm run test:startup`.
+- Stonecutter resolution failure: run `python scripts/check-build-repositories.py`
+  to check the configured official plugin metadata. Check DNS, TLS/proxy settings
+  and repository availability before changing a pinned version. Cached Gradle
+  builds and a successful metadata preflight test different parts of resolution.
+- Linux sandbox failure: production requires working unprivileged user namespaces
+  or an administrator-configured Chromium sandbox helper. The launcher does not
+  disable its sandbox to bypass distribution/AppArmor policy. Hosted CI smoke
+  processes have an explicit test-only exception.
+
+See [audit remediation](audit-remediation.md) for security limits, remaining staged
+refactoring and opt-in JFR profiling instructions.

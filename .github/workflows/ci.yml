@@ -59,6 +59,8 @@ jobs:
           distribution: temurin
           java-version: '21'
       - uses: gradle/actions/setup-gradle@v6
+      - name: Check build repository availability
+        run: python scripts/check-build-repositories.py
       - name: Build and check selected clients
         env:
           COMPATIBILITY: ${{ inputs.compatibility || false }}
