@@ -12,6 +12,8 @@ const directory = fs.mkdtempSync(path.join(os.tmpdir(), "daisy-smoke-"));
 const report = path.resolve(root, "..", "build", "reports", "launcher-smoke.png");
 fs.mkdirSync(path.dirname(report), { recursive: true });
 const env = { ...process.env, DAISY_SMOKE_TEST: "1", DAISY_SMOKE_DIR: directory, DAISY_SMOKE_REPORT: report };
+if (process.argv.includes("--responsive")) env.DAISY_SMOKE_RESPONSIVE = "1";
+else delete env.DAISY_SMOKE_RESPONSIVE;
 delete env.ELECTRON_RUN_AS_NODE;
 const packaged = process.argv.includes("--packaged");
 const executableIndex = process.argv.indexOf("--executable");

@@ -96,7 +96,7 @@ export function ModernHomeView({ status, refresh, notify, launch: launchProp, st
 
   return (
     <div className="flex h-full min-h-0 bg-transparent text-foreground">
-      <div className="min-w-0 flex-1 overflow-y-auto px-8 pb-10">
+      <div className="min-w-0 flex-1 overflow-y-auto px-4 md:px-8 pb-10">
         
         {/* Top bar: friendly 20px greeting */}
         <header className="flex items-center justify-between py-6">
@@ -126,7 +126,7 @@ export function ModernHomeView({ status, refresh, notify, launch: launchProp, st
         <div className="grid grid-cols-12 gap-6">
 
           {/* 1. Hero Tile (8 cols, ~380px tall) */}
-          <section className="relative col-span-12 xl:col-span-8 flex flex-col justify-between overflow-hidden rounded-2xl border-2 border-daisy-ink bg-card p-8 shadow-[6px_6px_0px_#000000] min-h-[380px]">
+          <section className="home-hero relative col-span-12 xl:col-span-8 flex flex-col justify-between overflow-hidden rounded-2xl border-2 border-daisy-ink bg-card p-8 shadow-[6px_6px_0px_#000000] min-h-[380px]">
             {/* Rich Minecraft Landscape Backdrop in Hero Bento Tile with positive z-index 0 underneath z-10 content */}
             <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
               <div className="absolute inset-0 scale-105">
@@ -150,84 +150,86 @@ export function ModernHomeView({ status, refresh, notify, launch: launchProp, st
               </span>
             </div>
 
-            {/* Left Content */}
-            <div className="relative z-10 max-w-lg my-auto pt-2">
-              <h1 className="font-pixel text-2xl md:text-3xl font-normal leading-tight tracking-wide text-white drop-shadow-[2px_2px_0px_#000000]">
-                {selected?.name || "Daisy 1.21.11"}
-              </h1>
+            <div className="home-hero-body relative z-10" data-avatar={Boolean(skin)}>
+              {/* Left Content */}
+              <div className="home-hero-content min-w-0 max-w-lg py-4">
+                <h1 className="font-pixel text-2xl md:text-3xl font-normal leading-tight tracking-wide text-white [overflow-wrap:anywhere] drop-shadow-[2px_2px_0px_#000000]">
+                  {selected?.name || "Daisy 1.21.11"}
+                </h1>
 
-              {/* Version & Metadata Chips */}
-              <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
-                <span className="rounded border-2 border-daisy-ink bg-primary px-2.5 py-1 font-bold text-primary-foreground shadow-[2px_2px_0px_#000000]">
-                  {instanceVersionLabel(selected) || "Fabric 1.21.11"}
-                </span>
-                <span className="rounded border-2 border-daisy-ink bg-black/75 backdrop-blur-sm px-2.5 py-1 font-semibold text-white shadow-[2px_2px_0px_#000000]">
-                  {t("{count} mods", { count: modCount || 0 })}
-                </span>
-                <span className="rounded border-2 border-daisy-ink bg-black/75 backdrop-blur-sm px-2.5 py-1 font-semibold text-white/90 shadow-[2px_2px_0px_#000000] transition-colors hover:bg-black/90 hover:text-white">
-                  <PlaytimeStat settings={status?.settings} notify={notify} className="text-white/90 hover:text-white" />
-                </span>
-                {lastPlayed && (
-                  <span className="rounded border-2 border-daisy-ink bg-black/75 backdrop-blur-sm px-2.5 py-1 font-semibold text-white/90 shadow-[2px_2px_0px_#000000]">
-                    {lastPlayed}
+                {/* Version & Metadata Chips */}
+                <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
+                  <span className="rounded border-2 border-daisy-ink bg-primary px-2.5 py-1 font-bold text-primary-foreground shadow-[2px_2px_0px_#000000]">
+                    {instanceVersionLabel(selected) || "Fabric 1.21.11"}
                   </span>
-                )}
-              </div>
-
-              {/* Play & Settings Actions */}
-              <div className="mt-6 flex flex-wrap items-center gap-3">
-                {running ? (
-                  <PlayBlock
-                    size="lg"
-                    danger
-                    busy={busy}
-                    onClick={stop}
-                  >
-                    {t("Stop")}
-                  </PlayBlock>
-                ) : (
-                  <PlayBlock
-                    size="lg"
-                    busy={launching || busy}
-                    disabled={disabled}
-                    onClick={() => launch("")}
-                  >
-                    {launching || busy ? t("Launching") : t("Play")}
-                  </PlayBlock>
-                )}
-
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => openInstance?.(selected?.id)}
-                  className="h-11 bg-black/60 text-white hover:bg-black/80 hover:text-primary border-white/20"
-                >
-                  <Settings2 className="size-4 text-primary" />
-                  <span>{t("Instance settings")}</span>
-                </Button>
-              </div>
-
-              {launching && log && (
-                <p className="mt-3 truncate text-xs text-white/80">{log}</p>
-              )}
-            </div>
-
-            {/* Right: 3D Player Skin Showcase */}
-            {skin ? (
-              <div className="absolute right-6 bottom-0 top-6 hidden w-[270px] xl:block pointer-events-auto">
-                <div className="relative size-full">
-                  <SkinViewer
-                    texture={skin}
-                    slim={activeSkin?.variant === "slim"}
-                    cape={cape?.url || ""}
-                    spin={false}
-                    idle
-                    scale={8}
-                    className="absolute inset-0"
-                  />
+                  <span className="rounded border-2 border-daisy-ink bg-black/75 backdrop-blur-sm px-2.5 py-1 font-semibold text-white shadow-[2px_2px_0px_#000000]">
+                    {t("{count} mods", { count: modCount || 0 })}
+                  </span>
+                  <span className="rounded border-2 border-daisy-ink bg-black/75 backdrop-blur-sm px-2.5 py-1 font-semibold text-white/90 shadow-[2px_2px_0px_#000000] transition-colors hover:bg-black/90 hover:text-white">
+                    <PlaytimeStat settings={status?.settings} notify={notify} className="text-white/90 hover:text-white" />
+                  </span>
+                  {lastPlayed && (
+                    <span className="rounded border-2 border-daisy-ink bg-black/75 backdrop-blur-sm px-2.5 py-1 font-semibold text-white/90 shadow-[2px_2px_0px_#000000]">
+                      {lastPlayed}
+                    </span>
+                  )}
                 </div>
+
+                {/* Play & Settings Actions */}
+                <div className="mt-6 flex flex-wrap items-center gap-3">
+                  {running ? (
+                    <PlayBlock
+                      size="lg"
+                      danger
+                      busy={busy}
+                      onClick={stop}
+                    >
+                      {t("Stop")}
+                    </PlayBlock>
+                  ) : (
+                    <PlayBlock
+                      size="lg"
+                      busy={launching || busy}
+                      disabled={disabled}
+                      onClick={() => launch("")}
+                    >
+                      {launching || busy ? t("Launching") : t("Play")}
+                    </PlayBlock>
+                  )}
+
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => openInstance?.(selected?.id)}
+                    className="h-11 bg-black/60 text-white hover:bg-black/80 hover:text-primary border-white/20"
+                  >
+                    <Settings2 className="size-4 text-primary" />
+                    <span>{t("Instance settings")}</span>
+                  </Button>
+                </div>
+
+                {launching && log && (
+                  <p className="mt-3 truncate text-xs text-white/80">{log}</p>
+                )}
               </div>
-            ) : null}
+
+              {/* Right: 3D Player Skin Showcase */}
+              {skin ? (
+                <div className="home-hero-avatar relative pointer-events-auto" role="img" aria-label={t("Player avatar")}>
+                  <div className="relative size-full">
+                    <SkinViewer
+                      texture={skin}
+                      slim={activeSkin?.variant === "slim"}
+                      cape={cape?.url || ""}
+                      spin={false}
+                      idle
+                      scale={8}
+                      className="absolute inset-0"
+                    />
+                  </div>
+                </div>
+              ) : null}
+            </div>
           </section>
 
           {/* 2. Quick Launch / Instances Column (4 cols) */}

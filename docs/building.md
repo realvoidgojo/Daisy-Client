@@ -66,3 +66,13 @@ appearance subset. Opaque externally supplied skin/authentication-agent binaries
 
 See [audit remediation](audit-remediation.md) for security limits, remaining staged
 refactoring and opt-in JFR profiling instructions.
+
+## Responsive launcher checks
+
+Run `npm run test:startup --prefix launcher -- --responsive` after `build:app`.
+On headless Linux, run `cd launcher && xvfb-run -a npm run test:startup -- --responsive`.
+This creates an isolated local account and generated skin, tests wide/narrow home
+layouts and 150% interface scale, and verifies the avatar loads, stays inside its
+card and does not overlap controls or create horizontal page overflow. Screenshots
+and layout measurements are written under `build/reports/launcher-smoke-*`.
+The smoke does not use or change the installed launcher's accounts or worlds.

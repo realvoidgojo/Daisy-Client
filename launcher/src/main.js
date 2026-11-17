@@ -1557,6 +1557,9 @@ function createWindow() {
         }
         if (!rendered) throw new Error("The launcher did not become ready offline");
         await new Promise((resolve) => setTimeout(resolve, 500));
+        if (process.env.DAISY_SMOKE_RESPONSIVE === "1") {
+          await require("./responsive-smoke.js").verifyResponsiveHome(mainWindow, process.env.DAISY_SMOKE_REPORT);
+        }
         const image = await mainWindow.webContents.capturePage();
         fs.writeFileSync(process.env.DAISY_SMOKE_REPORT, image.toPNG());
         console.log("DAISY_SMOKE_OK");
@@ -12735,6 +12738,9 @@ if (singleInstanceLock) {
     }
     if (!discordRpcRefreshTimer) {
       discordRpcRefreshTimer = setInterval(() => scheduleDiscordPresenceRefresh(), 15000);
+    }
+    if (smokeTest && process.env.DAISY_SMOKE_RESPONSIVE === "1") {
+      require("./responsive-smoke.js").prepareResponsiveSmoke({ nativeImage, setOfflineAccount, readInstances, writeInstances, readSettings, writeSettings, version: readBuildVersion() });
     }
     createWindow();
     if (smokeTest) return;

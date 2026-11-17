@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.0.4 — 2026-11-17
+
+- Kept the home-page player avatar visible when narrowing the launcher window.
+- Sized the avatar column from the hero card's available width and stacked it below controls when space is limited.
+- Removed fixed page minimum dimensions that clipped content at larger interface scales; kept native window minimum sizes.
+- Added native responsive checks around the desktop grid breakpoint, at minimum width and at 150% interface scale.
+- Included the maintainer's updated normal and Halloween menu title artwork.
+
 ## 1.0.3 — 2026-11-14
 
 - Secured RVR and modpack imports against path traversal, linked files, unsafe ZIP entries and oversized expansion.

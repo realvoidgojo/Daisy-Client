@@ -140,8 +140,8 @@
     font-family: var(--font-sans);
     font-size: 14px;
     margin: 0;
-    min-width: 940px;
-    min-height: 620px;
+    min-width: 0;
+    min-height: 0;
     overflow: hidden;
     -webkit-font-smoothing: antialiased;
   }
@@ -806,4 +806,20 @@ html[data-window-focus="off"] .m-btn {
   --rx: 0deg !important;
   --ry: 0deg !important;
   --glare: 0 !important;
+}
+
+/* Size the hero from its own card, including when the outer bento grid changes. */
+.home-hero { container-type: inline-size; }
+.home-hero-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) clamp(160px, 27cqw, 270px);
+  gap: 16px;
+  align-items: center;
+  flex: 1;
+}
+.home-hero-body[data-avatar="false"] { grid-template-columns: minmax(0, 1fr); }
+.home-hero-avatar { width: 100%; height: 280px; min-width: 0; }
+@container (max-width: 520px) {
+  .home-hero-body { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .home-hero-avatar { width: 180px; justify-self: center; }
 }

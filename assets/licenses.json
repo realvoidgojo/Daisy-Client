@@ -294,15 +294,15 @@
     "notice": "LICENSE"
   },
   "src/client/resources/assets/clientcore/textures/menu_title.png": {
-    "sha256": "4624e717f4a926e240c3bc9554cc89ccba8fdf55b21e91488b4df99f672cd1d5",
+    "sha256": "c7bf5748e0d29c9fc282cb792038ae23e891b00f8a37cb8ccbc9ddbb89cd087b",
     "license": "MIT",
-    "source": "Maintainer-supplied Daisy menu title artwork, 2026-11-13; distributed under the project MIT license",
+    "source": "Maintainer-supplied Daisy menu title artwork, updated 2026-11-17; distributed under the project MIT license",
     "notice": "LICENSE"
   },
   "src/client/resources/assets/clientcore/textures/menu_title_halloween.png": {
-    "sha256": "4624e717f4a926e240c3bc9554cc89ccba8fdf55b21e91488b4df99f672cd1d5",
+    "sha256": "c7bf5748e0d29c9fc282cb792038ae23e891b00f8a37cb8ccbc9ddbb89cd087b",
     "license": "MIT",
-    "source": "Maintainer-supplied Daisy menu title artwork, 2026-11-13; distributed under the project MIT license",
+    "source": "Maintainer-supplied Daisy menu title artwork, updated 2026-11-17; distributed under the project MIT license",
     "notice": "LICENSE"
   },
   "src/client/resources/assets/clientcore/textures/red_x_icon.png": {

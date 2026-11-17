@@ -119,6 +119,14 @@ jobs:
       - run: xvfb-run -a npm run test:startup
         if: runner.os == 'Linux'
         working-directory: launcher
+      - name: Verify responsive home avatar (Windows)
+        if: runner.os == 'Windows'
+        run: npm run test:startup -- --responsive
+        working-directory: launcher
+      - name: Verify responsive home avatar (Linux)
+        if: runner.os == 'Linux'
+        run: xvfb-run -a npm run test:startup -- --responsive
+        working-directory: launcher
       - uses: actions/upload-artifact@v7
         if: failure()
         with:
