@@ -8,7 +8,7 @@ plugins {
     */
     id("net.fabricmc.fabric-loom-remap") version "1.17.20" apply false
     id("net.fabricmc.fabric-loom") version "1.17.20" apply false
-    kotlin("jvm") version "2.3.21"
+    kotlin("jvm") version "2.4.21"
 }
 
 /*
