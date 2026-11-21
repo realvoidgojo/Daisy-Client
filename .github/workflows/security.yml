@@ -62,6 +62,6 @@ jobs:
       - name: Compile client and bootstrap for analysis
         if: matrix.build-mode == 'manual'
         run: bash gradlew :1.21.11:clean :1.21.11:build :daisy-bootstrap:clean :daisy-bootstrap:build --no-build-cache --console=plain "-Porg.gradle.java.installations.paths=$JAVA_HOME_21_X64,$JAVA_HOME_25_X64"
-      - uses: github/codeql-action/analyze@5895b2c9be147bc7f1c75ce72c5cb577febb1907 # v4
+      - uses: github/codeql-action/analyze@38112626f97ac1fd7acf3df7ebca51f4677c1b38 # v4
         with:
           category: '/language:${{ matrix.language }}'
