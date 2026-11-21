@@ -55,7 +55,7 @@ jobs:
           java-version: '21'
       - uses: gradle/actions/setup-gradle@v6
         if: matrix.build-mode == 'manual'
-      - uses: github/codeql-action/init@5895b2c9be147bc7f1c75ce72c5cb577febb1907 # v4
+      - uses: github/codeql-action/init@38112626f97ac1fd7acf3df7ebca51f4677c1b38 # v4
         with:
           languages: ${{ matrix.language }}
           build-mode: ${{ matrix.build-mode }}
